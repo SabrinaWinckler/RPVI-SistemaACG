@@ -14,7 +14,6 @@ import lombok.Data;
 @Data
 public class Solicitacao {
 
-
 	@Id
 	@NotEmpty
 	@GeneratedValue
@@ -40,34 +39,33 @@ public class Solicitacao {
 
 	private String profRes;
 
-
 	private String descricao;
 
 	@ManyToOne
 	private Atividade atividade;
-	public boolean verificaTamanho(int tamanho){
-        return tamanho <= 20;
-    }
 
-    public void incluirSolicitacao(String dataAtual, String dataInicio, String dataFim, int ch, String descricao,
+	private Anexo anexo;
+
+	public boolean verificaTamanho(int tamanho) {
+		return tamanho <= 20;
+	}
+
+	public Solicitacao incluirSolicitacao(String dataAtual, String dataInicio, String dataFim, int ch, String descricao,
 			String profRes, String nomeAnexo, int tamAnexo, int idAtividade, int idGrupo, int idCurriculo)
 			throws Exception {
-        if(!verificaTamanho(tamAnexo)){
-            throw new Exception("Tamanho do anexo excede 20mb");
-        }
-        Anexo anexo = new Anexo(nomeAnexo);
+		if (!verificaTamanho(tamAnexo)) {
+			throw new Exception("Tamanho do anexo excede 20mb");
+		}
+		anexo = new Anexo(nomeAnexo);
+		SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
+		this.dataAtual = formato.parse(dataAtual);
+		this.dataInicio = formato.parse(dataInicio);
+		this.dataFim = formato.parse(dataFim);
+		this.cargaHorariaSoli = ch;
+		this.descricao = descricao;
+		this.profRes = profRes;
 
-        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
-
-        this.dataAtual = formato.parse(dataAtual);
-        this.dataInicio = formato.parse(dataInicio);
-        this.dataFim = formato.parse(dataFim);
-
-        this.cargaHorariaSoli = ch;
-        this.descricao = descricao;
-        this.profRes = profRes;
-
-        repository.save(this);
+		return this;
 	}
 
 	public Solicitacao excluirSolicitacao() {

@@ -22,6 +22,8 @@ public class Anexo {
 	@NotEmpty
 	private String nome;
 
-	
+	public Anexo(String nome){
+		this.nome = nome;
+	}
 
 }

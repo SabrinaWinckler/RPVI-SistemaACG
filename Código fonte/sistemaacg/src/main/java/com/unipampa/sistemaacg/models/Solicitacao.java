@@ -46,6 +46,11 @@ public class Solicitacao {
 
 	private Anexo anexo;
 
+	//Construtor
+	public Solicitacao(){
+
+	}
+
 	public boolean verificaTamanho(int tamanho) {
 		return tamanho <= 20;
 	}

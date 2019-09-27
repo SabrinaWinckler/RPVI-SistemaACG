@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 
@@ -35,7 +36,7 @@ public class Solicitacao {
 	private int cargaHorariaSoli;
 
 	@NotEmpty
-	private boolean status;
+	private String status;
 
 	private String profRes;
 
@@ -44,7 +45,10 @@ public class Solicitacao {
 	@ManyToOne
 	private Atividade atividade;
 
+	@OneToOne
 	private Anexo anexo;
+	 
+
 
 	//Construtor
 	public Solicitacao(){
@@ -69,6 +73,7 @@ public class Solicitacao {
 		this.cargaHorariaSoli = ch;
 		this.descricao = descricao;
 		this.profRes = profRes;
+		this.status = Status.PENDENTE.toString();
 
 		return this;
 	}

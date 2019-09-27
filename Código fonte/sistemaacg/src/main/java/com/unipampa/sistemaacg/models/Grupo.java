@@ -3,6 +3,7 @@ package com.unipampa.sistemaacg.models;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 
@@ -17,5 +18,8 @@ public class Grupo {
 
 	@NotEmpty
 	private String nome;
+
+	@ManyToOne
+	private Curriculo curriculo;
 
 }

@@ -5,6 +5,7 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 
@@ -42,11 +43,14 @@ public class Solicitacao {
 
 	private String descricao;
 
-	public void incluir() {
+	@ManyToOne
+	private Atividade atividade;
+
+	public void incluirSolicitacao() {
 
 	}
 
-	public Solicitacao excluir() {
+	public Solicitacao excluirSolicitacao() {
 		return null;
 	}
 

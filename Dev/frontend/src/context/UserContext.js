@@ -4,7 +4,7 @@ export const UserContext = createContext()
 
 export default ({ children }) => {
     
-    const currentUser = window.sessionStorage.getItem('user') != 'false' ? window.sessionStorage.getItem('user') : ''
+    const currentUser = window.sessionStorage.getItem('user') !== 'false' ? window.sessionStorage.getItem('user') : ''
     
     const [user, setUser] = useState(currentUser)
 
@@ -17,7 +17,7 @@ export default ({ children }) => {
     
     const context = {
         user,
-        setUser,
+        setUser
     }
 
     return (

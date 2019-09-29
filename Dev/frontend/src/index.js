@@ -6,7 +6,7 @@ import UserContext from './context/UserContext'
 import './index.css';
 
 ReactDOM.render(
-    <UserContext>
+     <UserContext>
         <App />
-    </UserContext>
+     </UserContext>
     , document.getElementById('root'));

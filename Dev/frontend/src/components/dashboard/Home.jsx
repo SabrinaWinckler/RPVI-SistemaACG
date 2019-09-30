@@ -50,7 +50,7 @@ export default function PaperSheet() {
         <div>
             <Paper className={classes.root} styles={{}}>
                 <Typography variant="h5" component="h3">
-                    Bem vindo ao SOLICITA!
+                    Bem vindo ao P.IN.G.A.!
                 </Typography>
                 <Typography component="p">
                     Escolha seu perfil de usuário:

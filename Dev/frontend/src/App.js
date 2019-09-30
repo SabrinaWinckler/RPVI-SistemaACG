@@ -14,7 +14,7 @@ export default function App() {
           <Navbar />
           <Switch>
             <Route exact path='/' component ={Home} />
-            {/* <Route path='/painel' component ={Painel} /> */}
+            <Route path='/painel' component ={Painel} />
           </Switch>
           <Footer />
         </div>

@@ -56,22 +56,22 @@ export default function PaperSheet() {
                     Escolha seu perfil de usuário:
                 </Typography>
                 <Grid container direction="row" justify="space-around" alignItems="center">
-                    <Button variant="contained" id="disc" onClick={handleUser} className={classes.button} style={{ backgroundColor: '#009045' }}>
-                        <Grid container id="disc" direction="column" justify="center" alignItems="center">
-                            <img id="disc" src={student} style={{ width: 50, height: 50 }} alt="Student" />
-                            <Typography id="disc" variant="button" display="block" gutterBottom>
-                                Discente
+                        <Button variant="contained" id="disc" onClick={handleUser} className={classes.button} style={{ backgroundColor: '#009045' }} href="/painel">
+                            <Grid container id="disc" direction="column" justify="center" alignItems="center">
+                                <img id="disc" src={student} style={{ width: 50, height: 50 }} alt="Student" />
+                                <Typography id="disc" variant="button" display="block" gutterBottom>
+                                    Discente
                             </Typography>
-                        </Grid>
-                    </Button>
-                    <Button variant="contained" id="coord" onClick={handleUser} className={classes.button} style={{ backgroundColor: '#009045' }}>
-                        <Grid container id="coord" direction="column" justify="center" alignItems="center">
-                            <img src={coord} id="coord" style={{ width: 50, height: 50 }} alt="Coordinator" />
-                            <Typography id="coord" variant="button" display="block" gutterBottom>
-                                Coordenador
+                            </Grid>
+                        </Button>
+                        <Button variant="contained" id="coord" onClick={handleUser} className={classes.button} style={{ backgroundColor: '#009045' }} href="/painel">
+                            <Grid container id="coord" direction="column" justify="center" alignItems="center">
+                                <img src={coord} id="coord" style={{ width: 50, height: 50 }} alt="Coordinator" />
+                                <Typography id="coord" variant="button" display="block" gutterBottom>
+                                    Coordenador
                             </Typography>
-                        </Grid>
-                    </Button>
+                            </Grid>
+                        </Button>
                 </Grid>
             </Paper>
         </div>

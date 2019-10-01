@@ -47,7 +47,7 @@ public class Solicitacao {
 
 	@OneToOne
 	private Anexo anexo;
-	 
+
 
 
 	//Construtor
@@ -57,6 +57,11 @@ public class Solicitacao {
 
 	public boolean verificaTamanho(int tamanho) {
 		return tamanho <= 20;
+	}
+
+	public Solicitacao getSolicitacaoById(int id){
+		
+		return null;
 	}
 
 	public Solicitacao incluirSolicitacao(String dataAtual, String dataInicio, String dataFim, int ch, String descricao,

@@ -16,7 +16,7 @@ export default function ButtonAppBar() {
 
     return (
         <div className={classes.root}>
-            <AppBar className={classes.StyledAppBar} style={{ backgroundColor: 'white', position: 'absolute', bottom: 0 }} position="static">
+            <AppBar className={classes.StyledAppBar} style={{ backgroundColor: 'transparent', bottom: 0 }} position="static">
                 <Grid container direction="row" justify="center" alignItems="center">
                     <Typography style={{ color: 'black' }}variant="subtitle1" gutterBottom>
                         Versão: 0.1.0 | Desenvolvido para disciplina de RPVI 2019.2

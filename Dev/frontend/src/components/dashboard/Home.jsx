@@ -15,12 +15,12 @@ const useStyles = makeStyles(theme => ({
         marginTop: theme.spacing(4),
     },
     button: {
-        margin: theme.spacing(1),
+        margin: theme.spacing(2),
         color: 'white',
-        minHeight: '15%',
-        minWidth: '15%',
-        maxHeight: '15%',
-        maxWidth: '15%',
+        minHeight: '20%',
+        minWidth: '20%',
+        maxHeight: '50%',
+        maxWidth: '50%',
     },
 }));
 
@@ -56,22 +56,22 @@ export default function PaperSheet() {
                     Escolha seu perfil de usuário:
                 </Typography>
                 <Grid container direction="row" justify="space-around" alignItems="center">
+                    <Grid container id="disc" direction="column" justify="center" alignItems="center" item xs={6}>
                         <Button variant="contained" id="disc" onClick={handleUser} className={classes.button} style={{ backgroundColor: '#009045' }} href="/painel">
-                            <Grid container id="disc" direction="column" justify="center" alignItems="center">
-                                <img id="disc" src={student} style={{ width: 50, height: 50 }} alt="Student" />
-                                <Typography id="disc" variant="button" display="block" gutterBottom>
-                                    Discente
-                            </Typography>
-                            </Grid>
+                            <img id="disc" src={student} style={{ width: 'inherit' }} alt="Student" />
                         </Button>
+                        <Typography id="disc" variant="button" display="block" gutterBottom>
+                            Discente
+                        </Typography>
+                    </Grid>
+                    <Grid container id="coord" direction="column" justify="center" alignItems="center" item xs={6}>
                         <Button variant="contained" id="coord" onClick={handleUser} className={classes.button} style={{ backgroundColor: '#009045' }} href="/painel">
-                            <Grid container id="coord" direction="column" justify="center" alignItems="center">
-                                <img src={coord} id="coord" style={{ width: 50, height: 50 }} alt="Coordinator" />
-                                <Typography id="coord" variant="button" display="block" gutterBottom>
-                                    Coordenador
-                            </Typography>
-                            </Grid>
+                            <img src={coord} id="coord" style={{ width: 'inherit' }} alt="Coordinator" />
                         </Button>
+                        <Typography id="coord" variant="button" display="block" gutterBottom>
+                            Coordenador
+                        </Typography>
+                    </Grid>
                 </Grid>
             </Paper>
         </div>

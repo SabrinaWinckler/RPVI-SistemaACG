@@ -48,7 +48,7 @@ export default function ButtonAppBar() {
             <Link href='/' underline="none" >
               <img style={{ width: '60%', height: '60%', float: 'left' }} src={logo} alt="HomePage" />
             </Link>
-            <Link href='https://unipampa.edu.br/portal/' underline="none" >
+            <Link href='https://unipampa.edu.br/portal/' underline="none" style={{ display: 'contents'}}>
               <img style={{ width: '10%', height: '10%', float: 'right' }} src={logoUni} alt="UnipampaPage" />
             </Link>
           </Grid>

@@ -26,7 +26,7 @@ public class Curriculo {
 	@NotEmpty
 	private boolean status;
 
-	@OneToMany(mappedBy = "curriculo")
+	@OneToMany
 	private List<Grupo> grupo;
 
 }

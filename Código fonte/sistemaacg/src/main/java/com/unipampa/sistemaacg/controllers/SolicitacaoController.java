@@ -24,6 +24,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -127,6 +128,13 @@ public class SolicitacaoController {
 
     }
 
+    @DeleteMapping(value = "/{id}")
+    public @ResponseBody ResponseEntity<Optional<Solicitacao>> deleteSolicitacaobyId(@PathVariable long id) {
+        // Busca no banco pelo id
+        Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
+        solicitacaoRepository.deleteById(id);
+        return ResponseEntity.ok(retornableSolicitacao);
+    }
     //Código da documentação para usar como base
 
     @GetMapping("/anexos")

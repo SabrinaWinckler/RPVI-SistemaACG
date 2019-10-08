@@ -12,6 +12,9 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -28,13 +31,17 @@ public class StorageAnexo implements StorageService {
     }
 
     @Override
-    public String store(MultipartFile file, String nome) throws IOException {
+    public String store(MultipartFile file, String nome) throws IOException, NoSuchAlgorithmException {
 
         try {
             if (file.isEmpty()) {
                 throw new StorageException("Falha ao salvar arquivo vazio" + file.getOriginalFilename());
             }
-            Files.copy(file.getInputStream(), this.rootLocation.resolve(nome+"_"+file.getOriginalFilename()));
+            
+            MessageDigest m = MessageDigest.getInstance("MD5");
+            m.update(nome.getBytes(), 0, new Date().toString().length());
+
+            Files.copy(file.getInputStream(), this.rootLocation.resolve(nome+"_"+m+file.getOriginalFilename()));
         } catch (IOException e) {
             throw new StorageException("Falha ao armazenar " + file.getOriginalFilename(), e);
         }

@@ -2,40 +2,53 @@ package com.unipampa.sistemaacg.models;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Optional;
+import org.hibernate.Transaction;
+import org.springframework.core.io.Resource;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.unipampa.sistemaacg.repository.SolicitacaoRepository;
+
 import lombok.Data;
 
 @Entity
 @Data
-public class Solicitacao {
+public class Solicitacao{
 
 	@Id
-	@NotEmpty
-	@GeneratedValue
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private long idSolicitacao;
 
 	@NotEmpty
 	private String local;
 
 	@NotEmpty
+	private String aluno;
+
+	//@NotEmpty
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private Date dataAtual;
 
-	@NotEmpty
+	//@NotEmpty
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private Date dataInicio;
 
-	@NotEmpty
+	//@NotEmpty
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private Date dataFim;
 
-	@NotEmpty
-	private int cargaHorariaSoli;
+	private long cargaHorariaSoli;
 
-	@NotEmpty
 	private String status;
 
 	private String profRes;
@@ -45,45 +58,13 @@ public class Solicitacao {
 	@ManyToOne
 	private Atividade atividade;
 
-	@OneToOne
-	private Anexo anexo;
+	@NotEmpty
+	private String nomeAnexo;
 
-
-
-	//Construtor
-	public Solicitacao(){
-
-	}
-
-	public boolean verificaTamanho(int tamanho) {
+	public boolean verificaTamanho(long tamanho) {
 		return tamanho <= 20;
 	}
 
-	public Solicitacao getSolicitacaoById(int id){
-		
-		return null;
-	}
+	public Solicitacao(){}
 
-	public Solicitacao incluirSolicitacao(String dataAtual, String dataInicio, String dataFim, int ch, String descricao,
-			String profRes, String nomeAnexo, int tamAnexo, int idAtividade, int idGrupo, int idCurriculo)
-			throws Exception {
-		if (!verificaTamanho(tamAnexo)) {
-			throw new Exception("Tamanho do anexo excede 20mb");
-		}
-		anexo = new Anexo(nomeAnexo);
-		SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
-		this.dataAtual = formato.parse(dataAtual);
-		this.dataInicio = formato.parse(dataInicio);
-		this.dataFim = formato.parse(dataFim);
-		this.cargaHorariaSoli = ch;
-		this.descricao = descricao;
-		this.profRes = profRes;
-		this.status = Status.PENDENTE.toString();
-
-		return this;
-	}
-
-	public Solicitacao excluirSolicitacao() {
-		return null;
-	}
 }

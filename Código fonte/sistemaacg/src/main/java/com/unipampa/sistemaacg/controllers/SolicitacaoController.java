@@ -9,11 +9,14 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.unipampa.sistemaacg.dto.InfosSolicitacaoDTO;
 import com.unipampa.sistemaacg.dto.SolicitacaoPostDTO;
 import com.unipampa.sistemaacg.models.Atividade;
 import com.unipampa.sistemaacg.models.Solicitacao;
 import com.unipampa.sistemaacg.models.Status;
 import com.unipampa.sistemaacg.repository.AtividadeRepository;
+import com.unipampa.sistemaacg.repository.CurriculoRepository;
+import com.unipampa.sistemaacg.repository.GrupoRepository;
 import com.unipampa.sistemaacg.repository.SolicitacaoRepository;
 import com.unipampa.sistemaacg.storageanexo.StorageService;
 
@@ -48,6 +51,10 @@ public class SolicitacaoController {
     SolicitacaoRepository solicitacaoRepository;
     @Autowired
     AtividadeRepository atividadeRepository;
+    @Autowired
+    GrupoRepository grupoRepository;
+    @Autowired
+    CurriculoRepository curriculoRepository;
 
     private final StorageService storageService;
 
@@ -62,12 +69,15 @@ public class SolicitacaoController {
         return ResponseEntity.ok(retornableSolicitacoes);
     }
 
-    @GetMapping(value = "infos") // Lista de atividades, grupo e curriculo no formato JSON -
-                                 // localhost:8080/solicitacao/infos/
-    public Iterable<Object> getInfos() {
-        Iterable<Atividade> atividades = atividadeRepository.findAll();
+    @GetMapping(value = "/infos") // Lista de atividades, grupo e curriculo no formato JSON -  // localhost:8080/solicitacao/infos/
+    public InfosSolicitacaoDTO getInfos() {
 
-        return null;
+        InfosSolicitacaoDTO infos = new InfosSolicitacaoDTO();
+        infos.setAtividades(atividadeRepository.findAll());
+        infos.setCurriculo(curriculoRepository.findAll());
+        //infos.setGrupos(grupoRepository.findAll());
+
+        return infos;
     }
 
     @GetMapping(value = "/{id}") // get uma solicitação

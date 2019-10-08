@@ -181,7 +181,8 @@ const EnhancedTableToolbar = props => {
     const { user } = useContext(UserContext)
     const [modalStyle] = useState(getModalStyle)
     const [openModal, setOpenModal] = useState(false)
-    const [openSelect, setOpenSelect] = useState(false)
+    const [openSelectGroup, setOpenSelectGroup] = useState(false)
+    const [openSelectActivitie, setOpenSelectActivitie] = useState(false)
     const [values, setValues] = React.useState({
         name: '',
         registration: '',
@@ -201,9 +202,17 @@ const EnhancedTableToolbar = props => {
         setSelectedDate(date);
     };
 
-    const handleChange = value => event => {
-        setValues({ ...values, [value]: event.target.value });
-    };
+    const handleChange = () => event => {
+        setValues({ ...values, [event.target.id]: event.target.value });
+        console.log(values.group)
+    }
+
+    const handleChangeSelect = event => {
+        setValues(oldValues => ({
+          ...oldValues,
+          [event.target.id]: event.target.value,
+        }));
+      };
 
     // function handleChangeSelect(event, value) {
     //     //setRoomId(value.props.value)
@@ -211,16 +220,21 @@ const EnhancedTableToolbar = props => {
     // }
     function handleModal() {
         setOpenModal(true)
-        //setOpenModal({ open: openModal, [index]: !openModal });
     }
     function handleCloseModal() {
         setOpenModal(false)
     }
-    function handleCloseSelect() {
-        setOpenSelect(false);
+    function handleOpenSelectGroup() {
+        setOpenSelectGroup(true);
     }
-    function handleOpenSelect() {
-        setOpenSelect(true);
+    function handleOpenSelectActivitie() {
+        setOpenSelectActivitie(true);
+    }
+    function handleCloseSelectGroup() {
+        setOpenSelectGroup(false);
+    }
+    function handleCloseSelectActivitie() {
+        setOpenSelectActivitie(false);
     }
 
     return (
@@ -272,47 +286,47 @@ const EnhancedTableToolbar = props => {
                                     </Grid>
                                     <Grid container direction="row" justify="space-around" alignItems="center">
                                         <Grid item xs={8}>
-                                            <TextField required type="text" pattern="[A-Za-z]" label="Nome" style={{ width: '95%' }} className={classes.textField} value={values.name}
-                                                onChange={handleChange('name')} margin="normal" />
+                                            <TextField id="name" required type="text" pattern="[A-Za-z]" label="Nome" style={{ width: '95%' }} className={classes.textField}
+                                            value={values.name} onChange={handleChange('name')} margin="normal" />
                                         </Grid>
                                         <Grid item xs={4}>
-                                            <TextField required type="number" label="Matrícula" style={{ width: '100%' }} className={classes.textField} 
-                                            value={values.registration} onChange={handleChange('registration')} margin="normal" />
+                                            <TextField required id="registration" type="number" label="Matrícula" style={{ width: '100%' }} className={classes.textField}
+                                                value={values.registration} onChange={handleChange('registration')} margin="normal" />
                                         </Grid>
                                     </Grid>
                                     <Grid container direction="row" justify="space-between" alignItems="center">
                                         <div style={{ width: '35%' }}>
-                                            <InputLabel style={{ position: 'relative' }} htmlFor="grupos">Grupo da ACG</InputLabel>
-                                            <Select id="grupos" open={openSelect} className={classes.textField} style={{ width: '100%' }}
-                                            value={values.group} onClose={handleCloseSelect} onOpen={handleOpenSelect} onChange={handleChange('group')} >
-                                                <MenuItem name="GRUPO I">GRUPO I</MenuItem>
-                                                <MenuItem name="GRUPO II">GRUPO II</MenuItem>
-                                                <MenuItem name="GRUPO III">GRUPO III</MenuItem>
-                                                <MenuItem name="GRUPO IV">GRUPO IV</MenuItem>
+                                            <InputLabel style={{ position: 'relative' }} htmlFor="group">Grupo da ACG</InputLabel>
+                                            <Select id="group" key={1} open={openSelectGroup} className={classes.textField} style={{ width: '100%' }}
+                                                value={values.group} onClose={handleCloseSelectGroup} onOpen={handleOpenSelectGroup} onChange={handleChange('group')} >
+                                                <MenuItem value="GRUPO I">GRUPO I</MenuItem>
+                                                <MenuItem value="GRUPO II">GRUPO II</MenuItem>
+                                                <MenuItem value="GRUPO III">GRUPO III</MenuItem>
+                                                <MenuItem value="GRUPO IV">GRUPO IV</MenuItem>
                                             </Select>
                                         </div>
                                         <div style={{ width: '60%' }}>
-                                            <InputLabel style={{ position: 'relative' }} htmlFor="atividades">Atividade</InputLabel>
-                                            <Select id="atividades" open={openSelect} className={classes.textField} style={{ width: '100%' }}
-                                            value={values.activitie} onClose={handleCloseSelect} onOpen={handleOpenSelect} onChange={handleChange('activitie')} >
-                                                <MenuItem name="ATIVIDADE I">ATIVIDADE I</MenuItem>
-                                                <MenuItem name="ATIVIDADE II">ATIVIDADE II</MenuItem>
-                                                <MenuItem name="ATIVIDADE III">ATIVIDADE III</MenuItem>
-                                                <MenuItem name="ATIVIDADE IV">ATIVIDADE IV</MenuItem>
-                                                <MenuItem name="ATIVIDADE V">ATIVIDADE V</MenuItem>
-                                                <MenuItem name="ATIVIDADE VI">ATIVIDADE VI</MenuItem>
-                                                <MenuItem name="ATIVIDADE VII">ATIVIDADE VII</MenuItem>
+                                            <InputLabel style={{ position: 'relative' }} htmlFor="activitie">Atividade</InputLabel>
+                                            <Select id="activitie" name="activitie" key={2} open={openSelectActivitie} className={classes.textField} style={{ width: '100%' }}
+                                                value={values.activitie} onClose={handleCloseSelectActivitie} onOpen={handleOpenSelectActivitie} onChange={handleChangeSelect} >
+                                                <MenuItem value="ATIVIDADE I">ATIVIDADE I</MenuItem>
+                                                <MenuItem value="ATIVIDADE II">ATIVIDADE II</MenuItem>
+                                                <MenuItem value="ATIVIDADE III">ATIVIDADE III</MenuItem>
+                                                <MenuItem value="ATIVIDADE IV">ATIVIDADE IV</MenuItem>
+                                                <MenuItem value="ATIVIDADE V">ATIVIDADE V</MenuItem>
+                                                <MenuItem value="ATIVIDADE VI">ATIVIDADE VI</MenuItem>
+                                                <MenuItem value="ATIVIDADE VII">ATIVIDADE VII</MenuItem>
                                             </Select>
                                         </div>
                                     </Grid>
                                     <Grid container direction="row" justify="space-around" alignItems="center">
                                         <Grid item xs={6}>
                                             <TextField required label="Professor Responsável" style={{ width: '95%' }} className={classes.textField}
-                                            value={values.teacher} onChange={handleChange('teacher')} margin="normal" />
+                                                value={values.teacher} onChange={handleChange('teacher')} margin="normal" />
                                         </Grid>
                                         <Grid item xs={6}>
                                             <TextField required label="Local da atividade" style={{ width: '100%' }} className={classes.textField}
-                                            value={values.location} onChange={handleChange('location')} margin="normal" />
+                                                value={values.location} onChange={handleChange('location')} margin="normal" />
                                         </Grid>
                                     </Grid>
                                     <Grid container direction="row" justify="space-between" alignItems="center">
@@ -324,13 +338,13 @@ const EnhancedTableToolbar = props => {
                                                         KeyboardButtonProps={{
                                                             'aria-label': 'change date',
                                                         }}
-                                                        />
+                                                    />
                                                 </MuiPickersUtilsProvider>
                                             </div>
                                         </Grid>
                                         <Grid item xs={2} style={{ alignSelf: 'flex-end' }}>
                                             <div style={{ width: '100%' }}>
-                                                <Typography variant="h6"  gutterBottom>
+                                                <Typography variant="h6" gutterBottom>
                                                     a
                                                 </Typography>
                                             </div>
@@ -343,7 +357,7 @@ const EnhancedTableToolbar = props => {
                                                         KeyboardButtonProps={{
                                                             'aria-label': 'change date',
                                                         }}
-                                                        />
+                                                    />
                                                 </MuiPickersUtilsProvider>
                                             </div>
                                         </Grid>
@@ -351,17 +365,17 @@ const EnhancedTableToolbar = props => {
                                     <Grid container direction="row" justify="space-around" alignItems="center">
                                         <Grid item xs={6}>
                                             <TextField required type="number" label="Carga horária da Atividade (em horas)" style={{ width: '95%' }}
-                                            className={classes.textField} value={values.workload} onChange={handleChange('workload')} margin="normal" />
+                                                className={classes.textField} value={values.workload} onChange={handleChange('workload')} margin="normal" />
                                         </Grid>
                                         <Grid item xs={6}>
                                             <TextField required type="number" label="Carga horária Solicitada (em horas)" style={{ width: '95%' }}
-                                            className={classes.textField} value={values.requestedWorkload} onChange={handleChange('requestedWorkload')} margin="normal" />
+                                                className={classes.textField} value={values.requestedWorkload} onChange={handleChange('requestedWorkload')} margin="normal" />
                                         </Grid>
                                     </Grid>
                                     <Grid container justify="space-between" alignItems="center">
-                                            <TextField required label="Descrição da Atividade" multiline rows="4" variant="filled" className={classes.textField} 
+                                        <TextField required label="Descrição da Atividade" multiline rows="4" variant="filled" className={classes.textField}
                                             style={{ width: '100%' }} className={classes.textField} value={values.description} onChange={handleChange('description')}
-                                            margin="normal" />                                            
+                                            margin="normal" />
                                     </Grid>
                                 </Grid>
                             </FormControl>
@@ -411,7 +425,7 @@ const useStyles = makeStyles(theme => ({
 export default function EnhancedTable() {
     const classes = useStyles();
     const [order, setOrder] = React.useState('asc');
-    const [orderBy, setOrderBy] = React.useState('calories');
+    const [orderBy, setOrderBy] = React.useState();
     const [selected, setSelected] = React.useState([]);
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -468,7 +482,7 @@ export default function EnhancedTable() {
     return (
         <div className={classes.root}>
             <Grid container direction="row" justify="center" alignItems="center">
-                <Paper className={classes.paper} >
+                <Paper className={classes.paper} style={{ marginBottom: '4%' }}>
                     <EnhancedTableToolbar numSelected={selected.length} />
                     <div className={classes.tableWrapper}>
                         <Table className={classes.table} aria-labelledby="tableTitle" size={'medium'} >

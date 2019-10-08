@@ -56,25 +56,24 @@ public class SolicitacaoController {
     }
 
     @GetMapping(value = "") // Lista de solicitações no formato JSON - localhost:8080/solicitacao/
-    public @ResponseBody ResponseEntity<List<Solicitacao>> getSolitacoes() {
-
-        return null;
+    public @ResponseBody ResponseEntity<Iterable<Solicitacao>> getSolitacoes() {
+        Iterable<Solicitacao> retornableSolicitacoes = solicitacaoRepository.findAll();
+        return ResponseEntity.ok(retornableSolicitacoes);
     }
 
     @GetMapping(value = "infos") // Lista de atividades, grupo e curriculo no formato JSON -
                                  // localhost:8080/solicitacao/infos/
-    public List<Object> getInfos() {
-
-        atividadeRepository.findAll();
+    public Iterable<Object> getInfos() {
+        Iterable<Atividade> atividades = atividadeRepository.findAll();
 
         return null;
     }
 
     @GetMapping(value = "/{id}") // get uma solicitação
-    public @ResponseBody ResponseEntity<Solicitacao> getSolicitacaobyId(@PathVariable int id) {
+    public @ResponseBody ResponseEntity<Optional<Solicitacao>> getSolicitacaobyId(@PathVariable long id) {
         // Busca no banco pelo id
-        Solicitacao solicitacaoteste = new Solicitacao();
-        return new ResponseEntity<Solicitacao>(solicitacaoteste, HttpStatus.OK);
+        Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
+        return ResponseEntity.ok(retornableSolicitacao);
     }
     @PostMapping("/upload")
     public String postAnexo(@RequestParam("file") MultipartFile file, String nome) throws Exception {

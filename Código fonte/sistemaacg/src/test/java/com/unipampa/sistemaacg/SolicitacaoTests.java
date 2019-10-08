@@ -3,6 +3,7 @@ package com.unipampa.sistemaacg;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
+import com.unipampa.sistemaacg.dto.InfosSolicitacaoDTO;
 import com.unipampa.sistemaacg.storageanexo.StorageException;
 import com.unipampa.sistemaacg.storageanexo.StorageService;
 
@@ -36,7 +37,8 @@ public class SolicitacaoTests {
 
     @MockBean
     private StorageService storageService;
-
+    
+    //Upload and Read Anexos
     @Test
     public void shouldListAllFiles() throws Exception {
         given(this.storageService.loadAll())
@@ -66,6 +68,27 @@ public class SolicitacaoTests {
                 .willThrow(StorageException.class);
 
         this.mvc.perform(get("/files/test.txt")).andExpect(status().isNotFound());
+    }
+
+    //Solicitação
+
+    public void shouldPostSolicitacao() throws Exception {
+
+    }
+
+    @Test
+    public void shouldGetSolicitacoes() throws Exception {
+
+    }
+
+    public void shouldGetSolicitacao() throws Exception {
+
+    }
+
+    @Test
+    public void shouldGetInfos() throws Exception {
+        InfosSolicitacaoDTO infos = new InfosSolicitacaoDTO();
+
     }
 
 }

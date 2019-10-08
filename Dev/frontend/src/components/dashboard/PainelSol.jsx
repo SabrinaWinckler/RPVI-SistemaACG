@@ -1,11 +1,14 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { lighten, makeStyles } from '@material-ui/core/styles';
 import {
     Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar,
-    Typography, Paper, Checkbox, IconButton, Tooltip, Grid
+    Typography, Paper, Checkbox, IconButton, Tooltip, Grid, CardContent, Modal, FormControl, InputLabel,
+    Button, Select, MenuItem, TextField
 } from '@material-ui/core';
+import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
+import DateFnsUtils from '@date-io/date-fns'
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 
@@ -13,6 +16,18 @@ import { UserContext } from '../../context/UserContext'
 
 function createData(aluno, atividade, grupo, data, status) {
     return { aluno, atividade, grupo, data, status };
+}
+
+function getModalStyle() {
+    const top = 50
+    const left = 50
+
+    return {
+        top: `${top}%`,
+        left: `${left}%`,
+        transform: `translate(-${top}%, -${left}%)`,
+        minWidth: '55%',
+    };
 }
 
 const rows = [
@@ -126,48 +141,202 @@ const useToolbarStyles = makeStyles(theme => ({
     title: {
         flex: '0 0 auto',
     },
+    paper: {
+        position: 'absolute',
+        backgroundColor: theme.palette.background.paper,
+        borderRadius: '5px',
+    },
+    button: {
+        display: 'block',
+        marginTop: theme.spacing(2),
+    },
+    formControl: {
+        margin: theme.spacing(1),
+        minWidth: '-webkit-fill-available',
+    },
+    modalRoot: {
+        backgroundColor: theme.palette.background.paper,
+        minWidth: 500,
+    },
+    container: {
+        display: 'flex',
+        flexWrap: 'wrap',
+    },
+    textField: {
+        marginLeft: theme.spacing(0.5),
+        marginRight: theme.spacing(0.5),
+    },
+    dense: {
+        marginTop: 19,
+    },
+    menu: {
+        width: 200,
+    },
 }));
 
 const EnhancedTableToolbar = props => {
     const classes = useToolbarStyles();
     const { numSelected } = props;
     const { user } = useContext(UserContext)
+    const [modalStyle] = useState(getModalStyle)
+    const [openModal, setOpenModal] = useState(false)
+    const [openSelect, setOpenSelect] = useState(false)
+    const [values, setValues] = React.useState({
+        name: '',
+        registration: '',
+        group: '',
+        activitie: '',
+        teacher: '',
+        location: '',
+        dateStart: '',
+        dateEnd: '',
+        workload: '',
+        requestedWorkload: '',
+        description: '',
+    });
+    const [selectedDate, setSelectedDate] = React.useState(new Date('2014-08-18T21:11:54'));
+
+    const handleDateChange = date => {
+        setSelectedDate(date);
+    };
+
+    const handleChange = value => event => {
+        setValues({ ...values, [value]: event.target.value });
+    };
+
+    // function handleChangeSelect(event, value) {
+    //     //setRoomId(value.props.value)
+    //     //setRoomName(value.props.name)
+    // }
+    function handleModal() {
+        setOpenModal(true)
+        //setOpenModal({ open: openModal, [index]: !openModal });
+    }
+    function handleCloseModal() {
+        setOpenModal(false)
+    }
+    function handleCloseSelect() {
+        setOpenSelect(false);
+    }
+    function handleOpenSelect() {
+        setOpenSelect(true);
+    }
 
     return (
-        <Toolbar className={clsx(classes.root, { [classes.highlight]: numSelected > 0, })} >
-            <div className={classes.title}>
-                {numSelected > 0 ? (
-                    <Typography color="inherit" variant="subtitle1">
-                        {numSelected} selected
-                    </Typography>
-                ) : (
-                        <Grid container direction="column" justify="flex-start" alignItems="flex-start">
-                            <Typography variant="h6" id="tableTitle">
-                                Solicitações
+        <>
+            <Toolbar className={clsx(classes.root, { [classes.highlight]: numSelected > 0, })} >
+                <div className={classes.title}>
+                    {numSelected > 0 ? (
+                        <Typography color="inherit" variant="subtitle1">
+                            {numSelected} selected
                         </Typography>
-                            <Typography variant="subtitle2" gutterBottom>
-                                Olá {user}
-                            </Typography>
-                        </Grid>
-                    )}
-            </div>
-            <div className={classes.spacer} />
-            <div className={classes.actions}>
-                {numSelected > 0 ? (
-                    <Tooltip title="Delete">
-                        <IconButton aria-label="delete">
-                            <DeleteIcon />
-                        </IconButton>
-                    </Tooltip>
-                ) : (
-                        <Tooltip title="Filter list">
-                            <IconButton aria-label="filter list">
-                                <AddIcon />
+                    ) : (
+                            <Grid container direction="column" justify="flex-start" alignItems="flex-start">
+                                <Typography variant="h6" id="tableTitle">
+                                    Solicitações
+                                </Typography>
+                                <Typography variant="subtitle2" gutterBottom>
+                                    Olá {user}
+                                </Typography>
+                            </Grid>
+                        )}
+                </div>
+                <div className={classes.spacer} />
+                <div className={classes.actions}>
+                    {numSelected > 0 ? (
+                        <Tooltip title="Delete">
+                            <IconButton aria-label="delete">
+                                <DeleteIcon />
                             </IconButton>
                         </Tooltip>
-                    )}
-            </div>
-        </Toolbar>
+                    ) : (
+                            <Tooltip title="Filter list">
+                                <IconButton aria-label="filter list" onClick={handleModal}>
+                                    <AddIcon />
+                                </IconButton>
+                            </Tooltip>
+                        )}
+                </div>
+            </Toolbar>
+            <Modal aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description" open={openModal} onClose={handleCloseModal} >
+                <CardContent style={modalStyle} className={classes.paper}>
+                    <div className={classes.modalRoot}>
+                        <form autoComplete="off">
+                            <FormControl className={classes.formControl}>
+                                <Grid container direction="column" justify="space-evenly" alignItems="stretch" spacing={2}>
+                                    <Grid item xs>
+                                        <Typography variant="h5" gutterBottom>
+                                            Solicitação de ACG
+                                        </Typography>
+                                    </Grid>
+                                    <Grid container direction="row" justify="space-around" alignItems="center">
+                                        <Grid item xs={8}>
+                                            <TextField required label="Nome" style={{ width: '95%' }} className={classes.textField} value={values.name}
+                                                onChange={handleChange('name')} margin="normal" />
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <TextField required label="Matrícula" style={{ width: '100%' }} className={classes.textField} value={values.name}
+                                                onChange={handleChange('registration')} margin="normal" />
+                                        </Grid>
+                                    </Grid>
+                                    <Grid container direction="row" justify="space-between" alignItems="center">
+                                        <div style={{ width: '35%' }}>
+                                            <InputLabel style={{ position: 'relative' }} htmlFor="grupos">Grupo da ACG</InputLabel>
+                                            <Select id="grupos" open={openSelect} className={classes.textField} style={{ width: '100%' }} onClose={handleCloseSelect} onOpen={handleOpenSelect} onChange={handleChange('group')} >
+                                                <MenuItem name="GRUPO I">GRUPO I</MenuItem>
+                                                <MenuItem name="GRUPO II">GRUPO II</MenuItem>
+                                                <MenuItem name="GRUPO III">GRUPO III</MenuItem>
+                                                <MenuItem name="GRUPO IV">GRUPO IV</MenuItem>
+                                            </Select>
+                                        </div>
+                                        <div style={{ width: '60%' }}>
+                                            <InputLabel style={{ position: 'relative' }} htmlFor="atividades">Atividade</InputLabel>
+                                            <Select id="atividades" open={openSelect} className={classes.textField} style={{ width: '100%' }} onClose={handleCloseSelect} onOpen={handleOpenSelect} onChange={handleChange('activitie')} >
+                                                <MenuItem name="ATIVIDADE I">ATIVIDADE I</MenuItem>
+                                                <MenuItem name="ATIVIDADE II">ATIVIDADE II</MenuItem>
+                                                <MenuItem name="ATIVIDADE III">ATIVIDADE III</MenuItem>
+                                                <MenuItem name="ATIVIDADE IV">ATIVIDADE IV</MenuItem>
+                                                <MenuItem name="ATIVIDADE V">ATIVIDADE V</MenuItem>
+                                                <MenuItem name="ATIVIDADE VI">ATIVIDADE VI</MenuItem>
+                                                <MenuItem name="ATIVIDADE VII">ATIVIDADE VII</MenuItem>
+                                            </Select>
+                                        </div>
+                                    </Grid>
+                                    <TextField required label="Professor Responsável" className={classes.textField} value={values.name}
+                                        onChange={handleChange('teacher')} margin="normal" />
+                                    <TextField required label="Local da atividade" className={classes.textField} value={values.name}
+                                        onChange={handleChange('location')} margin="normal"
+                                    />
+                                    <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                                        <KeyboardDatePicker disableToolbar variant="inline" format="dd/MM/yyyy" margin="normal" id="date-picker-inline"
+                                            label="Período da Atividade" value={selectedDate} onChange={handleDateChange}
+                                            KeyboardButtonProps={{
+                                                'aria-label': 'change date',
+                                            }}
+                                        />
+                                        <KeyboardDatePicker disableToolbar variant="inline" format="dd/MM/yyyy" margin="normal" id="date-picker-inline"
+                                            label="a" value={selectedDate} onChange={handleDateChange}
+                                            KeyboardButtonProps={{
+                                                'aria-label': 'change date',
+                                            }}
+                                        />
+                                    </MuiPickersUtilsProvider>
+                                    <TextField required type="number" label="Carga horária da Atividade (em horas)" className={classes.textField} value={values.name}
+                                        onChange={handleChange('workload')} margin="normal" />
+                                    <TextField required type="number" label="Carga horária Solicitada (em horas)" className={classes.textField} value={values.name}
+                                        onChange={handleChange('workload')} margin="normal" />
+                                    <TextField required label="Descrição da Atividade" className={classes.textField} value={values.name}
+                                        onChange={handleChange('workload')} margin="normal" />
+                                </Grid>
+                            </FormControl>
+                        </form>
+                        <Button className={classes.button} >
+                            Enviar
+                        </Button>
+                    </div>
+                </CardContent>
+            </Modal>
+        </>
     );
 };
 

@@ -7,6 +7,6 @@ import './index.css';
 
 ReactDOM.render(
      <UserContext>
-        <App />
+        <App className="container"/>
      </UserContext>
     , document.getElementById('root'));

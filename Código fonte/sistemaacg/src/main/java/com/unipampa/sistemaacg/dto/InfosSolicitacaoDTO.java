@@ -13,7 +13,7 @@ import lombok.Data;
 public class InfosSolicitacaoDTO {
     Iterable<Atividade> atividades;
     Iterable<Grupo> grupos;
-    Iterable<Curriculo> curriculo;
+    //Iterable<Curriculo> curriculo;
 
     public InfosSolicitacaoDTO(){}
 }

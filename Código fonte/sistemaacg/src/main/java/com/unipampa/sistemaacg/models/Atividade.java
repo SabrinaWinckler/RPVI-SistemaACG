@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 
@@ -28,5 +29,7 @@ public class Atividade {
 	@NotEmpty
 	private int ch;
 
+	@ManyToOne
+	private Grupo grupo;
 
 }

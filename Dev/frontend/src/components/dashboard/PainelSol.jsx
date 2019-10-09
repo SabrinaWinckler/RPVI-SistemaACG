@@ -1,6 +1,7 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
+import axios from 'axios'
 import { lighten, makeStyles } from '@material-ui/core/styles';
 import {
     Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar,
@@ -31,20 +32,20 @@ function getModalStyle() {
     };
 }
 
-const rows = [
-    createData('Matheus Colina', 'Cursos na área de interesse em função do perfil do egresso', 'Grupo I', '27/08/2019', 'pendente'),
-    createData('Mathias Baldigraxa', 'Participação em projeto de ensino em outras IES', 'Grupo IV', '25/09/2019', 'pendente'),
-    createData('Débora Molheira', 'Organização de eventos de ensino', 'Grupo II', '27/08/2019', 'pendente'),
-    createData('Sandro Boizera', 'Cursos de língua estrangeira inglês', 'Grupo III', '02/08/2019', 'aprovado'),
-    createData('Sabrina Paulé', 'Apresentação de trabalho em eventos de ensino', 'Grupo I', '20/06/2019', 'aprovado'),
-    createData('Juca', 'bla bla bla', 'Grupo III', '27/03/2008', 'aprovado'),
-    createData('Judith', 'bla bla bla', 'Grupo II', '09/08/2019', 'pendente'),
-    createData('Micael', 'bla bla bla', 'Grupo I', '18/08/2019', 'pendente'),
-    createData('Sam', 'bla bla bla', 'Grupo III', '23/08/2019', 'aprovado'),
-    createData('João Pablo', 'bla bla bla', 'Grupo IV', '20/08/2019', 'pendente'),
-    createData('Bernadino', 'bla bla bla', 'Grupo IV', '12/08/2019', 'aprovado'),
-    createData('Eu', 'bla bla bla', 'Grupo III', '01/08/2019', 'pendente'),
-];
+// const rows = [
+//     createData('Matheus Colina', 'Cursos na área de interesse em função do perfil do egresso', 'Grupo I', '27/08/2019', 'pendente'),
+//     createData('Mathias Baldigraxa', 'Participação em projeto de ensino em outras IES', 'Grupo IV', '25/09/2019', 'pendente'),
+//     createData('Débora Molheira', 'Organização de eventos de ensino', 'Grupo II', '27/08/2019', 'pendente'),
+//     createData('Sandro Boizera', 'Cursos de língua estrangeira inglês', 'Grupo III', '02/08/2019', 'aprovado'),
+//     createData('Sabrina Paulé', 'Apresentação de trabalho em eventos de ensino', 'Grupo I', '20/06/2019', 'aprovado'),
+//     createData('Juca', 'bla bla bla', 'Grupo III', '27/03/2008', 'aprovado'),
+//     createData('Judith', 'bla bla bla', 'Grupo II', '09/08/2019', 'pendente'),
+//     createData('Micael', 'bla bla bla', 'Grupo I', '18/08/2019', 'pendente'),
+//     createData('Sam', 'bla bla bla', 'Grupo III', '23/08/2019', 'aprovado'),
+//     createData('João Pablo', 'bla bla bla', 'Grupo IV', '20/08/2019', 'pendente'),
+//     createData('Bernadino', 'bla bla bla', 'Grupo IV', '12/08/2019', 'aprovado'),
+//     createData('Eu', 'bla bla bla', 'Grupo III', '01/08/2019', 'pendente'),
+// ];
 
 function desc(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -430,6 +431,16 @@ export default function EnhancedTable() {
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
+    const [rows, setRows] = useState([])
+
+    useEffect(() => {
+        async function loadSolicitations() {
+          const response = await axios.get('localhost:8081/solicitacao')
+          setRows(response.data)
+        }
+        loadSolicitations()
+      }, [])
+
 
     const handleRequestSort = (event, property) => {
         const isDesc = orderBy === property && order === 'desc';
@@ -505,8 +516,8 @@ export default function EnhancedTable() {
                                                     {row.aluno}
                                                 </TableCell>
                                                 <TableCell align="left">{row.atividade}</TableCell>
-                                                <TableCell align="left">{row.grupo}</TableCell>
-                                                <TableCell align="left">{row.data}</TableCell>
+                                                <TableCell align="left">{row.atividade.grupo}</TableCell>
+                                                <TableCell align="left">{row.dataAtual}</TableCell>
                                                 <TableCell align="left">{row.status}</TableCell>
                                             </TableRow>
                                         );

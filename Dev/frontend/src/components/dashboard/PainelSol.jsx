@@ -435,7 +435,7 @@ export default function EnhancedTable() {
 
     useEffect(() => {
         async function loadSolicitations() {
-          const response = await axios.get('localhost:8081/solicitacao')
+          const response = await axios.get('http://localhost:8081/solicitacao')
           setRows(response.data)
         }
         loadSolicitations()

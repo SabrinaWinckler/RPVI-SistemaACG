@@ -44,7 +44,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 /**
  * SolicitacaoController
  */
-@CrossOrigin(origins = "http://solicitacao.com", maxAge = 3600)
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("solicitacao") // localhost:8080/solicitacao
 public class SolicitacaoController {

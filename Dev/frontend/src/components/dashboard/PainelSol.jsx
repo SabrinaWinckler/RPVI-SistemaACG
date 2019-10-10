@@ -493,6 +493,7 @@ export default function EnhancedTable() {
     return (
         <div className={classes.root}>
             <Grid container direction="row" justify="center" alignItems="center">
+                {console.log(rows)}
                 <Paper className={classes.paper} style={{ marginBottom: '4%' }}>
                     <EnhancedTableToolbar numSelected={selected.length} />
                     <div className={classes.tableWrapper}>
@@ -515,8 +516,8 @@ export default function EnhancedTable() {
                                                 <TableCell component="th" id={labelId} scope="row" padding="none">
                                                     {row.aluno}
                                                 </TableCell>
-                                                <TableCell align="left">{row.atividade}</TableCell>
-                                                <TableCell align="left">{row.atividade.grupo}</TableCell>
+                                                <TableCell align="left">{row.atividade.descricao}</TableCell>
+                                                <TableCell align="left">{row.atividade.grupo.nome}</TableCell>
                                                 <TableCell align="left">{row.dataAtual}</TableCell>
                                                 <TableCell align="left">{row.status}</TableCell>
                                             </TableRow>

@@ -1,7 +1,6 @@
 package com.unipampa.sistemaacg.dto;
 
 import com.unipampa.sistemaacg.models.Atividade;
-import com.unipampa.sistemaacg.models.Curriculo;
 import com.unipampa.sistemaacg.models.Grupo;
 
 import lombok.Data;

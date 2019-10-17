@@ -4,7 +4,6 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import org.apache.tomcat.jni.File;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,5 +25,6 @@ public class SolicitacaoPostDTO {
 	private String profRes;
 	private String descricao;
 	private long idAtividade;
-	private Resource anexo;
+	//private Resource anexo;
+	private MultipartFile anexo;
 }

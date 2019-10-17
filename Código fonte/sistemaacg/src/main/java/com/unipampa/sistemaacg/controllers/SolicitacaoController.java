@@ -107,16 +107,16 @@ public class SolicitacaoController {
         Solicitacao newsolicitacao = new Solicitacao();
         newsolicitacao.setAtividade(atividade.get());
 
-        java.io.File file = solicitacao.getAnexo().getFile();
-        FileInputStream input = new FileInputStream(file);
-        MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain","Spring Framework".getBytes());
+       // java.io.File file = solicitacao.getAnexo().getFile();
+        //FileInputStream input = new FileInputStream(file);
+        //MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain","Spring Framework".getBytes());
 
-        newsolicitacao.setNomeAnexo(this.postAnexo(multipartFile, solicitacao.getAluno()));
+        newsolicitacao.setNomeAnexo(this.postAnexo(solicitacao.getAnexo(), solicitacao.getAluno()));
 
         //newsolicitacao.setNomeAnexo(this.postTeste("teste"));
 
          if (!newsolicitacao.verificaTamanho(solicitacao.getAnexo().getSize())) {
-		 	return ResponseEntity.badRequest().body("O arquivo com "+ solicitacao.getAnexo().getFilename()+"mb excede o tamanho permitido! Por favor selecione um arquivo com no máximo 20mb");
+		 	return ResponseEntity.badRequest().body("O arquivo com "+ solicitacao.getAnexo().getSize()+"mb excede o tamanho permitido! Por favor selecione um arquivo com no máximo 20mb");
          }
 
         newsolicitacao.setAluno(solicitacao.getAluno());

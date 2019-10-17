@@ -37,11 +37,11 @@ public class StorageAnexo implements StorageService {
             if (file.isEmpty()) {
                 throw new StorageException("Falha ao salvar arquivo vazio" + file.getOriginalFilename());
             }
-            
-            MessageDigest m = MessageDigest.getInstance("MD5");
-            m.update(nome.getBytes(), 0, new Date().toString().length());
 
-            Files.copy(file.getInputStream(), this.rootLocation.resolve(nome+"_"+m+file.getOriginalFilename()));
+          //  MessageDigest m = MessageDigest.getInstance("MD5");
+          //  m.update(nome.getBytes(), 0, new Date().toString().length());
+
+            Files.copy(file.getInputStream(), this.rootLocation.resolve(nome+"_"+file.getOriginalFilename()));
         } catch (IOException e) {
             throw new StorageException("Falha ao armazenar " + file.getOriginalFilename(), e);
         }

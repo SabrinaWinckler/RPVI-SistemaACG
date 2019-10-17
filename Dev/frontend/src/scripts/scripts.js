@@ -32,14 +32,14 @@ export const validateDate = (date) => {
     }
 }
 
-export const sendForm = async (data, file) => {
+export const sendForm = async (data) => {
     var formData = new FormData()
     formData.append("data", JSON.stringify(data))
-    const blob = new Blob([file], {
-        type: 'application/json'
-      });
-    formData.append("file", blob)
-    axios.post('http://localhost:8081/solicitacao/', formData)
+    // const blob = new Blob([file], {
+    //     type: 'application/json'
+    //   });
+    // formData.append("file", blob)
+    axios.post('http://localhost:8081/solicitacao/', JSON.stringify(data))
             .then(data => {
                 console.log(data)
                 return true

@@ -16,6 +16,8 @@ import com.unipampa.sistemaacg.repository.CurriculoRepository;
 import com.unipampa.sistemaacg.repository.GrupoRepository;
 import com.unipampa.sistemaacg.repository.SolicitacaoRepository;
 import com.unipampa.sistemaacg.storageanexo.StorageService;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -96,7 +98,7 @@ public class SolicitacaoController {
     // }
 
     @PostMapping("/")
-    public ResponseEntity postSolicitacao(@RequestBody SolicitacaoPostDTO solicitacao) throws Exception {
+    public ResponseEntity postSolicitacao(@RequestParam SolicitacaoPostDTO solicitacao) throws Exception {
 
         Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
 
@@ -111,13 +113,13 @@ public class SolicitacaoController {
         //FileInputStream input = new FileInputStream(file);
         //MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain","Spring Framework".getBytes());
 
-        newsolicitacao.setNomeAnexo(this.postAnexo(solicitacao.getAnexo(), solicitacao.getAluno()));
+        //newsolicitacao.setNomeAnexo(this.postAnexo(solicitacao.getAnexo(), solicitacao.getAluno()));
 
         //newsolicitacao.setNomeAnexo(this.postTeste("teste"));
 
-         if (!newsolicitacao.verificaTamanho(solicitacao.getAnexo().getSize())) {
-		 	return ResponseEntity.badRequest().body("O arquivo com "+ solicitacao.getAnexo().getSize()+"mb excede o tamanho permitido! Por favor selecione um arquivo com no máximo 20mb");
-         }
+//         if (!newsolicitacao.verificaTamanho(solicitacao.getAnexo().getSize())) {
+//		 	return ResponseEntity.badRequest().body("O arquivo com "+ solicitacao.getAnexo().getSize()+"mb excede o tamanho permitido! Por favor selecione um arquivo com no máximo 20mb");
+//         }
 
         newsolicitacao.setAluno(solicitacao.getAluno());
         newsolicitacao.setCargaHorariaSoli(solicitacao.getCargaHorariaSoli());
@@ -126,11 +128,11 @@ public class SolicitacaoController {
         newsolicitacao.setProfRes(solicitacao.getProfRes());
 
         Date dataAtual = new Date();
-        // SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-        // Date dataTeste = formato.parse(solicitacao.getDataInicio());
+        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+        Date dataTeste = formato.parse(solicitacao.getDataInicio());
 		newsolicitacao.setDataAtual(dataAtual);
-        newsolicitacao.setDataInicio(solicitacao.getDataInicio());
-		newsolicitacao.setDataFim(solicitacao.getDataFim());
+                newsolicitacao.setDataInicio(dataTeste);
+		newsolicitacao.setDataFim(dataTeste);//tem q aarrumae
 
 		newsolicitacao.setStatus(Status.PENDENTE.toString());
 

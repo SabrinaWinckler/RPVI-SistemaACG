@@ -176,17 +176,17 @@ const EnhancedTableToolbar = props => {
     const [openModal, setOpenModal] = useState(false)
     const [file, setFile] = useState(null)
     const [values, setValues] = useState({
-        location: '',
-        name: '',
-        dateStart: '',
-        dateEnd: '',
-        requestedWorkload: '',
-        teacher: '',
-        description: '',
-        activitie: '',
-        registration: '',
-        group: '',
-        workload: '',
+        location: 'unipampa',
+        name: 'Juca',
+        dateStart: '26/08/2019',
+        dateEnd: '27/06/2019',
+        requestedWorkload: '1',
+        teacher: 'Berna',
+        description: 'Foi top',
+        activitie: '1',
+        registration: '1234567890',
+        group: '1',
+        workload: '2',
     });
     const [selectedDateStart, setSelectedDateStart] = useState(new Date());
     const [selectedDateEnd, setSelectedDateEnd] = useState();
@@ -285,7 +285,7 @@ const EnhancedTableToolbar = props => {
         window.location.reload()
     };
 
-    function handleSubmit(event) {
+    async function handleSubmit(event) {
         //console.log(file)
         if(!validateName(values.name)){
             setStatus({ show: true, message: 'Nome Inválido!' })
@@ -312,14 +312,16 @@ const EnhancedTableToolbar = props => {
             descricao: values.description,
             idAtividade: values.activitie.toString()
         }
-        if(sendForm(data, file)){
-            alert('top')
+        console.log(JSON.stringify(data))
+        const response = await sendForm(data)
+        if(response){
+            alert("foi")
         } else {
-            alert('não top')
+            alert("num foi")
         }
+        
         //setSubmitMessage('Solicitação Realizada com Sucesso!')
         //handleOpen()
-        //console.log(JSON.stringify(data))
         
     }
 

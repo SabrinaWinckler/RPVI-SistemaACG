@@ -15,16 +15,16 @@ import lombok.Data;
 @Data
 public class SolicitacaoPostDTO {
 
-    private String local;
+        private String local;
 	private String aluno;
 	@JsonFormat(pattern="yyyy-MM-dd")
-	private Date dataInicio;
+	private String dataInicio;
 	@JsonFormat(pattern="yyyy-MM-dd")
-	private Date dataFim;
+	private String dataFim;
 	private long cargaHorariaSoli;
 	private String profRes;
 	private String descricao;
 	private long idAtividade;
 	//private Resource anexo;
-	private MultipartFile anexo;
+	//private MultipartFile anexo;
 }

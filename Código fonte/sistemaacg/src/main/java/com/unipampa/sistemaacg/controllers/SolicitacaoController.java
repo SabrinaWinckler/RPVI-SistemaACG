@@ -1,11 +1,8 @@
 package com.unipampa.sistemaacg.controllers;
 
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -21,11 +18,10 @@ import com.unipampa.sistemaacg.repository.SolicitacaoRepository;
 import com.unipampa.sistemaacg.storageanexo.StorageService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -39,7 +35,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * SolicitacaoController
@@ -112,12 +107,16 @@ public class SolicitacaoController {
         Solicitacao newsolicitacao = new Solicitacao();
         newsolicitacao.setAtividade(atividade.get());
 
-        newsolicitacao.setNomeAnexo(this.postAnexo(solicitacao.getAnexo(), solicitacao.getAluno()));
+        java.io.File file = solicitacao.getAnexo().getFile();
+        FileInputStream input = new FileInputStream(file);
+        MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain","Spring Framework".getBytes());
+
+        newsolicitacao.setNomeAnexo(this.postAnexo(multipartFile, solicitacao.getAluno()));
 
         //newsolicitacao.setNomeAnexo(this.postTeste("teste"));
 
          if (!newsolicitacao.verificaTamanho(solicitacao.getAnexo().getSize())) {
-		 	return ResponseEntity.badRequest().body("O arquivo com "+ solicitacao.getAnexo().getSize()+"mb excede o tamanho permitido! Por favor selecione um arquivo com no máximo 20mb");
+		 	return ResponseEntity.badRequest().body("O arquivo com "+ solicitacao.getAnexo().getFilename()+"mb excede o tamanho permitido! Por favor selecione um arquivo com no máximo 20mb");
          }
 
         newsolicitacao.setAluno(solicitacao.getAluno());

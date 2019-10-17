@@ -57,7 +57,6 @@ public class SolicitacaoController {
     public SolicitacaoController(StorageService storageService) {
         this.storageService = storageService;
     }
-
     @GetMapping(value = "") // Lista de solicitações no formato JSON - localhost:8080/solicitacao/
     public @ResponseBody ResponseEntity<Iterable<Solicitacao>> getSolitacoes() {
         Iterable<Solicitacao> retornableSolicitacoes = solicitacaoRepository.findAll();

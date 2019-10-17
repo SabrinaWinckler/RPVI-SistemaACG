@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - SistemaacgApplication",
+            "request": "launch",
+            "mainClass": "com.unipampa.sistemaacg.SistemaacgApplication",
+            "projectName": "sistemaacg"
+        }
+    ]
+}

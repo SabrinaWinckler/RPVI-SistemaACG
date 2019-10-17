@@ -25,5 +25,5 @@ public class SolicitacaoPostDTO {
 	private String profRes;
 	private String descricao;
 	private long idAtividade;
-	private MultipartFile anexo;
+	private MultipartFile anexo;// need to be a resource
 }

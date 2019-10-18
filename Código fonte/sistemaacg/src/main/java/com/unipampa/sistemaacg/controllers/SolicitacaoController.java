@@ -1,5 +1,6 @@
 package com.unipampa.sistemaacg.controllers;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,6 +27,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -94,9 +96,9 @@ public class SolicitacaoController {
     // public String postTeste(String nome) throws Exception {
     //     return nome;
     // }
-
+    @JsonIgnore 
     @PostMapping("/")
-    public ResponseEntity postSolicitacao(@RequestBody SolicitacaoPostDTO solicitacao,  MultipartFile file) throws Exception {
+    public ResponseEntity postSolicitacao(@ModelAttribute SolicitacaoPostDTO solicitacao,  MultipartFile file) throws Exception {
 
         Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
 

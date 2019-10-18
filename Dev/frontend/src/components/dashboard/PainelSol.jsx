@@ -178,8 +178,8 @@ const EnhancedTableToolbar = props => {
     const [values, setValues] = useState({
         location: 'unipampa',
         name: 'Juca',
-        dateStart: '26/08/2019',
-        dateEnd: '27/06/2019',
+        dateStart: '2019-01-02',
+        dateEnd: '2019-01-03',
         requestedWorkload: '1',
         teacher: 'Berna',
         description: 'Foi top',
@@ -312,13 +312,9 @@ const EnhancedTableToolbar = props => {
             descricao: values.description,
             idAtividade: values.activitie.toString()
         }
-        console.log(JSON.stringify(data))
-        const response = await sendForm(data)
-        if(response){
-            alert("foi")
-        } else {
-            alert("num foi")
-        }
+        console.log(JSON.stringify(data), file)
+        const response = await sendForm(data, file)
+        
         
         //setSubmitMessage('Solicitação Realizada com Sucesso!')
         //handleOpen()

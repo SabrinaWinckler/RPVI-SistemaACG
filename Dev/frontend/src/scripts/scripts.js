@@ -1,4 +1,5 @@
 import axios from 'axios'
+import _ from 'lodash'
 
 export const validateName = (name) => {
     var regName = /^[a-zA-Z\s]*$/;
@@ -32,14 +33,18 @@ export const validateDate = (date) => {
     }
 }
 
-export const sendForm = async (data) => {
+export const sendForm = async (data, file) => {
     var formData = new FormData()
-    formData.append("data", JSON.stringify(data))
+    _.forEach(data, (value, index)=>{
+        formData.append(index, value);
+    })
+    formData.append("file", file)
+    console.log(formData)
     // const blob = new Blob([file], {
     //     type: 'application/json'
     //   });
     // formData.append("file", blob)
-    axios.post('http://localhost:8081/solicitacao/', JSON.stringify(data))
+    axios.post('http://localhost:8081/solicitacao/', formData)
             .then(data => {
                 console.log(data)
                 return true

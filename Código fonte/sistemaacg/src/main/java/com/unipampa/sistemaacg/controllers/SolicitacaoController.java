@@ -98,7 +98,7 @@ public class SolicitacaoController {
     // }
 
     @PostMapping("/")
-    public ResponseEntity postSolicitacao(@RequestParam SolicitacaoPostDTO solicitacao) throws Exception {
+    public ResponseEntity postSolicitacao(@RequestBody SolicitacaoPostDTO solicitacao) throws Exception {
 
         Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
 

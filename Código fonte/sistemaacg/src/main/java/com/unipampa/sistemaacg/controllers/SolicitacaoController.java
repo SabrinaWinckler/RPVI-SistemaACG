@@ -1,8 +1,9 @@
 package com.unipampa.sistemaacg.controllers;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -16,14 +17,11 @@ import com.unipampa.sistemaacg.repository.CurriculoRepository;
 import com.unipampa.sistemaacg.repository.GrupoRepository;
 import com.unipampa.sistemaacg.repository.SolicitacaoRepository;
 import com.unipampa.sistemaacg.storageanexo.StorageService;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -98,7 +96,7 @@ public class SolicitacaoController {
     // }
 
     @PostMapping("/")
-    public ResponseEntity postSolicitacao(@RequestBody SolicitacaoPostDTO solicitacao) throws Exception {
+    public ResponseEntity postSolicitacao(@RequestBody SolicitacaoPostDTO solicitacao,  MultipartFile file) throws Exception {
 
         Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
 
@@ -113,7 +111,8 @@ public class SolicitacaoController {
         //FileInputStream input = new FileInputStream(file);
         //MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain","Spring Framework".getBytes());
 
-        //newsolicitacao.setNomeAnexo(this.postAnexo(solicitacao.getAnexo(), solicitacao.getAluno()));
+        //newsolicitacao.setNomeAnexo(this.postAnexo(file, solicitacao.getAluno()));
+        newsolicitacao.setNomeAnexo(storageService.store(file, solicitacao.getAluno()));
 
         //newsolicitacao.setNomeAnexo(this.postTeste("teste"));
 

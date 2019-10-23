@@ -1,11 +1,6 @@
 package com.unipampa.sistemaacg.models;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Optional;
-import org.hibernate.Transaction;
-import org.springframework.core.io.Resource;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,12 +8,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.unipampa.sistemaacg.repository.SolicitacaoRepository;
 
 import lombok.Data;
 
@@ -58,9 +50,6 @@ public class Solicitacao{
 
 	@ManyToOne
 	private Atividade atividade;
-
-	@OneToMany
-	private Anexo id;
 
 	public boolean verificaTamanho(long tamanho) {
 		return tamanho <= 20;

@@ -25,6 +25,4 @@ public class SolicitacaoPostDTO {
 	private String profRes;
 	private String descricao;
 	private long idAtividade;
-	//private Resource anexo;
-	//private MultipartFile anexo;
 }

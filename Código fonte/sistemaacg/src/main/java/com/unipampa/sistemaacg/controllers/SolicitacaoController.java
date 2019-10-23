@@ -1,6 +1,5 @@
 package com.unipampa.sistemaacg.controllers;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -8,6 +7,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unipampa.sistemaacg.dto.InfosSolicitacaoDTO;
 import com.unipampa.sistemaacg.dto.SolicitacaoPostDTO;
 import com.unipampa.sistemaacg.models.Atividade;
@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -85,6 +84,7 @@ public class SolicitacaoController {
         Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
         return ResponseEntity.ok(retornableSolicitacao);
     }
+
     @PostMapping("/upload")
     public String postAnexo(@RequestParam("file") MultipartFile file, String nome) throws Exception {
 
@@ -92,11 +92,7 @@ public class SolicitacaoController {
 
     }
 
-    // @PostMapping("/teste")
-    // public String postTeste(String nome) throws Exception {
-    //     return nome;
-    // }
-    @JsonIgnore 
+    @JsonIgnore
     @PostMapping("/")
     public ResponseEntity postSolicitacao(@ModelAttribute SolicitacaoPostDTO solicitacao,  MultipartFile file) throws Exception {
 
@@ -109,18 +105,11 @@ public class SolicitacaoController {
         Solicitacao newsolicitacao = new Solicitacao();
         newsolicitacao.setAtividade(atividade.get());
 
-       // java.io.File file = solicitacao.getAnexo().getFile();
-        //FileInputStream input = new FileInputStream(file);
-        //MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain","Spring Framework".getBytes());
+         if (!newsolicitacao.verificaTamanho(file.getSize())) {
+		 	return ResponseEntity.badRequest().body("O arquivo com "+ file.getSize()+"mb excede o tamanho permitido! Por favor selecione um arquivo com no máximo 20mb");
+        }
 
-        //newsolicitacao.setNomeAnexo(this.postAnexo(file, solicitacao.getAluno()));
         newsolicitacao.setNomeAnexo(storageService.store(file, solicitacao.getAluno()));
-
-        //newsolicitacao.setNomeAnexo(this.postTeste("teste"));
-
-//         if (!newsolicitacao.verificaTamanho(solicitacao.getAnexo().getSize())) {
-//		 	return ResponseEntity.badRequest().body("O arquivo com "+ solicitacao.getAnexo().getSize()+"mb excede o tamanho permitido! Por favor selecione um arquivo com no máximo 20mb");
-//         }
 
         newsolicitacao.setAluno(solicitacao.getAluno());
         newsolicitacao.setCargaHorariaSoli(solicitacao.getCargaHorariaSoli());
@@ -132,7 +121,7 @@ public class SolicitacaoController {
         SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
         Date dataTeste = formato.parse(solicitacao.getDataInicio());
 		newsolicitacao.setDataAtual(dataAtual);
-                newsolicitacao.setDataInicio(dataTeste);
+        newsolicitacao.setDataInicio(dataTeste);
 		newsolicitacao.setDataFim(dataTeste);//tem q aarrumae
 
 		newsolicitacao.setStatus(Status.PENDENTE.toString());
@@ -148,27 +137,6 @@ public class SolicitacaoController {
         Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
         solicitacaoRepository.deleteById(id);
         return ResponseEntity.ok(retornableSolicitacao);
-    }
-    //Código da documentação para usar como base
-
-    @GetMapping("/anexos")
-    public String listUploadedFiles(Model model) throws IOException {
-
-        model.addAttribute("files", storageService.loadAll().map(
-                path -> MvcUriComponentsBuilder.fromMethodName(SolicitacaoController.class,
-                        "serveFile", path.getFileName().toString()).build().toString())
-                .collect(Collectors.toList()));
-
-        return "uploadForm";
-    }
-
-    @GetMapping("/files/{filename:.+}")
-    @ResponseBody
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
-
-        Resource file = storageService.loadAsResource(filename);
-        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
 
 }

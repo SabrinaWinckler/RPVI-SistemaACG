@@ -11,6 +11,10 @@ import com.unipampa.sistemaacg.controllers.SolicitacaoController;
 import com.unipampa.sistemaacg.dto.InfosSolicitacaoDTO;
 import com.unipampa.sistemaacg.dto.SolicitacaoPostDTO;
 import com.unipampa.sistemaacg.models.Solicitacao;
+import com.unipampa.sistemaacg.repository.AtividadeRepository;
+import com.unipampa.sistemaacg.repository.CurriculoRepository;
+import com.unipampa.sistemaacg.repository.GrupoRepository;
+import com.unipampa.sistemaacg.repository.SolicitacaoRepository;
 import com.unipampa.sistemaacg.storageanexo.StorageAnexo;
 import com.unipampa.sistemaacg.storageanexo.StorageException;
 import com.unipampa.sistemaacg.storageanexo.StorageProperties;
@@ -68,6 +72,15 @@ public class SolicitacaoTests {
 
     // @Autowired
     StorageAnexo storage;
+
+    @Autowired
+    SolicitacaoRepository solicitacaoRepository;
+    @Autowired
+    AtividadeRepository atividadeRepository;
+    @Autowired
+    GrupoRepository grupoRepository;
+    @Autowired
+    CurriculoRepository curriculoRepository;
 
     // Criação caso base
     // @Autowired

@@ -1,16 +1,21 @@
 package com.unipampa.sistemaacg.controllers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unipampa.sistemaacg.dto.AvaliacaoDTO;
 import com.unipampa.sistemaacg.dto.AvaliacaoGetDTO;
+import com.unipampa.sistemaacg.models.Anexo;
 import com.unipampa.sistemaacg.models.AvaliacaoSolicitacao;
 import com.unipampa.sistemaacg.models.Solicitacao;
 import com.unipampa.sistemaacg.models.Status;
+import com.unipampa.sistemaacg.repository.AnexoRepository;
 import com.unipampa.sistemaacg.repository.AtividadeRepository;
 import com.unipampa.sistemaacg.repository.AvaliacaoRepository;
 import com.unipampa.sistemaacg.repository.CurriculoRepository;
@@ -52,6 +57,8 @@ public class AvaliacaoController {
     CurriculoRepository curriculoRepository;
     @Autowired
     AvaliacaoRepository avaliacaoRepository;
+    @Autowired
+    AnexoRepository anexoRepository;
 
     private final StorageService storageService;
 
@@ -96,18 +103,31 @@ public class AvaliacaoController {
     }
 
     @GetMapping(value = "/infos/{id}") // get infos para avaliacao
-    public AvaliacaoGetDTO getInfos(@PathVariable long id) {
+    public HashMap<Solicitacao,List<Resource>> getInfos(@PathVariable long id) {
         // Busca no banco pelo id
         Solicitacao retornableSolicitacao = solicitacaoRepository.findById(id).get();
 
+        Iterable<Anexo> anexos = anexoRepository.findAll();
+        List<Anexo> anexosDaSolicitacao = new ArrayList<>();
+        List<Resource> arquivos = new ArrayList<>();
+        HashMap<Solicitacao,List<Resource>> retorno = new HashMap<>();
 
-        return null;
+        for(Anexo anexo: anexos){
+            if(anexo.getSolicitacao().equals(retornableSolicitacao)){
+                anexosDaSolicitacao.add(anexo);
+                arquivos.add(storageService.loadAsResource(anexo.getNome()));
+            }
+        }
+
+        retorno.put(retornableSolicitacao, arquivos);
+
+        return retorno;
     }
 
     //pega um anexo
     @GetMapping("/files/{filename:.+}")
     @ResponseBody
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
+    public ResponseEntity<Resource> getFile(@PathVariable String filename) {
 
         Resource file = storageService.loadAsResource(filename);
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,

@@ -1,11 +1,6 @@
 package com.unipampa.sistemaacg.dto;
 
-import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-
-import org.springframework.core.io.Resource;
-import org.springframework.web.multipart.MultipartFile;
 
 import lombok.Data;
 

@@ -1,23 +1,18 @@
 package com.unipampa.sistemaacg.controllers;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Blob;
 
 import com.unipampa.sistemaacg.models.Anexo;
 import com.unipampa.sistemaacg.repository.AnexoRepository;
 import com.unipampa.sistemaacg.repository.SolicitacaoRepository;
 
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * AnexoController

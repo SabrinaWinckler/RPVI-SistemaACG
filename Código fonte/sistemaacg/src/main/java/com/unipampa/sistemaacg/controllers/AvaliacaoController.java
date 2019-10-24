@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unipampa.sistemaacg.dto.AvaliacaoDTO;
-import com.unipampa.sistemaacg.dto.AvaliacaoGetDTO;
 import com.unipampa.sistemaacg.models.Anexo;
 import com.unipampa.sistemaacg.models.AvaliacaoSolicitacao;
 import com.unipampa.sistemaacg.models.Solicitacao;

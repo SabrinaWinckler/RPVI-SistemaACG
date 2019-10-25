@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -67,18 +68,19 @@ public class AvaliacaoController {
     }
 
     @JsonIgnore
-    @PostMapping("/")
-    public ResponseEntity postAvaliacao(@ModelAttribute AvaliacaoDTO avaliacao){
+    @PostMapping("/{id}")
+    public ResponseEntity postAvaliacao(@RequestBody AvaliacaoDTO avaliacao, @PathVariable long id){
 
         AvaliacaoSolicitacao newavaliacao = new AvaliacaoSolicitacao();
         Date dataAtual = new Date();
-        Solicitacao avaliada = solicitacaoRepository.findById(avaliacao.getSolicitacao()).get();
+        Solicitacao avaliada = solicitacaoRepository.findById(id).get();
 
-        if(avaliacao.getParecer() == null){
+        if(avaliacao.isDeferido()){
             avaliada.setStatus(Status.DEFERIDO.toString());
         }else{
             avaliada.setStatus(Status.INDEFERIDO.toString());
         }
+        avaliada.setIdSolicitacao(id);
         solicitacaoRepository.save(avaliada);
 
         newavaliacao.setCargaHorariaAtribuida(avaliacao.getCargaHorariaAtribuida());
@@ -102,28 +104,29 @@ public class AvaliacaoController {
     }
 
     @GetMapping(value = "/infos/{id}") // get infos para avaliacao
-    public HashMap<Solicitacao,List<Resource>> getInfos(@PathVariable long id) {
+    public HashMap<Solicitacao,List<String>> getInfos(@PathVariable long id) {
         // Busca no banco pelo id
         Solicitacao retornableSolicitacao = solicitacaoRepository.findById(id).get();
 
         Iterable<Anexo> anexos = anexoRepository.findAll();
-        List<Anexo> anexosDaSolicitacao = new ArrayList<>();
-        List<Resource> arquivos = new ArrayList<>();
-        HashMap<Solicitacao,List<Resource>> retorno = new HashMap<>();
+
+        List<String> anexosDaSolicitacao = new ArrayList<>();
+
+        HashMap<Solicitacao,List<String>> retorno = new HashMap<>();
 
         for(Anexo anexo: anexos){
             if(anexo.getSolicitacao().equals(retornableSolicitacao)){
-                anexosDaSolicitacao.add(anexo);
-                arquivos.add(storageService.loadAsResource(anexo.getNome()));
+                anexosDaSolicitacao.add(anexo.getNome());
+
             }
         }
 
-        retorno.put(retornableSolicitacao, arquivos);
+        retorno.put(retornableSolicitacao, anexosDaSolicitacao);
 
         return retorno;
     }
 
-    //pega um anexo
+    //pega um anexo a partir do nome do anexo, só chamar isso para cada anexo na view, ele mostra o pdf no navegador
     @GetMapping("/files/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {
@@ -133,16 +136,18 @@ public class AvaliacaoController {
                 "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
 
+
+    //Documentação
     //lista todos anexos
-    @GetMapping("/anexos")
-    public String listUploadedFiles(Model model) throws IOException {
+    // @GetMapping("/anexos")
+    // public String listUploadedFiles(Model model) throws IOException {
 
-        model.addAttribute("files", storageService.loadAll().map(
-                path -> MvcUriComponentsBuilder.fromMethodName(SolicitacaoController.class,
-                        "serveFile", path.getFileName().toString()).build().toString())
-                .collect(Collectors.toList()));
+    //     model.addAttribute("files", storageService.loadAll().map(
+    //             path -> MvcUriComponentsBuilder.fromMethodName(SolicitacaoController.class,
+    //                     "serveFile", path.getFileName().toString()).build().toString())
+    //             .collect(Collectors.toList()));
 
-        return "uploadForm";
-    }
+    //     return "uploadForm";
+    // }
 
 }

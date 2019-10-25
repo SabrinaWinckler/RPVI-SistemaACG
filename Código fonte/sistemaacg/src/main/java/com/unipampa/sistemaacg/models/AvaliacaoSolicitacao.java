@@ -28,7 +28,7 @@ public class AvaliacaoSolicitacao{
 	@JsonFormat(pattern="yyyy-MM-dd")
 	private Date dataAvaliacao;//atual
 
-    @NotEmpty
+    //@NotEmpty
 	private long cargaHorariaAtribuida;
 
     @OneToOne

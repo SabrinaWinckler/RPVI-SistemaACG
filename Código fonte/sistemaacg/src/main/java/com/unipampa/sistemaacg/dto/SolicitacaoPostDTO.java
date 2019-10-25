@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class SolicitacaoPostDTO {
 
-        private String local;
+    private String local;
 	private String aluno;
 	@JsonFormat(pattern="yyyy-MM-dd")
 	private String dataInicio;

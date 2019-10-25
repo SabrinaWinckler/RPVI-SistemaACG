@@ -8,9 +8,11 @@ import java.util.Optional;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unipampa.sistemaacg.dto.InfosSolicitacaoDTO;
 import com.unipampa.sistemaacg.dto.SolicitacaoPostDTO;
+import com.unipampa.sistemaacg.models.Anexo;
 import com.unipampa.sistemaacg.models.Atividade;
 import com.unipampa.sistemaacg.models.Solicitacao;
 import com.unipampa.sistemaacg.models.Status;
+import com.unipampa.sistemaacg.repository.AnexoRepository;
 import com.unipampa.sistemaacg.repository.AtividadeRepository;
 import com.unipampa.sistemaacg.repository.CurriculoRepository;
 import com.unipampa.sistemaacg.repository.GrupoRepository;
@@ -26,7 +28,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,6 +40,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("solicitacao") // localhost:8080/solicitacao
 public class SolicitacaoController {
 
+    @Autowired
+    AnexoRepository anexoRepository;
     @Autowired
     SolicitacaoRepository solicitacaoRepository;
     @Autowired
@@ -79,17 +82,18 @@ public class SolicitacaoController {
         return ResponseEntity.ok(retornableSolicitacao);
     }
 
-    @PostMapping("/upload")
-    public String postAnexo(@RequestParam("file") MultipartFile file, String nome) throws Exception {
+    // @PostMapping("/upload")
+    // public String postAnexo(@RequestParam("file") MultipartFile file, String nome) throws Exception {
 
-        return storageService.store(file, nome);
+    //     return storageService.store(file, nome);
 
-    }
+    // }
 
     @JsonIgnore
     @PostMapping("/")
-    public ResponseEntity postSolicitacao(@ModelAttribute SolicitacaoPostDTO solicitacao,  MultipartFile file) throws Exception {
+    public ResponseEntity postSolicitacao(@ModelAttribute SolicitacaoPostDTO solicitacao,  MultipartFile files[]) throws Exception {
 
+        String caminhoNome;
         Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
 
         if(!atividade.isPresent()){
@@ -97,13 +101,17 @@ public class SolicitacaoController {
         }
 
         Solicitacao newsolicitacao = new Solicitacao();
+        Anexo newAnexo = new Anexo();
         newsolicitacao.setAtividade(atividade.get());
 
+ 
+        for (MultipartFile file : files) {
          if (!newsolicitacao.verificaTamanho(file.getSize())) {
 		 	return ResponseEntity.badRequest().body("O arquivo com "+ file.getSize()+"mb excede o tamanho permitido! Por favor selecione um arquivo com no máximo 20mb");
         }
-
-       // newsolicitacao.setNomeAnexo(storageService.store(file, solicitacao.getAluno()));
+    }
+        
+   
 
         newsolicitacao.setAluno(solicitacao.getAluno());
         newsolicitacao.setCargaHorariaSoli(solicitacao.getCargaHorariaSoli());
@@ -121,6 +129,15 @@ public class SolicitacaoController {
 		newsolicitacao.setStatus(Status.PENDENTE.toString());
 
         Solicitacao retornableSolicitacao = solicitacaoRepository.save(newsolicitacao);
+        
+        for (MultipartFile file : files) {
+            caminhoNome = storageService.store(file, solicitacao.getAluno());
+            String[] arrayString = caminhoNome.split("_", 2);
+            newAnexo.setNome(arrayString[1]);
+            newAnexo.setCaminho(arrayString[0]);
+            anexoRepository.save(newAnexo);
+        }
+
         return ResponseEntity.ok(retornableSolicitacao);
 
     }

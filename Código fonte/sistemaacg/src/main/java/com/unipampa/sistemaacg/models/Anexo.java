@@ -1,13 +1,10 @@
 package com.unipampa.sistemaacg.models;
 
-import java.sql.Blob;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
@@ -30,9 +27,9 @@ public class Anexo {
     @NotNull
     private String nome;
 
-    @Lob
-    @Column(name = "file", columnDefinition = "BLOB")
-    private byte file[];
+    
+    @Column(name = "caminho")
+    private String caminho;
 
     
 

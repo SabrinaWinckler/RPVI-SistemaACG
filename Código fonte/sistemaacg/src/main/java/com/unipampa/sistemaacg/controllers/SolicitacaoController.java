@@ -1,6 +1,7 @@
 package com.unipampa.sistemaacg.controllers;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -82,12 +84,24 @@ public class SolicitacaoController {
         return ResponseEntity.ok(retornableSolicitacao);
     }
 
-    // @PostMapping("/upload")
-    // public String postAnexo(@RequestParam("file") MultipartFile file, String nome) throws Exception {
+    @PostMapping("/upload")
+    public String postAnexo(@RequestParam("file") MultipartFile file, String nome) throws Exception {
 
-    //     return storageService.store(file, nome);
+        return storageService.store(file, nome);
 
-    // }
+    }
+
+
+    @PostMapping("uploadfiles")
+    public ArrayList postAnexos(@RequestParam("file") MultipartFile files[], String nome) throws Exception {
+        ArrayList filesName = new ArrayList<String>();
+        String nomeCaminho;
+        for (MultipartFile string : files) {
+            nomeCaminho = storageService.store(string, nome);
+            filesName.add(nomeCaminho);
+        }
+        return filesName;
+    }
 
     @JsonIgnore
     @PostMapping("/")
@@ -111,7 +125,6 @@ public class SolicitacaoController {
         }
     }
         
-   
 
         newsolicitacao.setAluno(solicitacao.getAluno());
         newsolicitacao.setCargaHorariaSoli(solicitacao.getCargaHorariaSoli());
@@ -124,7 +137,7 @@ public class SolicitacaoController {
         Date dataTeste = formato.parse(solicitacao.getDataInicio());
 		newsolicitacao.setDataAtual(dataAtual);
         newsolicitacao.setDataInicio(dataTeste);
-		newsolicitacao.setDataFim(dataTeste);//tem q aarrumae
+		newsolicitacao.setDataFim(dataTeste);
 
 		newsolicitacao.setStatus(Status.PENDENTE.toString());
 
@@ -132,7 +145,7 @@ public class SolicitacaoController {
         
         for (MultipartFile file : files) {
             caminhoNome = storageService.store(file, solicitacao.getAluno());
-            String[] arrayString = caminhoNome.split("_", 2);
+            String[] arrayString = caminhoNome.split("-", 2);
             newAnexo.setNome(arrayString[1]);
             newAnexo.setCaminho(arrayString[0]);
             anexoRepository.save(newAnexo);

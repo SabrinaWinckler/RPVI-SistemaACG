@@ -92,16 +92,16 @@ public class SolicitacaoController {
     }
 
 
-    @PostMapping("uploadfiles")
-    public ArrayList postAnexos(@RequestParam("file") MultipartFile files[], String nome) throws Exception {
-        ArrayList filesName = new ArrayList<String>();
-        String nomeCaminho;
-        for (MultipartFile string : files) {
-            nomeCaminho = storageService.store(string, nome);
-            filesName.add(nomeCaminho);
-        }
-        return filesName;
-    }
+    // @PostMapping("/uploadfiles")
+    // public ArrayList postAnexos(@RequestParam("file") MultipartFile files[], String nome) throws Exception {
+    //     ArrayList filesName = new ArrayList<String>();
+    //     String nomeCaminho;
+    //     for (MultipartFile string : files) {
+    //         nomeCaminho = storageService.store(string, nome);
+    //         filesName.add(nomeCaminho);
+    //     }
+    //     return filesName;
+    // }
 
     @JsonIgnore
     @PostMapping("/")

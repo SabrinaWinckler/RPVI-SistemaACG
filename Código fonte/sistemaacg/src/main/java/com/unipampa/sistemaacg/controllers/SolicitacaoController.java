@@ -191,5 +191,6 @@ public class SolicitacaoController {
         return ResponseEntity.ok(retornableSolicitacao);
     }
 
+
 }
 

@@ -2,17 +2,23 @@ import React, { useContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import axios from 'axios'
-import { lighten, makeStyles } from '@material-ui/core/styles';
+import { lighten, makeStyles, withStyles } from '@material-ui/core/styles';
 import {
     Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar,
     Typography, Paper, Checkbox, IconButton, Tooltip, Grid, CardContent, Modal, FormControl, InputLabel,
-    Button, Select, MenuItem, TextField, Chip, Avatar, Dialog, DialogActions, DialogTitle 
+    Button, Select, MenuItem, TextField, Chip, Avatar, Dialog, DialogActions, DialogTitle, Box, Radio,
+    RadioGroup, FormControlLabel, FormLabel, Fab, Divider 
 } from '@material-ui/core';
+import MuiExpansionPanel from '@material-ui/core/ExpansionPanel';
+import MuiExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import MuiExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import { Warning as WarningIcon } from '@material-ui/icons'
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns'
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
+import DescriptionIcon from '@material-ui/icons/Description'
+import GetAppIcon from '@material-ui/icons/GetApp'
 
 import { UserContext } from '../../context/UserContext'
 import { validateName, validateRegistration, validateDate, sendForm, deleteSolicitacao } from '../../scripts/scripts'
@@ -61,6 +67,7 @@ const headCells = [
     { id: 'grupo', numeric: false, align: 'left', disablePadding: false, label: 'Grupo' },
     { id: 'data', numeric: true, align: 'left', disablePadding: false, label: 'Data' },
     { id: 'status', numeric: false, align: 'left', disablePadding: false, label: 'Situação' },
+    { id: 'aval', numeric: false, align: 'left', disablePadding: false, label: 'Avaliar' },
 ];
 
 function EnhancedTableHead(props) {
@@ -203,7 +210,7 @@ const EnhancedTableToolbar = props => {
 
     useEffect(() => {
         async function loadSolicitations() {
-          const response = await axios.get('http://localhost:8081/solicitacao/infos/')
+          const response = await axios.get('http://localhost:2222/solicitacao/infos/')
           setGroups(response.data.grupos)
           setActivities(response.data.atividades)
         }
@@ -258,7 +265,7 @@ const EnhancedTableToolbar = props => {
 
     async function handleDelete() {
             try {
-                const response = await axios.delete(`http://localhost:8081/solicitacao/${selectedRow[0]}`)
+                const response = await axios.delete(`http://localhost:2222/solicitacao/${selectedRow[0]}`)
                 .then(resp => {
                     console.log(response)
                 })
@@ -513,6 +520,47 @@ EnhancedTableToolbar.propTypes = {
     selectedRow: PropTypes
 };
 
+const ExpansionPanel = withStyles({
+    root: {
+      border: '1px solid rgba(0, 0, 0, .125)',
+      boxShadow: 'none',
+      '&:not(:last-child)': {
+        borderBottom: 0,
+      },
+      '&:before': {
+        display: 'none',
+      },
+      '&$expanded': {
+        margin: 'auto',
+      },
+    },
+    expanded: {},
+  })(MuiExpansionPanel);
+  
+  const ExpansionPanelSummary = withStyles({
+    root: {
+      backgroundColor: 'rgba(0, 0, 0, .03)',
+      borderBottom: '1px solid rgba(0, 0, 0, .125)',
+      marginBottom: -1,
+      minHeight: 56,
+      '&$expanded': {
+        minHeight: 56,
+      },
+    },
+    content: {
+      '&$expanded': {
+        margin: '12px 0',
+      },
+    },
+    expanded: {},
+  })(MuiExpansionPanelSummary);
+  
+  const ExpansionPanelDetails = withStyles(theme => ({
+    root: {
+      padding: theme.spacing(2),
+    },
+  }))(MuiExpansionPanelDetails);
+
 const useStyles = makeStyles(theme => ({
     root: {
         width: '100%',
@@ -521,6 +569,11 @@ const useStyles = makeStyles(theme => ({
     paper: {
         width: '95%',
         marginBottom: theme.spacing(2),
+    },
+    paperModal: {
+        position: 'absolute',
+        backgroundColor: theme.palette.background.paper,
+        borderRadius: '5px',
     },
     table: {
         minWidth: 750,
@@ -539,21 +592,57 @@ const useStyles = makeStyles(theme => ({
         top: 20,
         width: 1,
     },
+    margin: {
+        margin: theme.spacing(1),
+    },
+    extendedIcon: {
+        marginRight: theme.spacing(1),
+    },
+    textField: {
+        marginLeft: theme.spacing(0.1),
+        marginRight: theme.spacing(0.1),
+    },
 }));
 
 export default function EnhancedTable() {
     const classes = useStyles();
+    const [modalStyle] = useState(getModalStyle)
     const [order, setOrder] = useState('asc');
     const [orderBy, setOrderBy] = React.useState();
     const [selected, setSelected] = React.useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [open, setOpen] = useState(false)
+    const [valueRadio, setValueRadio] = React.useState('')
+
+    const [expanded, setExpanded] = React.useState(false);
 
     const [rows, setRows] = useState([])
 
+    const handleChangeExpand = event => {
+        setExpanded(true);
+      };
+
+    const handleChangeCollapse = event => {
+        setExpanded(false);
+      };
+    
+
+    const handleChangeRadio = event => {
+        setValueRadio(event.target.value);
+      };
+
+    const handleModal = (index) => {
+        setOpen({ open: open, [index]: !open });
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+
     useEffect(() => {
         async function loadSolicitations() {
-          const response = await axios.get('http://localhost:8081/solicitacao')
+          const response = await axios.get('http://localhost:2222/solicitacao')
           setRows(response.data)
         }
         loadSolicitations()
@@ -638,6 +727,160 @@ export default function EnhancedTable() {
                                                 <TableCell align="left">{row.atividade.grupo.nome}</TableCell>
                                                 <TableCell align="left">{row.dataAtual}</TableCell>
                                                 <TableCell align="left">{row.status}</TableCell>
+                                                <TableCell align="left">
+                                                    <IconButton onClick={() => handleModal(index)}>
+                                                        <DescriptionIcon />
+                                                    </IconButton>
+                                                </TableCell>
+                                                <Modal aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description"
+                                                    open={open[index]} onClose={handleClose} >
+                                                    <CardContent style={modalStyle} className={classes.paperModal}>
+                                                        <Grid container direction="column" justify="space-evenly" alignItems="stretch" spacing={2}>
+                                                            <Grid item xs>
+                                                                <Typography variant="h5" gutterBottom>
+                                                                    Avaliação de Solicitação
+                                                                </Typography>
+                                                            </Grid>
+                                                            <Grid container direction="row" justify="space-around" alignItems="center">
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph >
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                            <Box fontWeight="fontWeightBold" m={1}>Aluno: </Box>
+                                                                            {row.aluno}
+                                                                        </Grid>
+                                                                    </Typography>
+                                                                </Grid>
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                            <Box fontWeight="fontWeightBold" m={1}>Matrícula: </Box>
+                                                                            
+                                                                        </Grid>
+                                                                    </Typography>
+                                                                </Grid>
+                                                            </Grid>
+                                                            <Grid container direction="row" justify="space-between" alignItems="center">
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                            <Box fontWeight="fontWeightBold" m={1}>Atividade: </Box>
+                                                                            {row.atividade.descricao}
+                                                                        </Grid>
+                                                                    </Typography>
+                                                                </Grid>
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                            <Box fontWeight="fontWeightBold" m={1}>Grupo: </Box>
+                                                                            {row.atividade.grupo.nome}
+                                                                        </Grid>
+                                                                    </Typography>
+                                                                </Grid>
+                                                            </Grid>
+                                                            <Grid container direction="row" justify="space-around" alignItems="center">
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                            <Box fontWeight="fontWeightBold" m={1}>Professor Responsável: </Box>
+                                                                            {row.profRes}
+                                                                        </Grid>
+                                                                    </Typography>
+                                                                </Grid>
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                            <Box fontWeight="fontWeightBold" m={1}>Local: </Box>
+                                                                            {row.local}
+                                                                        </Grid>
+                                                                    </Typography>
+                                                                </Grid>
+                                                            </Grid>
+                                                            <Grid container direction="row" justify="space-between" alignItems="center">
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                            <Box fontWeight="fontWeightBold" m={1}>Início: </Box>
+                                                                            {row.dataInicio}
+                                                                        </Grid>
+                                                                    </Typography>
+                                                                </Grid>
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                            <Box fontWeight="fontWeightBold" m={1}>Fim: </Box>
+                                                                            {row.dataFim}
+                                                                        </Grid>
+                                                                    </Typography>
+                                                                </Grid>
+                                                            </Grid>
+                                                            <Grid container direction="row" justify="space-around" alignItems="center">
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                            <Box fontWeight="fontWeightBold" m={1}>Carga Horária Solicitada: </Box>
+                                                                            {row.cargaHorariaSoli} hora(s)
+                                                                        </Grid>
+                                                                    </Typography>
+                                                                </Grid>
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                            <Box fontWeight="fontWeightBold" m={1}>Horas Aproveitadas: </Box>
+                                                                            <TextField id="usedHours" required type="number"
+                                                                            className={classes.textField} value="" margin="normal" autoComplete="off"/>
+                                                                        </Grid>
+                                                                    </Typography>
+                                                                </Grid>
+                                                            </Grid>
+                                                            <Grid container justify="space-between" alignItems="center">
+                                                                <Typography paragraph>
+                                                                    <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                        <Box fontWeight="fontWeightBold" m={1}>Descrição: </Box>
+                                                                        {row.descricao}
+                                                                    </Grid>
+                                                                </Typography>
+                                                            </Grid>
+                                                            <Grid container justify="space-between" alignItems="center">
+                                                                <Typography paragraph>
+                                                                    <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                        <Box fontWeight="fontWeightBold" m={1}>Comprovantes: </Box>
+                                                                        <Fab variant="extended" color="primary" aria-label="attach" className={classes.margin}>
+                                                                            <GetAppIcon className={classes.extendedIcon} />
+                                                                            Comprovante
+                                                                        </Fab>
+                                                                    </Grid>
+                                                                </Typography>
+                                                            </Grid>
+                                                            <Divider style={{ marginBottom: "1%" }}/>
+                                                            <Grid container direction="row" justify="space-between" alignItems="center">
+                                                                <FormControl component="fieldset">
+                                                                    <FormLabel component="legend">Avaliação</FormLabel>
+                                                                    <RadioGroup aria-label="position" name="position" value={valueRadio} onChange={handleChangeRadio} row required>
+                                                                        <FormControlLabel value="def"
+                                                                        control={<Radio color="primary" />}
+                                                                        label="Deferir" labelPlacement="end" onChange={handleChangeCollapse}/>
+                                                                        <FormControlLabel value="indef"
+                                                                        control={<Radio color="secondary" />}
+                                                                        label="Indeferir" labelPlacement="end" onChange={handleChangeExpand}/>
+                                                                    </RadioGroup>
+                                                                </FormControl>
+                                                                <Button variant="contained" color="primary" className={classes.button}>
+                                                                    <DescriptionIcon />
+                                                                    Confirmar
+                                                                </Button>
+                                                            </Grid>
+                                                            <ExpansionPanel style={{ width: '100%' }} square expanded={expanded} >
+                                                                <ExpansionPanelSummary aria-controls="panel1d-content" id="panel1d-header">
+                                                                    <Typography>Observações:</Typography>
+                                                                </ExpansionPanelSummary>
+                                                                    <ExpansionPanelDetails>
+                                                                        <TextField id="description" type="text" required multiline rows="4" variant="filled" className={classes.textField}
+                                                                        style={{ width: '100%' }} value="" margin="normal" autoComplete="off"/>
+                                                                    </ExpansionPanelDetails>
+                                                            </ExpansionPanel>
+                                                        </Grid>
+                                                    </CardContent>
+                                                </Modal>
                                             </TableRow>
                                         );
                                     })}
@@ -659,6 +902,7 @@ export default function EnhancedTable() {
                         onChangePage={handleChangePage}
                         onChangeRowsPerPage={handleChangeRowsPerPage}
                     />
+                    
                 </Paper>
             </Grid>
         </div>

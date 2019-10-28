@@ -44,7 +44,7 @@ export const sendForm = async (data, file) => {
     //     type: 'application/json'
     //   });
     // formData.append("file", blob)
-    axios.post('http://localhost:8081/solicitacao/', formData)
+    axios.post('http://localhost:2222/solicitacao/', formData)
             .then(data => {
                 console.log(data)
                 return true
@@ -59,7 +59,7 @@ export const sendForm = async (data, file) => {
 
 export const deleteSolicitacao = async (itemId) => {
 
-    axios.delete(`http://localhost:8081/solicitacao/${itemId}`, { params: { id: itemId } })
+    axios.delete(`http://localhost:2222/solicitacao/${itemId}`, { params: { id: itemId } })
             .then(response => {
                 console.log(response)
                 return true

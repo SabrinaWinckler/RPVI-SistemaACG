@@ -28,16 +28,10 @@ public class StorageAnexo implements StorageService {
         this.properties = properties;
     }
 
-
-
-    
-    public String saveCaminho(String caminho){
-
+    public String saveCaminho(String caminho) {
 
         return "caminho";
     }
-
-    
 
     @Override
     public String store(MultipartFile file, String nome) throws IOException, NoSuchAlgorithmException {
@@ -48,20 +42,19 @@ public class StorageAnexo implements StorageService {
                 throw new StorageException("Falha ao salvar arquivo vazio" + file.getOriginalFilename());
             }
 
-            fileName = nome+"_"+file.getOriginalFilename()+"_"+ generator.nextInt(30000);
+            fileName = nome + "_" + generator.nextInt(30000) + "_" + file.getOriginalFilename();
             Files.copy(file.getInputStream(), this.rootLocation.resolve(fileName));
         } catch (IOException e) {
             throw new StorageException("Falha ao armazenar " + file.getOriginalFilename(), e);
         }
 
-        return this.rootLocation.toString() + "-" + file.getOriginalFilename();
+        return this.rootLocation.toString() + "-" + fileName;
     }
 
     @Override
     public Stream<Path> loadAll() {
         try {
-            return Files.walk(this.rootLocation, 1)
-                    .filter(path -> !path.equals(this.rootLocation))
+            return Files.walk(this.rootLocation, 1).filter(path -> !path.equals(this.rootLocation))
                     .map(path -> this.rootLocation.relativize(path));
         } catch (IOException e) {
             throw new StorageException("Falha ao ler arquivos salvos", e);
@@ -79,10 +72,9 @@ public class StorageAnexo implements StorageService {
         try {
             Path file = load(filename);
             Resource resource = new UrlResource(file.toUri());
-            if(resource.exists() || resource.isReadable()) {
+            if (resource.exists() || resource.isReadable()) {
                 return resource;
-            }
-            else {
+            } else {
                 throw new StorageException("Não foi possível ler este arquivo: " + filename);
 
             }

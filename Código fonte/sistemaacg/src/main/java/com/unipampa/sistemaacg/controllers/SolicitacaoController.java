@@ -1,10 +1,13 @@
 package com.unipampa.sistemaacg.controllers;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unipampa.sistemaacg.dto.InfosSolicitacaoDTO;
@@ -20,7 +23,12 @@ import com.unipampa.sistemaacg.repository.GrupoRepository;
 import com.unipampa.sistemaacg.repository.SolicitacaoRepository;
 import com.unipampa.sistemaacg.storageanexo.StorageService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -52,6 +60,7 @@ public class SolicitacaoController {
     GrupoRepository grupoRepository;
     @Autowired
     CurriculoRepository curriculoRepository;
+    private static final Logger logger = LoggerFactory.getLogger(SolicitacaoController.class);
 
     private final StorageService storageService;
 
@@ -92,9 +101,9 @@ public class SolicitacaoController {
     }
 
 
-    @PostMapping("uploadfiles")
+    @PostMapping("/uploadfiles")
     public ArrayList postAnexos(@RequestParam("file") MultipartFile files[], String nome) throws Exception {
-        ArrayList filesName = new ArrayList<String>();
+        ArrayList<String> filesName = new ArrayList<>();
         String nomeCaminho;
         for (MultipartFile string : files) {
             nomeCaminho = storageService.store(string, nome);
@@ -102,6 +111,26 @@ public class SolicitacaoController {
         }
         return filesName;
     }
+
+    @GetMapping("/download/{fileName:.+}")
+    public ResponseEntity<Resource> httpGetDownloadFile(@PathVariable String fileName, HttpServletRequest request) {
+        Resource resource = storageService.loadAsResource(fileName);
+        String contentType = null;
+        try {
+            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
+        } catch (IOException ex) {
+            logger.info("Could not determine file type.");
+        }
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+
+
+
 
     @JsonIgnore
     @PostMapping("/")
@@ -124,7 +153,6 @@ public class SolicitacaoController {
 		 	return ResponseEntity.badRequest().body("O arquivo com "+ file.getSize()+"mb excede o tamanho permitido! Por favor selecione um arquivo com no máximo 20mb");
         }
     }
-        
 
         newsolicitacao.setAluno(solicitacao.getAluno());
         newsolicitacao.setCargaHorariaSoli(solicitacao.getCargaHorariaSoli());
@@ -146,7 +174,7 @@ public class SolicitacaoController {
         for (MultipartFile file : files) {
             caminhoNome = storageService.store(file, solicitacao.getAluno());
             String[] arrayString = caminhoNome.split("-", 2);
-            newAnexo.setNome(arrayString[1]);
+            newAnexo.setNome(arrayString[1]+".pdf");
             newAnexo.setCaminho(arrayString[0]);
             anexoRepository.save(newAnexo);
         }
@@ -162,6 +190,7 @@ public class SolicitacaoController {
         solicitacaoRepository.deleteById(id);
         return ResponseEntity.ok(retornableSolicitacao);
     }
+
 
 }
 

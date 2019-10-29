@@ -174,7 +174,7 @@ public class SolicitacaoController {
         for (MultipartFile file : files) {
             caminhoNome = storageService.store(file, solicitacao.getAluno());
             String[] arrayString = caminhoNome.split("-", 2);
-            newAnexo.setNome(arrayString[1]+".pdf");
+            newAnexo.setNome(arrayString[1]);
             newAnexo.setCaminho(arrayString[0]);
             anexoRepository.save(newAnexo);
         }

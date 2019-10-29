@@ -21,6 +21,9 @@ public class Atividade {
 	private String docsNecessarios;
 
 	@NotEmpty
+	private String detalhamento;
+
+	@NotEmpty
 	private String descricao;
 
 

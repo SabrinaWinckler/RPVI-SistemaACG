@@ -7,7 +7,7 @@ import {
     Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar,
     Typography, Paper, Checkbox, IconButton, Tooltip, Grid, CardContent, Modal, FormControl, InputLabel,
     Button, Select, MenuItem, TextField, Chip, Avatar, Dialog, DialogActions, DialogTitle, Box, Radio,
-    RadioGroup, FormControlLabel, FormLabel, Fab, Divider 
+    RadioGroup, FormControlLabel, FormLabel, Fab, Divider, Popover  
 } from '@material-ui/core';
 import MuiExpansionPanel from '@material-ui/core/ExpansionPanel';
 import MuiExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -21,7 +21,7 @@ import DescriptionIcon from '@material-ui/icons/Description'
 import GetAppIcon from '@material-ui/icons/GetApp'
 
 import { UserContext } from '../../context/UserContext'
-import { validateName, validateRegistration, validateDate, sendForm, deleteSolicitacao } from '../../scripts/scripts'
+import { validateName, validateRegistration, validateDate, sendForm, deleteSolicitacao, getDocs } from '../../scripts/scripts'
 
 function getModalStyle() {
     const top = 50
@@ -181,7 +181,8 @@ const EnhancedTableToolbar = props => {
     const { user } = useContext(UserContext)
     const [modalStyle] = useState(getModalStyle)
     const [openModal, setOpenModal] = useState(false)
-    const [file, setFile] = useState(null)
+    const [file, setFile] = useState([])
+    const [docs, setDocs] = useState([])
     const [values, setValues] = useState({
         location: 'unipampa',
         name: 'Juca',
@@ -197,13 +198,16 @@ const EnhancedTableToolbar = props => {
     });
     const [selectedDateStart, setSelectedDateStart] = useState(new Date());
     const [selectedDateEnd, setSelectedDateEnd] = useState();
+    const [message, setMessage] = useState("Selecione Uma Atividade");
     const [status, setStatus] = useState({ show: false, message: '' })
 
     const [groups, setGroups] = useState([])
     const [openDialog, setOpenDialog] = useState(false)
     const [submitMessage, setSubmitMessage] = useState('')
+    const [key, setKey] = useState()
     const [activities, setActivities] = useState([])
-    const [selectValues, setselectValues] = useState({
+    const [runButtons, setRunButtons] = useState(false)
+    const [selectValues, setSelectValues] = useState({
         group: '',
         activitie: '',
       });
@@ -218,11 +222,20 @@ const EnhancedTableToolbar = props => {
       }, [])
 
     const handleChangeSelect = event => {
-        setselectValues(oldValues => ({
+        setSelectValues(oldValues => ({
           ...oldValues,
           [event.target.name]: event.target.value,
         }));
         setValues({ ...values, [event.target.name]: event.target.value });
+        let docsLine = getDocs(activities[event.target.value - 1].docsNecessarios)
+        console.log(docsLine)
+        if(!docsLine){
+            setMessage("Não foi possível verificar a documentação necessária")
+            return
+        }else{
+            setDocs(docsLine)
+            setRunButtons(true)        
+        }
       };
 
     const handleFile = event =>  {
@@ -487,12 +500,36 @@ const EnhancedTableToolbar = props => {
                                 </Grid>
                             </FormControl>
                             <Grid container direction="row" justify="space-between" alignItems="center">
-                                <input required accept="image/*, .pdf, .docx" className={classes.input} onChange={handleFile} id="uploadFile" multiple type="file" />
-                                <label htmlFor="uploadFile">
-                                    <Button variant="outlined" component="span" className={classes.button}>
-                                        Comprovante
-                                    </Button>
-                                </label>
+                                <Grid container direction="column" justify="center" alignItems="flex-start" style={{ width: '45%' }}>
+                                {!runButtons ? (
+                                    <Typography color="inherit" variant="subtitle1">
+                                        {message}
+                                    </Typography>
+                                ) : (
+                                    <Grid container direction="column" justify="center" alignItems="flex-start" style={{ width: '45%' }}>
+                                        {docs.map((doc, index) => (
+                                            <Grid container direction="row" justify="center" alignItems="center">
+                                                <input required accept="image/*, .pdf" className={classes.input} onChange={handleFile} id="uploadFile" multiple type="file" />
+                                                <label htmlFor="uploadFile">
+                                                    <Button variant="outlined" component="span" className={classes.button} >
+                                                        Comprovante {index + 1}
+                                                    </Button>
+                                                </label>
+                                                <Popover anchorReference="anchorPosition" anchorPosition={{ top: 180, left: 900 }} anchorOrigin={{
+                                                    vertical: 'top',
+                                                    horizontal: 'left',
+                                                }}
+                                                transformOrigin={{
+                                                    vertical: 'center',
+                                                    horizontal: 'center',
+                                                }} >
+                                                    {doc}
+                                                </Popover>
+                                            </Grid>
+                                        ))}
+                                    </Grid>
+                                )}
+                                </Grid>
                                 <Button className={classes.button} onClick={handleSubmit} >
                                     Enviar
                                 </Button>
@@ -700,7 +737,6 @@ export default function EnhancedTable() {
     return (
         <div className={classes.root}>
             <Grid container direction="row" justify="center" alignItems="center">
-                {console.log(rows)}
                 <Paper className={classes.paper} style={{ marginBottom: '4%' }}>
                     <EnhancedTableToolbar numSelected={selected.length} selectedRow={selected} />
                     <div className={classes.tableWrapper}>

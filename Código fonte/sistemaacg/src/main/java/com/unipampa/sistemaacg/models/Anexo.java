@@ -1,12 +1,11 @@
 package com.unipampa.sistemaacg.models;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotEmpty;
 
 import lombok.Data;
 
@@ -24,14 +23,8 @@ public class Anexo {
     @ManyToOne
     private Solicitacao solicitacao;
 
-    @NotNull
+    @NotEmpty
     private String nome;
-
-    
-    @Column(name = "caminho")
-    private String caminho;
-
-    
 
 
 }

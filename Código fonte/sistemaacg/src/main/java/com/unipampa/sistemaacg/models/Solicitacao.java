@@ -41,6 +41,7 @@ public class Solicitacao{
 
 	private long cargaHorariaSoli;
 
+	@NotEmpty
 	private String status;
 
 	private String profRes;
@@ -49,10 +50,6 @@ public class Solicitacao{
 
 	@ManyToOne
 	private Atividade atividade;
-
-	public boolean verificaTamanho(long tamanho) {
-		return tamanho <= 20;
-	}
 
 	public Solicitacao(){}
 

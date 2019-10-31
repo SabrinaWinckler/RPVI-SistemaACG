@@ -131,18 +131,4 @@ public class AvaliacaoController {
                 "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
 
-
-    //Documentação
-    //lista todos anexos
-    // @GetMapping("/anexos")
-    // public String listUploadedFiles(Model model) throws IOException {
-
-    //     model.addAttribute("files", storageService.loadAll().map(
-    //             path -> MvcUriComponentsBuilder.fromMethodName(SolicitacaoController.class,
-    //                     "serveFile", path.getFileName().toString()).build().toString())
-    //             .collect(Collectors.toList()));
-
-    //     return "uploadForm";
-    // }
-
 }

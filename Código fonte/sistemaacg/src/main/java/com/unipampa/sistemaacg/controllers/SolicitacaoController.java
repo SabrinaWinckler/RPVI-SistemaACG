@@ -2,7 +2,6 @@ package com.unipampa.sistemaacg.controllers;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
@@ -37,7 +36,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -80,6 +78,7 @@ public class SolicitacaoController {
 
         InfosSolicitacaoDTO infos = new InfosSolicitacaoDTO();
         infos.setAtividades(atividadeRepository.findAll());
+        
         //infos.setCurriculo(curriculoRepository.findAll());
         infos.setGrupos(grupoRepository.findAll());
 
@@ -91,25 +90,6 @@ public class SolicitacaoController {
         // Busca no banco pelo id
         Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
         return ResponseEntity.ok(retornableSolicitacao);
-    }
-
-    @PostMapping("/upload")
-    public String postAnexo(@RequestParam("file") MultipartFile file, String nome) throws Exception {
-
-        return storageService.store(file, nome);
-
-    }
-
-
-    @PostMapping("/uploadfiles")
-    public ArrayList postAnexos(@RequestParam("file") MultipartFile files[], String nome) throws Exception {
-        ArrayList<String> filesName = new ArrayList<>();
-        String nomeCaminho;
-        for (MultipartFile string : files) {
-            nomeCaminho = storageService.store(string, nome);
-            filesName.add(nomeCaminho);
-        }
-        return filesName;
     }
 
     @GetMapping("/download/{fileName:.+}")
@@ -130,29 +110,20 @@ public class SolicitacaoController {
     }
 
 
-
-
     @JsonIgnore
     @PostMapping("/")
     public ResponseEntity postSolicitacao(@ModelAttribute SolicitacaoPostDTO solicitacao,  MultipartFile files[]) throws Exception {
 
-        String caminhoNome;
         Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
 
         if(!atividade.isPresent()){
             return ResponseEntity.badRequest().body("A Atividade com o ID "+ solicitacao.getIdAtividade()+" não foi encontrada");
         }
+        
 
         Solicitacao newsolicitacao = new Solicitacao();
         Anexo newAnexo = new Anexo();
         newsolicitacao.setAtividade(atividade.get());
-
- 
-        for (MultipartFile file : files) {
-         if (!newsolicitacao.verificaTamanho(file.getSize())) {
-		 	return ResponseEntity.badRequest().body("O arquivo com "+ file.getSize()+"mb excede o tamanho permitido! Por favor selecione um arquivo com no máximo 20mb");
-        }
-    }
 
         newsolicitacao.setAluno(solicitacao.getAluno());
         newsolicitacao.setCargaHorariaSoli(solicitacao.getCargaHorariaSoli());
@@ -173,10 +144,7 @@ public class SolicitacaoController {
         Solicitacao retornableSolicitacao = solicitacaoRepository.save(newsolicitacao);
         
         for (MultipartFile file : files) {
-            caminhoNome = storageService.store(file, solicitacao.getAluno());
-            String[] arrayString = caminhoNome.split("-", 2);
-            newAnexo.setNome(arrayString[1]);
-            newAnexo.setCaminho(arrayString[0]);
+            newAnexo.setNome(storageService.store(file, solicitacao.getAluno()));
             anexoRepository.save(newAnexo);
         }
 

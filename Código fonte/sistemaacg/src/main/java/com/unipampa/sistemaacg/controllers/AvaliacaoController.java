@@ -129,7 +129,7 @@ public class AvaliacaoController {
         Resource file = storageService.loadAsResource(filename);
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=\"" + file.getFilename() + "\"").body(file);
-    }
+    } 
 
 
     //Documentação

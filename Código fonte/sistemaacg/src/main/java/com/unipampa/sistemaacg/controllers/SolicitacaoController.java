@@ -162,10 +162,11 @@ public class SolicitacaoController {
 
         Date dataAtual = new Date();
         SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-        Date dataTeste = formato.parse(solicitacao.getDataInicio());
+        Date dataInicio = formato.parse(solicitacao.getDataInicio());
+        Date dataFim = formato.parse(solicitacao.getDataFim());
 		newsolicitacao.setDataAtual(dataAtual);
-        newsolicitacao.setDataInicio(dataTeste);
-		newsolicitacao.setDataFim(dataTeste);
+        newsolicitacao.setDataInicio(dataInicio);
+		newsolicitacao.setDataFim(dataFim);
 
 		newsolicitacao.setStatus(Status.PENDENTE.toString());
 

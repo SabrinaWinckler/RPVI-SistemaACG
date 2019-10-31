@@ -70,3 +70,17 @@ export const deleteSolicitacao = async (itemId) => {
             })
 
 }
+
+export const getDocs = (string) => {
+    if(string){
+        var docs = string.split(',')
+        //var docsSize = docs.length
+        // var infos = []
+        // infos.push(docs, docsSize)
+        return docs
+        
+    }else {
+        return null
+    }
+
+}

@@ -28,10 +28,4 @@ public class Observacao {
 	@NotEmpty
     private int ch;
 
-    @ManyToMany
-    @JoinTable(name="doc_has_observacao", joinColumns=
-    {@JoinColumn(name = "id_observacao") }, inverseJoinColumns =
-      {@JoinColumn(name="id_doc_necessario")})
-    List<DocsNecessarios> docsNecessarios;
-
 }

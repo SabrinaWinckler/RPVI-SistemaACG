@@ -173,6 +173,9 @@ const useToolbarStyles = makeStyles(theme => ({
     avatar: {
         margin: theme.spacing(1),
     },
+    typography: {
+        padding: theme.spacing(2),
+      },
 }));
 
 const EnhancedTableToolbar = props => {
@@ -200,6 +203,7 @@ const EnhancedTableToolbar = props => {
     const [selectedDateEnd, setSelectedDateEnd] = useState();
     const [message, setMessage] = useState("Selecione Uma Atividade");
     const [status, setStatus] = useState({ show: false, message: '' })
+    const [anchorEl, setAnchorEl] = useState(null)
 
     const [groups, setGroups] = useState([])
     const [openDialog, setOpenDialog] = useState(false)
@@ -211,6 +215,20 @@ const EnhancedTableToolbar = props => {
         group: '',
         activitie: '',
       });
+    const [open, setOpen] = useState(false)
+
+    const handleClick = event => {
+        setAnchorEl(event.currentTarget)
+        setOpen({ open: open, [event.target.key]: !open });
+    };
+    
+    const handleClosePop = () => {
+        setAnchorEl(null);
+        setOpen(false);
+    };
+    
+    // const open = Boolean(anchorEl);
+    // const id = open ? 'simple-popover' : undefined;
 
     useEffect(() => {
         async function loadSolicitations() {
@@ -508,22 +526,28 @@ const EnhancedTableToolbar = props => {
                                 ) : (
                                     <Grid container direction="column" justify="center" alignItems="flex-start" style={{ width: '45%' }}>
                                         {docs.map((doc, index) => (
-                                            <Grid container direction="row" justify="center" alignItems="center">
+                                            <Grid container direction="row" justify="center" alignItems="center" style={{ width: '100%' }}>
                                                 <input required accept="image/*, .pdf" className={classes.input} onChange={handleFile} id="uploadFile" multiple type="file" />
                                                 <label htmlFor="uploadFile">
                                                     <Button variant="outlined" component="span" className={classes.button} >
-                                                        Comprovante {index + 1}
+                                                        Arquivo {index + 1}
                                                     </Button>
                                                 </label>
-                                                <Popover anchorReference="anchorPosition" anchorPosition={{ top: 180, left: 900 }} anchorOrigin={{
-                                                    vertical: 'top',
-                                                    horizontal: 'left',
-                                                }}
-                                                transformOrigin={{
-                                                    vertical: 'center',
-                                                    horizontal: 'center',
-                                                }} >
-                                                    {doc}
+                                                <Button key={index} variant="contained" onClick={handleClick}>
+                                                    ?
+                                                </Button>
+                                                <Popover key={index} open={open} anchorEl={anchorEl} onClose={handleClosePop}
+                                                    anchorOrigin={{
+                                                        vertical: 'bottom',
+                                                        horizontal: 'center',
+                                                    }}
+                                                    transformOrigin={{
+                                                        vertical: 'top',
+                                                        horizontal: 'center',
+                                                    }} >
+                                                    <Typography className={classes.typography}>
+                                                        {doc}
+                                                    </Typography>
                                                 </Popover>
                                             </Grid>
                                         ))}

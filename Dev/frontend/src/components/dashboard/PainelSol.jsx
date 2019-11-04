@@ -21,7 +21,7 @@ import DescriptionIcon from '@material-ui/icons/Description'
 import GetAppIcon from '@material-ui/icons/GetApp'
 
 import { UserContext } from '../../context/UserContext'
-import { validateName, validateRegistration, validateDate, sendForm, deleteSolicitacao, getDocs } from '../../scripts/scripts'
+import { validateName, validateRegistration, validateDate, sendForm, deleteSolicitacao, getDocs, getActivities } from '../../scripts/scripts'
 
 function getModalStyle() {
     const top = 50
@@ -203,29 +203,19 @@ const EnhancedTableToolbar = props => {
     const [selectedDateEnd, setSelectedDateEnd] = useState();
     const [message, setMessage] = useState("Selecione Uma Atividade");
     const [status, setStatus] = useState({ show: false, message: '' })
-    const [anchorEl, setAnchorEl] = useState(null)
+    const [actSelect, setActSelect] = useState(true)
 
     const [groups, setGroups] = useState([])
     const [openDialog, setOpenDialog] = useState(false)
     const [submitMessage, setSubmitMessage] = useState('')
-    const [key, setKey] = useState()
+    const [groupKey, setGroupKey] = useState()
     const [activities, setActivities] = useState([])
+    const [activitiesByGroup, setActivitiesByGroup] = useState([])
     const [runButtons, setRunButtons] = useState(false)
     const [selectValues, setSelectValues] = useState({
         group: '',
         activitie: '',
       });
-    const [open, setOpen] = useState(false)
-
-    const handleClick = event => {
-        setAnchorEl(event.currentTarget)
-        setOpen({ open: open, [event.target.key]: !open });
-    };
-    
-    const handleClosePop = () => {
-        setAnchorEl(null);
-        setOpen(false);
-    };
     
     // const open = Boolean(anchorEl);
     // const id = open ? 'simple-popover' : undefined;
@@ -234,10 +224,33 @@ const EnhancedTableToolbar = props => {
         async function loadSolicitations() {
           const response = await axios.get('http://localhost:2222/solicitacao/infos/')
           setGroups(response.data.grupos)
+          setActivitiesByGroup(response.data.atividades)
           setActivities(response.data.atividades)
         }
         loadSolicitations()
       }, [])
+
+      useEffect(() => {
+        setActivities(getActivities(activitiesByGroup, groupKey))
+        if(selectValues.group !== ''){
+            setActSelect(false)
+        } 
+
+      }, [selectValues.group, activitiesByGroup, groupKey])
+
+    const handleChangeGroup = event => {
+        setGroupKey(event.target.value)
+        setSelectValues(oldValues => ({
+            ...oldValues,
+            [event.target.name]: event.target.value,
+        }));
+        setValues({ ...values, [event.target.name]: event.target.value });
+        
+      };
+
+      function handleTeste() {
+        console.log(activities)
+      }
 
     const handleChangeSelect = event => {
         setSelectValues(oldValues => ({
@@ -245,8 +258,9 @@ const EnhancedTableToolbar = props => {
           [event.target.name]: event.target.value,
         }));
         setValues({ ...values, [event.target.name]: event.target.value });
+        console.log(activities)
+        console.log(event.target.value)
         let docsLine = getDocs(activities[event.target.value - 1].docsNecessarios)
-        console.log(docsLine)
         if(!docsLine){
             setMessage("Não foi possível verificar a documentação necessária")
             return
@@ -434,7 +448,7 @@ const EnhancedTableToolbar = props => {
                                             <FormControl style={{ width: '35%' }}>
                                                 <InputLabel style={{ position: 'relative' }} htmlFor="groupSelect">Grupo da ACG</InputLabel>
                                                 <Select value={selectValues.group} className={classes.textField} style={{ width: '100%' }}
-                                                onChange={handleChangeSelect}
+                                                onChange={handleChangeGroup}
                                                 inputProps={{
                                                     name: 'group',
                                                     id: 'groupSelect',
@@ -446,7 +460,7 @@ const EnhancedTableToolbar = props => {
                                             </FormControl>
                                             <FormControl style={{ width: '60%' }}>
                                                 <InputLabel style={{ position: 'relative' }} htmlFor="activitieSelect">Atividade</InputLabel>
-                                                <Select value={selectValues.activitie} className={classes.textField} style={{ width: '100%' }}
+                                                <Select disabled={actSelect} value={selectValues.activitie} className={classes.textField} style={{ width: '100%' }}
                                                 onChange={handleChangeSelect}
                                                 inputProps={{
                                                     name: 'activitie',
@@ -533,22 +547,9 @@ const EnhancedTableToolbar = props => {
                                                         Arquivo {index + 1}
                                                     </Button>
                                                 </label>
-                                                <Button key={index} variant="contained" onClick={handleClick}>
-                                                    ?
-                                                </Button>
-                                                <Popover key={index} open={open} anchorEl={anchorEl} onClose={handleClosePop}
-                                                    anchorOrigin={{
-                                                        vertical: 'bottom',
-                                                        horizontal: 'center',
-                                                    }}
-                                                    transformOrigin={{
-                                                        vertical: 'top',
-                                                        horizontal: 'center',
-                                                    }} >
-                                                    <Typography className={classes.typography}>
-                                                        {doc}
-                                                    </Typography>
-                                                </Popover>
+                                                <Typography className={classes.typography}>
+                                                    {doc}
+                                                </Typography>
                                             </Grid>
                                         ))}
                                     </Grid>
@@ -556,6 +557,9 @@ const EnhancedTableToolbar = props => {
                                 </Grid>
                                 <Button className={classes.button} onClick={handleSubmit} >
                                     Enviar
+                                </Button>
+                                <Button className={classes.button} onClick={handleTeste} >
+                                    testar
                                 </Button>
                             </Grid>
                         </form>

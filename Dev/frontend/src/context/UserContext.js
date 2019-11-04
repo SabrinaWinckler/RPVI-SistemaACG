@@ -9,7 +9,6 @@ export default ({ children }) => {
     const [user, setUser] = useState(currentUser)
 
     useEffect(() => {
-            console.log(user);
             window.sessionStorage.setItem('user', user);
         },
         [user]

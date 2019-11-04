@@ -210,6 +210,7 @@ const EnhancedTableToolbar = props => {
     const [submitMessage, setSubmitMessage] = useState('')
     const [groupKey, setGroupKey] = useState()
     const [activities, setActivities] = useState([])
+    const [docsReq, setDocsReq] = useState([])
     const [activitiesByGroup, setActivitiesByGroup] = useState([])
     const [runButtons, setRunButtons] = useState(false)
     const [selectValues, setSelectValues] = useState({
@@ -224,6 +225,7 @@ const EnhancedTableToolbar = props => {
         async function loadSolicitations() {
           const response = await axios.get('http://localhost:2222/solicitacao/infos/')
           setGroups(response.data.grupos)
+          setDocsReq(response.data.docsNecessarios)
           setActivitiesByGroup(response.data.atividades)
           setActivities(response.data.atividades)
         }

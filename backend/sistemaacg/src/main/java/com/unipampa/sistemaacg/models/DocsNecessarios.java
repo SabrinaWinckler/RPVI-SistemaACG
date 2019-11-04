@@ -30,8 +30,13 @@ public class DocsNecessarios {
     @NotNull
     String nome;
 
-    @ManyToOne
-    Atividade atividade;
+
+    @ManyToMany
+    @JoinTable(name="doc_has_atividade", joinColumns=
+    {@JoinColumn(name = "id_doc_necessario") }, inverseJoinColumns =
+      {@JoinColumn(name="id_atividade")})
+    List<Atividade> atividade;
+
 
     @ManyToMany
     @JoinTable(name="doc_has_observacao", joinColumns=

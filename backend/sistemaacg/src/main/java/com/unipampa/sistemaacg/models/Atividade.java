@@ -10,6 +10,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.ManyToMany;
+import javax.persistence.JoinTable;
+import javax.persistence.JoinColumn;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 
@@ -31,12 +34,10 @@ public class Atividade {
 	@ManyToOne
 	private Grupo grupo;
 
-	
-    @ManyToMany
-    @JoinTable(name="atividade_has_doc", joinColumns=
-    {@JoinColumn(name = "id_atividade") }, inverseJoinColumns =
-      {@JoinColumn(name="id_doc_necessario")})
-    List<DocsNecessarios> docs;
-
+	@ManyToMany
+	@JoinTable(name = "atividade_has_doc", 
+	joinColumns = { @JoinColumn(name = "id_atividade") }, 
+	inverseJoinColumns = {@JoinColumn(name = "id_doc_necessario") })
+	List<DocsNecessarios> docs;
 
 }

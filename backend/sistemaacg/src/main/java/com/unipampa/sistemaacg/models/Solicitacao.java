@@ -1,15 +1,20 @@
 package com.unipampa.sistemaacg.models;
 
 import java.util.Date;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.Data;
 
@@ -50,9 +55,13 @@ public class Solicitacao{
 	@ManyToOne
 	private Atividade atividade;
 
-	public boolean verificaTamanho(long tamanho) {
-		return tamanho <= 20;
-	}
+	@OneToMany(mappedBy = "solicitacao", cascade=CascadeType.ALL)
+	@JsonManagedReference
+	private List<Anexo> anexos;
+
+	@OneToOne(mappedBy = "solicitacao")
+	@JsonManagedReference
+	private AvaliacaoSolicitacao avaliacao;
 
 	public Solicitacao(){}
 

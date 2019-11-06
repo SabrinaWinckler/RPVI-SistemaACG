@@ -8,6 +8,8 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import lombok.Data;
 
 /**
@@ -22,16 +24,18 @@ public class Anexo {
 	 private long idAnexo;
 
     @ManyToOne
+    @JsonBackReference
     private Solicitacao solicitacao;
+
+
+    @ManyToOne
+    private DocsNecessarios docs;
 
     @NotNull
     private String nome;
 
-    
+
     @Column(name = "caminho")
     private String caminho;
-
-    
-
 
 }

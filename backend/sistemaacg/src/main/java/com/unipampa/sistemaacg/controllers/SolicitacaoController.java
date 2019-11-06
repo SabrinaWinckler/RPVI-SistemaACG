@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unipampa.sistemaacg.dto.InfosSolicitacaoDTO;
@@ -139,7 +140,7 @@ public class SolicitacaoController {
 
     @JsonIgnore
     @PostMapping("/")
-    public ResponseEntity postSolicitacao(@ModelAttribute SolicitacaoPostDTO solicitacao,  MultipartFile files[]) throws Exception {
+    public ResponseEntity postSolicitacao(@Valid @ModelAttribute SolicitacaoPostDTO solicitacao,  MultipartFile files[]) throws Exception {
 
         String caminhoNome;
         Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
@@ -151,14 +152,6 @@ public class SolicitacaoController {
         Solicitacao newsolicitacao = new Solicitacao();
         Anexo newAnexo = new Anexo();
         newsolicitacao.setAtividade(atividade.get());
-
- 
-        for (MultipartFile file : files) {
-         if (!newsolicitacao.verificaTamanho(file.getSize())) {
-		 	return ResponseEntity.badRequest().body("O arquivo com "+ file.getSize()+"mb excede o tamanho permitido! Por favor selecione um arquivo com no máximo 20mb");
-        }
-    }
-
         newsolicitacao.setAluno(solicitacao.getAluno());
         newsolicitacao.setCargaHorariaSoli(solicitacao.getCargaHorariaSoli());
         newsolicitacao.setDescricao(solicitacao.getDescricao());
@@ -175,7 +168,7 @@ public class SolicitacaoController {
 		newsolicitacao.setStatus(Status.PENDENTE.toString());
 
         Solicitacao retornableSolicitacao = solicitacaoRepository.save(newsolicitacao);
-        
+
         for (MultipartFile file : files) {
             caminhoNome = storageService.store(file, solicitacao.getAluno());
             String[] arrayString = caminhoNome.split("-", 2);

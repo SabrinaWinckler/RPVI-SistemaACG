@@ -112,6 +112,8 @@ public class SolicitacaoController {
             nomeCaminho = storageService.store(string, nome);
             filesName.add(nomeCaminho);
         }
+
+        
         return filesName;
     }
 

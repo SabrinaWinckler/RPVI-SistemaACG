@@ -10,10 +10,8 @@ VALUES(1, "Evento_Pesquisa", "detalhamento_1", 1), (2, "Extensão_Amanda","detal
 INSERT INTO docs_necessarios(docs_necessarios.id_doc_necessario, docs_necessarios.nome)
 VALUES(1, "Comprovante de Evento"), (2, "Comprovante de extensão"), (3, "Comprovante de participação em pesquisa"), (4, "Comprovante de ensino"), (5, "PROVA_ADES_DOCS_NECESSÁRIOS");
 
-
 INSERT INTO atividade_has_doc(atividade_has_doc.id_atividade, atividade_has_doc.id_doc_necessario)
 VALUES(1, 1), (2,2), (3,3), (4,4), (5,5);
-
 
 INSERT INTO solicitacao(solicitacao.id_solicitacao, solicitacao.carga_horaria_soli, solicitacao.data_atual, solicitacao.data_fim, solicitacao.data_inicio, solicitacao.descricao, solicitacao.local, solicitacao.matricula, solicitacao.nome_aluno, solicitacao.prof_res, solicitacao.status, solicitacao.atividade_id_atividade)
 VALUES (1, 200, "2019-12-3", "2019-12-4", "2012-12-3", "SIEPE", "Santana do Livramento", 1701570595, "Matheus M", "Bernadino", "Pendente", 1), (2, 50, "2019-12-1", "2019-12-4", "2012-12-2", "ERAD", "Santa Maria", 1701570595, "Matheus M", "AFLorenzon", "Pendente", 1), (3, 10, "2019-10-3", "2019-9-4", "2012-12-3", "VLSI", "Cusco, Peru", 1701570595, "Matheus M", "Nulo :D", "Deferido", 2);

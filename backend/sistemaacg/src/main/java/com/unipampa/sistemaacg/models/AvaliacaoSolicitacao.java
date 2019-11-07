@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.NotBlank;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -21,20 +22,19 @@ public class AvaliacaoSolicitacao{
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private long idAvaliacao;
 
-    private String parecer;
+    private String justificativa;//obrigatório if indeferido
 
 	//@NotEmpty
 	@JsonFormat(pattern="yyyy-MM-dd")
 	private Date dataAvaliacao;//atual
 
-    //@NotEmpty
-	private long cargaHorariaAtribuida;
+	private long cargaHorariaAtribuida;//obrigatório if deferido
 
 	@OneToOne
 	@JsonBackReference
+	@NotBlank
     private Solicitacao solicitacao;
 
 	public AvaliacaoSolicitacao(){}
-
 
 }

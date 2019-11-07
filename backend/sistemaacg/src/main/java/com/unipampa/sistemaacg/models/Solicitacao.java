@@ -40,9 +40,9 @@ public class Solicitacao{
 	@Size(min = 3)
 	private String nomeAluno;
 
-	@Size(min = 10, max = 10, message = "A matrícula é inválida.")
+	@Size(min = 5, max = 10, message = "A matrícula é inválida.")
 	@NotBlank(message = "A matrícula é obrigatória")
-	@Pattern(regexp = "[0-9]?[0-9]?0?[0-9]*$")//Padrão da matrícula não validado com a coordenaçao
+	@Pattern(regexp = "[0-9]?[0-9]?0?[1||2][0-9]*$")//Padrão da matrícula não validado com a coordenaçao
 	private long matricula;
 
 	@JsonFormat(pattern="yyyy-MM-dd")

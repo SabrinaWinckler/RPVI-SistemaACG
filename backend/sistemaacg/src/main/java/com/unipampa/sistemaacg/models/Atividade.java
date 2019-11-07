@@ -39,7 +39,9 @@ public class Atividade {
     @JoinTable(name="atividade_has_doc", joinColumns=
     {@JoinColumn(name = "id_atividade") }, inverseJoinColumns =
       {@JoinColumn(name="id_doc_necessario")})
-    List<DocsNecessarios> docs;
+	List<DocsNecessarios> docs;
+
+    private int ch;
 
 
     // @OneToMany

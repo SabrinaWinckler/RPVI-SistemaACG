@@ -37,8 +37,4 @@ public class Anexo {
     @NotNull
     private String nome;
 
-
-    @Column(name = "caminho")
-    private String caminho;
-
 }

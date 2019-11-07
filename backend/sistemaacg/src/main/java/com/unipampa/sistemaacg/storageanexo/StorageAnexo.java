@@ -48,7 +48,7 @@ public class StorageAnexo implements StorageService {
             throw new StorageException("Falha ao armazenar " + file.getOriginalFilename(), e);
         }
 
-        return this.rootLocation.toString() + "-" + fileName;
+        return fileName;
     }
 
     @Override

@@ -47,7 +47,7 @@ public class StorageAnexo implements StorageService {
         } catch (IOException e) {
             throw new StorageException("Falha ao armazenar " + file.getOriginalFilename(), e);
         }
-
+         
         return fileName;
     }
 

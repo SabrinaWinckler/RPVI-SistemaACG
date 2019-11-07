@@ -76,12 +76,13 @@ public class AvaliacaoController {
             avaliada.setStatus(Status.INDEFERIDO.toString());
         }
         avaliada.setIdSolicitacao(id);
+        avaliada.setAtividade(avaliacao.getSolicitacao().getAtividade());
         solicitacaoRepository.save(avaliada);
 
         newavaliacao.setCargaHorariaAtribuida(avaliacao.getCargaHorariaAtribuida());
         newavaliacao.setDataAvaliacao(dataAtual);
         newavaliacao.setSolicitacao(avaliada);
-        newavaliacao.setParecer(avaliacao.getParecer());
+        newavaliacao.setJustificativa(avaliacao.getParecer());
 
         AvaliacaoSolicitacao retornableAvaliacao = avaliacaoRepository.save(newavaliacao);
 

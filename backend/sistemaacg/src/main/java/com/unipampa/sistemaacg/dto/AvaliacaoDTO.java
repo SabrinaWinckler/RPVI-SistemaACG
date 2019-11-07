@@ -1,5 +1,7 @@
 package com.unipampa.sistemaacg.dto;
 
+import com.unipampa.sistemaacg.models.Solicitacao;
+
 import lombok.Data;
 
 /**
@@ -9,7 +11,7 @@ import lombok.Data;
 public class AvaliacaoDTO {
 
 	private long cargaHorariaAtribuida;
-    private long solicitacao;
+    private Solicitacao solicitacao;
     private String parecer;
     private boolean deferido;
 

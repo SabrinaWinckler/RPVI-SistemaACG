@@ -152,7 +152,8 @@ public class SolicitacaoController {
         Solicitacao newsolicitacao = new Solicitacao();
         Anexo newAnexo = new Anexo();
         newsolicitacao.setAtividade(atividade.get());
-        newsolicitacao.setAluno(solicitacao.getAluno());
+        newsolicitacao.setNomeAluno(solicitacao.getAluno());
+        newsolicitacao.setMatricula(solicitacao.getMatricula());
         newsolicitacao.setCargaHorariaSoli(solicitacao.getCargaHorariaSoli());
         newsolicitacao.setDescricao(solicitacao.getDescricao());
         newsolicitacao.setLocal(solicitacao.getLocal());

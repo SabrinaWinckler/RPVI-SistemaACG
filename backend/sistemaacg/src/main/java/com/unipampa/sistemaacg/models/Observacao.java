@@ -15,17 +15,10 @@ import lombok.Data;
 /**
  * Observacao
  */
-@Entity
-@Data
+
 public class Observacao {
-    @Id
-	@NotEmpty
-	@GeneratedValue
     private long idObservacao;
-
 	private String observacao;
-
-	@NotEmpty
     private int ch;
 
 }

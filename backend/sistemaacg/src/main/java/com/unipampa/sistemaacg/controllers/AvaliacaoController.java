@@ -8,7 +8,9 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unipampa.sistemaacg.dto.AvaliacaoDTO;
+import com.unipampa.sistemaacg.dto.SolicitacaoPostDTO;
 import com.unipampa.sistemaacg.models.Anexo;
+import com.unipampa.sistemaacg.models.Atividade;
 import com.unipampa.sistemaacg.models.AvaliacaoSolicitacao;
 import com.unipampa.sistemaacg.models.Solicitacao;
 import com.unipampa.sistemaacg.models.Status;
@@ -123,7 +125,7 @@ public class AvaliacaoController {
     }
 
     //pega um anexo a partir do nome do anexo, só chamar isso para cada anexo na view, ele mostra o pdf no navegador
-    @GetMapping("/files/{filename:.+}")
+    @GetMapping("/file/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {
 
@@ -132,18 +134,13 @@ public class AvaliacaoController {
                 "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
 
+    public String getAnexoByDoc(SolicitacaoPostDTO solicitacao){
+        Atividade atividade = atividadeRepository.findById(solicitacao.getIdAtividade()).get();
+        
+        return null;
 
-    //Documentação
-    //lista todos anexos
-    // @GetMapping("/anexos")
-    // public String listUploadedFiles(Model model) throws IOException {
+    }
 
-    //     model.addAttribute("files", storageService.loadAll().map(
-    //             path -> MvcUriComponentsBuilder.fromMethodName(SolicitacaoController.class,
-    //                     "serveFile", path.getFileName().toString()).build().toString())
-    //             .collect(Collectors.toList()));
 
-    //     return "uploadForm";
-    // }
 
 }

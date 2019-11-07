@@ -32,7 +32,7 @@ public class Anexo {
 
     @ManyToOne
     @NotBlank
-    private DocsNecessarios docs;
+    private DocsNecessarios doc;
 
     @NotNull
     private String nome;

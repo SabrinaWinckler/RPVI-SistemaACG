@@ -117,24 +117,6 @@ public class SolicitacaoController {
         return filesName;
     }
 
-    @GetMapping("/download/{fileName:.+}")
-    public ResponseEntity<Resource> httpGetDownloadFile(@PathVariable String fileName, HttpServletRequest request) {
-        Resource resource = storageService.loadAsResource(fileName);
-        String contentType = null;
-        try {
-            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-        } catch (IOException ex) {
-            logger.info("Could not determine file type.");
-        }
-        if (contentType == null) {
-            contentType = "application/octet-stream";
-        }
-        return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
-    }
-
-
     @JsonIgnore
     @PostMapping("/")
     public ResponseEntity postSolicitacao(@Valid @ModelAttribute SolicitacaoPostDTO solicitacao, MultipartFile files[]) throws Exception {
@@ -166,8 +148,10 @@ public class SolicitacaoController {
 
         Solicitacao retornableSolicitacao = solicitacaoRepository.save(newsolicitacao);
 
-        for (MultipartFile file : files) {
-            newAnexo.setNome(storageService.store(file, solicitacao.getAluno()));
+
+        for (int j = 0; j < files.length; j++) {
+            newAnexo.setNome(storageService.store(files[j], solicitacao.getAluno()));
+            newAnexo.setDoc(atividade.get().getDocs().get(j));
             anexoRepository.save(newAnexo);
         }
 

@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unipampa.sistemaacg.dto.InfosSolicitacaoDTO;
@@ -113,7 +114,7 @@ public class SolicitacaoController {
             filesName.add(nomeCaminho);
         }
 
-        
+
         return filesName;
     }
 

@@ -29,7 +29,7 @@ public class Solicitacao{
 	private long idSolicitacao;
 
 	@NotEmpty
-	@Range(min = 3)
+	@Size(min = 3)
 	private String nomeAluno;
 
 	@Range(min = 5, message = "A matrícula é inválida.")

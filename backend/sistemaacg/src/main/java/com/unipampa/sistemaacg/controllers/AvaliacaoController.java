@@ -68,7 +68,7 @@ public class AvaliacaoController {
     @PostMapping("/{id}")
     public ResponseEntity postAvaliacao(@RequestBody AvaliacaoDTO avaliacao, @PathVariable long id){
 
-        AvaliacaoSolicitacao newavaliacao = new AvaliacaoSolicitacao();
+        AvaliacaoSolicitacao newAvaliacao = new AvaliacaoSolicitacao();
         Date dataAtual = new Date();
         Solicitacao avaliada = solicitacaoRepository.findById(id).get();
 
@@ -78,15 +78,16 @@ public class AvaliacaoController {
             avaliada.setStatus(Status.INDEFERIDO.toString());
         }
         avaliada.setIdSolicitacao(id);
-        avaliada.setAtividade(solicitacaoRepository.findById(id).get().getAtividade());
+        avaliada.setAtividade(atividadeRepository.findById(avaliacao.getIdAtividade()).get());
         solicitacaoRepository.save(avaliada);
 
-        newavaliacao.setCargaHorariaAtribuida(avaliacao.getCargaHorariaAtribuida());
-        newavaliacao.setDataAvaliacao(dataAtual);
-        newavaliacao.setSolicitacao(avaliada);
-        newavaliacao.setJustificativa(avaliacao.getParecer());
+        newAvaliacao.setCargaHorariaAtribuida(avaliacao.getCargaHorariaAtribuida());
+        newAvaliacao.setDataAvaliacao(dataAtual);
+        newAvaliacao.setSolicitacao(avaliada);
+        newAvaliacao.setJustificativa(avaliacao.getParecer());
 
-        AvaliacaoSolicitacao retornableAvaliacao = avaliacaoRepository.save(newavaliacao);
+
+        AvaliacaoSolicitacao retornableAvaliacao = avaliacaoRepository.save(newAvaliacao);
 
         return ResponseEntity.ok(retornableAvaliacao);
     }

@@ -11,7 +11,7 @@ import lombok.Data;
 public class AvaliacaoDTO {
 
 	private long cargaHorariaAtribuida;
-    private Solicitacao solicitacao;
+    private long idSolicitacao;
     private String parecer;
     private boolean deferido;
 

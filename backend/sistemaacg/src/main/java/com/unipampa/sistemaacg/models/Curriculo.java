@@ -23,7 +23,5 @@ public class Curriculo {
 	@NotEmpty
 	private boolean status;
 
-	//@OneToMany
-	//private List<Grupo> grupo;
 
 }

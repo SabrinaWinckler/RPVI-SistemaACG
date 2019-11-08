@@ -78,7 +78,7 @@ public class AvaliacaoController {
             avaliada.setStatus(Status.INDEFERIDO.toString());
         }
         avaliada.setIdSolicitacao(id);
-        avaliada.setAtividade(avaliacao.getSolicitacao().getAtividade());
+        avaliada.setAtividade(solicitacaoRepository.findById(id).get().getAtividade());
         solicitacaoRepository.save(avaliada);
 
         newavaliacao.setCargaHorariaAtribuida(avaliacao.getCargaHorariaAtribuida());

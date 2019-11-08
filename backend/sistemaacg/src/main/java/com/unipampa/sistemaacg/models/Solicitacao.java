@@ -13,9 +13,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.*;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
@@ -25,6 +25,7 @@ import org.hibernate.validator.constraints.Range;
 public class Solicitacao{
 
 	@Id
+	@NotNull
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private long idSolicitacao;
 
@@ -64,6 +65,7 @@ public class Solicitacao{
 	private List<Anexo> anexos;
 
 	@OneToOne(mappedBy = "solicitacao")
+	@NotNull
 	@JsonManagedReference
 	private AvaliacaoSolicitacao avaliacao;
 

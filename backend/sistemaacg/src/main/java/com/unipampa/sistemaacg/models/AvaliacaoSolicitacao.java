@@ -2,12 +2,9 @@ package com.unipampa.sistemaacg.models;
 
 import java.util.Date;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -19,6 +16,7 @@ import lombok.Data;
 public class AvaliacaoSolicitacao{
 
 	@Id
+	@NotNull
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private long idAvaliacao;
 
@@ -30,10 +28,24 @@ public class AvaliacaoSolicitacao{
 	private long cargaHorariaAtribuida;//obrigatório if deferido
 
 	@OneToOne
+	@JoinColumn(name="id_avaliacao", unique=true)
 	@JsonBackReference
 	@NotNull
     private Solicitacao solicitacao;
 
 	public AvaliacaoSolicitacao(){}
+
+	public void verificaDeferimento() throws Exception {
+		if(this.solicitacao.getStatus().equalsIgnoreCase("DEFERIDO")){
+			if(this.cargaHorariaAtribuida <= 0){
+				throw new Exception("É necessário atribuir carga horária quando a solicitação é deferida");
+			}
+		}else if(this.solicitacao.getStatus().equalsIgnoreCase("INDEFERIDO")){
+			if(this.justificativa == null || this.justificativa.isEmpty()){
+				throw new Exception("É necessário informar a justificativa do indeferimento");
+			}
+		}
+
+	}
 
 }

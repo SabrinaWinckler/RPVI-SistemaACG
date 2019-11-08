@@ -66,34 +66,43 @@ public class AvaliacaoController {
 
     @JsonIgnore
     @PostMapping("/{id}")
-    public ResponseEntity postAvaliacao(@RequestBody AvaliacaoDTO avaliacao, @PathVariable long id){
+    public ResponseEntity postAvaliacao(@RequestBody AvaliacaoDTO avaliacao, @PathVariable long id) throws Exception {
 
         AvaliacaoSolicitacao newAvaliacao = new AvaliacaoSolicitacao();
         Date dataAtual = new Date();
+        //Resolver erro STACKOVERFLOW.
         Solicitacao avaliada = solicitacaoRepository.findById(id).get();
-
-        if(avaliacao.isDeferido()){
+        String status = avaliada.getStatus();
+        if (status.equals("Deferido") || status.equals("Indeferido")) {
+            throw new Exception("LOL");
+        }
+        if (avaliacao.isDeferido()) {
             avaliada.setStatus(Status.DEFERIDO.toString());
-        }else{
+        } else {
             avaliada.setStatus(Status.INDEFERIDO.toString());
         }
         avaliada.setIdSolicitacao(id);
         avaliada.setAtividade(atividadeRepository.findById(avaliacao.getIdAtividade()).get());
         solicitacaoRepository.save(avaliada);
-
         newAvaliacao.setCargaHorariaAtribuida(avaliacao.getCargaHorariaAtribuida());
         newAvaliacao.setDataAvaliacao(dataAtual);
         newAvaliacao.setSolicitacao(avaliada);
+
         newAvaliacao.setJustificativa(avaliacao.getParecer());
+        try {
+            newAvaliacao.verificaDeferimento();
+        } catch (Exception e) {
+            return ResponseEntity.ok("Não foi possível realizar a avaliação, pois: " + e.getMessage());
 
-
+        }
         AvaliacaoSolicitacao retornableAvaliacao = avaliacaoRepository.save(newAvaliacao);
 
         return ResponseEntity.ok(retornableAvaliacao);
     }
 
     @DeleteMapping(value = "/{id}")
-    public @ResponseBody ResponseEntity<Optional<AvaliacaoSolicitacao>> deleteAvaliacaobyId(@PathVariable long id) {
+    public @ResponseBody
+    ResponseEntity<Optional<AvaliacaoSolicitacao>> deleteAvaliacaobyId(@PathVariable long id) {
         // Busca no banco pelo id
         Optional<AvaliacaoSolicitacao> retornableAvaliacao = avaliacaoRepository.findById(id);
         avaliacaoRepository.deleteById(id);
@@ -103,7 +112,7 @@ public class AvaliacaoController {
     }
 
     @GetMapping(value = "/infos/{id}") // get infos para avaliacao
-    public HashMap<Solicitacao,List<String>> getInfos(@PathVariable long id) {
+    public HashMap<Solicitacao, List<String>> getInfos(@PathVariable long id) {
         // Busca no banco pelo id
         Solicitacao retornableSolicitacao = solicitacaoRepository.findById(id).get();
 
@@ -111,10 +120,10 @@ public class AvaliacaoController {
 
         List<String> anexosDaSolicitacao = new ArrayList<>();
 
-        HashMap<Solicitacao,List<String>> retorno = new HashMap<>();
+        HashMap<Solicitacao, List<String>> retorno = new HashMap<>();
 
-        for(Anexo anexo: anexos){
-            if(anexo.getSolicitacao().equals(retornableSolicitacao)){
+        for (Anexo anexo : anexos) {
+            if (anexo.getSolicitacao().equals(retornableSolicitacao)) {
                 anexosDaSolicitacao.add(anexo.getNome());
 
             }
@@ -125,23 +134,23 @@ public class AvaliacaoController {
         return retorno;
     }
 
-    //pega um anexo a partir do nome do anexo, só chamar isso para cada anexo na view, ele mostra o pdf no navegador
+    // pega um anexo a partir do nome do anexo, só chamar isso para cada anexo na
+    // view, ele mostra o pdf no navegador
     @GetMapping("/file/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {
 
         Resource file = storageService.loadAsResource(filename);
-        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + file.getFilename() + "\"").body(file);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+                .body(file);
     }
 
-    public String getAnexoByDoc(SolicitacaoPostDTO solicitacao){
+    public String getAnexoByDoc(SolicitacaoPostDTO solicitacao) {
         Atividade atividade = atividadeRepository.findById(solicitacao.getIdAtividade()).get();
-        
+
         return null;
 
     }
-
-
 
 }

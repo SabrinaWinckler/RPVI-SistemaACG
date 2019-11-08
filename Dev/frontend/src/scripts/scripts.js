@@ -47,7 +47,7 @@ export const sendForm = async (data, files) => {
     _.forEach(data, (value, index)=>{
         formData.append(index, value);
     })
-    formData.append("files", getFilesList(files))
+    formData.append("file", getFilesList(files))
     console.log(formData)
     // const blob = new Blob([file], {
     //     type: 'application/json'

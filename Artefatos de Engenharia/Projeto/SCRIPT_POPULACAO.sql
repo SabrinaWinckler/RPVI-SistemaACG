@@ -1,5 +1,5 @@
-INSERT INTO curriculo (curriculo.id_curriculo, curriculo.ano, curriculo.status)
-VALUES(1, 2019, 1), (2, 2010, 2);
+﻿INSERT INTO curriculo (curriculo.id_curriculo, curriculo.ano, curriculo.status)
+VALUES(1, 2019, 1), (2, 2010, 1);
 
 INSERT INTO grupo(grupo.id_grupo, grupo.nome, grupo.curriculo_id_curriculo)
 VALUES(1, "Pesquisa", 1), (2, "Extensão", 1), (3, "Ensino", 1), (4, "Culturais", 1), (5, "ADES", 2);

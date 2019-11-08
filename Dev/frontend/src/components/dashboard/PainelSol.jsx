@@ -180,11 +180,12 @@ const useToolbarStyles = makeStyles(theme => ({
 
 const EnhancedTableToolbar = props => {
     const classes = useToolbarStyles();
+    let fileList = []
     const { numSelected, selectedRow } = props;
     const { user } = useContext(UserContext)
     const [modalStyle] = useState(getModalStyle)
     const [openModal, setOpenModal] = useState(false)
-    const [file, setFile] = useState([])
+    const [files, setFiles] = useState([])
     const [docs, setDocs] = useState([])
     const [values, setValues] = useState({
         location: 'unipampa',
@@ -250,9 +251,10 @@ const EnhancedTableToolbar = props => {
         
       };
 
-      function handleTeste() {
-        console.log(activities)
-      }
+    //   function handleTeste() {
+    //     console.log(fileList)
+    //     console.log(docs)
+    //   }
 
     const handleChangeSelect = event => {
         setSelectValues(oldValues => ({
@@ -260,9 +262,9 @@ const EnhancedTableToolbar = props => {
           [event.target.name]: event.target.value,
         }));
         setValues({ ...values, [event.target.name]: event.target.value });
-        console.log(activities)
-        console.log(event.target.value)
-        let docsLine = getDocs(activities[event.target.value - 1].docsNecessarios)
+        // console.log(activities)
+        // console.log(event.target.value)
+        let docsLine = getDocs(activities, event.target.value)
         if(!docsLine){
             setMessage("Não foi possível verificar a documentação necessária")
             return
@@ -272,8 +274,29 @@ const EnhancedTableToolbar = props => {
         }
       };
 
-    const handleFile = event =>  {
-        setFile(event.target.files[0])
+    function handleFile (event){
+        if(fileList.length === 0){
+            const fileData = ({
+                idDoc: event.target.id,
+                file: event.target.files[0]
+            })
+            fileList.push(fileData)
+        } else {
+            let index
+            for (index = 0; index < fileList.length; index++) {
+                if(fileList[index].idDoc === event.target.id){
+                    fileList[index].file = event.target.files[0]
+                    return
+                }
+            }
+            const fileData = ({
+                idDoc: event.target.id,
+                file: event.target.files[0]
+            })
+            fileList.push(fileData)
+        }
+        // console.log(fileList)
+        //setFiles(event.target.files[0])
     }
 
     const handleDateChangeStart = date => {
@@ -353,12 +376,13 @@ const EnhancedTableToolbar = props => {
             setStatus({ show: true, message: 'Número de Matrícula Inválido!' })
             return
         }
-        if(file === null){
-            setStatus({ show: true, message: 'Você precisa anexar pelo menos um arquivo!' })
+        if(fileList === null){
+            setStatus({ show: true, message: 'Você precisa anexar o(s) arquivo(s) necessário(s)!' })
         }
         var data = {
             local: values.location,
             aluno: values.name,
+            matricula: values.registration,
             dataInicio: values.dateStart,
             dataFim: values.dateEnd,
             cargaHorariaSoli: values.requestedWorkload,
@@ -366,13 +390,11 @@ const EnhancedTableToolbar = props => {
             descricao: values.description,
             idAtividade: values.activitie.toString()
         }
-        console.log(JSON.stringify(data), file)
-        const response = await sendForm(data, file)
-        
-        
+        console.log(JSON.stringify(data), fileList)
+        const response = await sendForm(data, fileList)
+        console.log(response)
         //setSubmitMessage('Solicitação Realizada com Sucesso!')
         //handleOpen()
-        
     }
 
     return (
@@ -540,18 +562,22 @@ const EnhancedTableToolbar = props => {
                                         {message}
                                     </Typography>
                                 ) : (
-                                    <Grid container direction="column" justify="center" alignItems="flex-start" style={{ width: '45%' }}>
+                                    <Grid container direction="column" justify="center" alignItems="flex-start" style={{ width: '100%' }}>
                                         {docs.map((doc, index) => (
                                             <Grid container direction="row" justify="center" alignItems="center" style={{ width: '100%' }}>
-                                                <input required accept="image/*, .pdf" className={classes.input} onChange={handleFile} id="uploadFile" multiple type="file" />
-                                                <label htmlFor="uploadFile">
-                                                    <Button variant="outlined" component="span" className={classes.button} >
-                                                        Arquivo {index + 1}
-                                                    </Button>
-                                                </label>
-                                                <Typography className={classes.typography}>
-                                                    {doc}
-                                                </Typography>
+                                                <Grid item xs={6} style={{ maxWidth: '30%' }}>
+                                                    <label htmlFor={doc.idDocNecessario}>
+                                                        <Button variant="outlined" component="span" className={classes.button} style={{ padding: '5% 13%' }}>
+                                                            Arquivo {index + 1}
+                                                        <input required accept="image/*, .pdf" className={classes.input} onChange={(e) => {handleFile(e)}} id={doc.idDocNecessario} multiple type="file" />
+                                                        </Button>
+                                                    </label>
+                                                </Grid>
+                                                <Grid item xs={6}>
+                                                    <Typography className={classes.typography}>
+                                                        {doc.nome}
+                                                    </Typography>
+                                                </Grid>
                                             </Grid>
                                         ))}
                                     </Grid>
@@ -560,9 +586,9 @@ const EnhancedTableToolbar = props => {
                                 <Button className={classes.button} onClick={handleSubmit} >
                                     Enviar
                                 </Button>
-                                <Button className={classes.button} onClick={handleTeste} >
+                                {/* <Button className={classes.button} onClick={handleTeste} >
                                     testar
-                                </Button>
+                                </Button> */}
                             </Grid>
                         </form>
                         <Dialog open={openDialog} onClose={handleClose} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description" >

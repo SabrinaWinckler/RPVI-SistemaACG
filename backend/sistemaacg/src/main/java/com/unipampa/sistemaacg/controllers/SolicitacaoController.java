@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unipampa.sistemaacg.dto.InfosSolicitacaoDTO;
@@ -74,13 +75,16 @@ public class SolicitacaoController {
     public SolicitacaoController(StorageService storageService) {
         this.storageService = storageService;
     }
+
     @GetMapping(value = "") // Lista de solicitações no formato JSON - localhost:8080/solicitacao/
-    public @ResponseBody ResponseEntity<Iterable<Solicitacao>> getSolitacoes() {
+    public @ResponseBody
+    ResponseEntity<Iterable<Solicitacao>> getSolitacoes() {
         Iterable<Solicitacao> retornableSolicitacoes = solicitacaoRepository.findAll();
         return ResponseEntity.ok(retornableSolicitacoes);
     }
 
-    @GetMapping(value = "/infos") // Lista de atividades, grupo e curriculo no formato JSON -  // localhost:8080/solicitacao/infos/
+    @GetMapping(value = "/infos")
+    // Lista de atividades, grupo e curriculo no formato JSON -  // localhost:8080/solicitacao/infos/
     public InfosSolicitacaoDTO getInfos() {
 
         InfosSolicitacaoDTO infos = new InfosSolicitacaoDTO();
@@ -93,17 +97,11 @@ public class SolicitacaoController {
     }
 
     @GetMapping(value = "/{id}") // get uma solicitação
-    public @ResponseBody ResponseEntity<Optional<Solicitacao>> getSolicitacaobyId(@PathVariable long id) {
+    public @ResponseBody
+    ResponseEntity<Optional<Solicitacao>> getSolicitacaobyId(@PathVariable long id) {
         // Busca no banco pelo id
         Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
         return ResponseEntity.ok(retornableSolicitacao);
-    }
-
-    @PostMapping("/upload")
-    public String postAnexo(@RequestParam("file") MultipartFile file, String nome) throws Exception {
-
-        return storageService.store(file, nome);
-
     }
 
 
@@ -115,38 +113,19 @@ public class SolicitacaoController {
             nomeCaminho = storageService.store(string, nome);
             filesName.add(nomeCaminho);
         }
+
+
         return filesName;
     }
 
-    @GetMapping("/download/{fileName:.+}")
-    public ResponseEntity<Resource> httpGetDownloadFile(@PathVariable String fileName, HttpServletRequest request) {
-        Resource resource = storageService.loadAsResource(fileName);
-        String contentType = null;
-        try {
-            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-        } catch (IOException ex) {
-            logger.info("Could not determine file type.");
-        }
-        if (contentType == null) {
-            contentType = "application/octet-stream";
-        }
-        return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
-    }
-
-
-
-
     @JsonIgnore
     @PostMapping("/")
-    public ResponseEntity postSolicitacao(@Valid @ModelAttribute SolicitacaoPostDTO solicitacao,  MultipartFile files[]) throws Exception {
+    public ResponseEntity postSolicitacao(@Valid @ModelAttribute SolicitacaoPostDTO solicitacao, MultipartFile files[]) throws Exception {
 
-        String caminhoNome;
         Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
 
-        if(!atividade.isPresent()){
-            return ResponseEntity.badRequest().body("A Atividade com o ID "+ solicitacao.getIdAtividade()+" não foi encontrada");
+        if (!atividade.isPresent()) {
+            return ResponseEntity.badRequest().body("A Atividade com o ID " + solicitacao.getIdAtividade() + " não foi encontrada");
         }
 
         Solicitacao newsolicitacao = new Solicitacao();
@@ -162,19 +141,18 @@ public class SolicitacaoController {
         Date dataAtual = new Date();
         SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
         Date dataTeste = formato.parse(solicitacao.getDataInicio());
-		newsolicitacao.setDataAtual(dataAtual);
+        newsolicitacao.setDataAtual(dataAtual);
         newsolicitacao.setDataInicio(dataTeste);
-		newsolicitacao.setDataFim(dataTeste);
+        newsolicitacao.setDataFim(dataTeste);
 
-		newsolicitacao.setStatus(Status.PENDENTE.toString());
+        newsolicitacao.setStatus(Status.PENDENTE.toString());
 
         Solicitacao retornableSolicitacao = solicitacaoRepository.save(newsolicitacao);
 
-        for (MultipartFile file : files) {
-            caminhoNome = storageService.store(file, solicitacao.getAluno());
-            String[] arrayString = caminhoNome.split("-", 2);
-            newAnexo.setNome(arrayString[1]);
-            newAnexo.setCaminho(arrayString[0]);
+
+        for (int j = 0; j < files.length; j++) {
+            newAnexo.setNome(storageService.store(files[j], solicitacao.getAluno()));
+            newAnexo.setDoc(atividade.get().getDocs().get(j));
             anexoRepository.save(newAnexo);
         }
 
@@ -183,7 +161,8 @@ public class SolicitacaoController {
     }
 
     @DeleteMapping(value = "/{id}")
-    public @ResponseBody ResponseEntity<Optional<Solicitacao>> deleteSolicitacaobyId(@PathVariable long id) {
+    public @ResponseBody
+    ResponseEntity<Optional<Solicitacao>> deleteSolicitacaobyId(@PathVariable long id) {
         // Busca no banco pelo id
         Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
         solicitacaoRepository.deleteById(id);

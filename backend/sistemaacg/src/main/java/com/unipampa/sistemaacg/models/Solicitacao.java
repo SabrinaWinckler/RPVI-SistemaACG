@@ -12,21 +12,13 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.FutureOrPresent;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.PastOrPresent;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.Data;
+import org.hibernate.validator.constraints.Range;
 
 @Entity
 @Data
@@ -40,9 +32,9 @@ public class Solicitacao{
 	@Size(min = 3)
 	private String nomeAluno;
 
-	@Size(min = 10, max = 10, message = "A matrícula é inválida.")
-	@NotBlank(message = "A matrícula é obrigatória")
-	@Pattern(regexp = "[0-9]?[0-9]?0?[0-9]*$")//Padrão da matrícula não validado com a coordenaçao
+	@Range(min = 5, message = "A matrícula é inválida.")
+	@NotNull(message = "A matrícula é obrigatória")
+	//@Pattern(regexp = "[0-9]?[0-9]?0?[1||2][0-9]*$")//Padrão da matrícula não validado com a coordenaçao
 	private long matricula;
 
 	@JsonFormat(pattern="yyyy-MM-dd")
@@ -51,24 +43,24 @@ public class Solicitacao{
 
 	@JsonFormat(pattern="yyyy-MM-dd")
 	@PastOrPresent
-	@NotBlank(message = "A data de inicio é obrigatória")
+	@NotNull(message = "A data de inicio é obrigatória")
 	private Date dataInicio;
 
 	@JsonFormat(pattern="yyyy-MM-dd")
-	@NotBlank(message = "A data de fim é obrigatória")
+	@NotNull(message = "A data de fim é obrigatória")
 	private Date dataFim;
 
-	@NotBlank(message = "A matrícula é obrigatória")
+	@NotNull(message = "A matrícula é obrigatória")
 	@Positive
 	private long cargaHorariaSoli;
 
 	@ManyToOne
-	@NotBlank(message = "É obrigatório selecionar uma atividade")
+	@NotNull(message = "É obrigatório selecionar uma atividade")
 	private Atividade atividade;
 
 	@OneToMany(mappedBy = "solicitacao", cascade=CascadeType.ALL)
 	@JsonManagedReference
-	@NotBlank(message = "É obrigatório anexar os arquivos comprobatórios")
+	@NotNull(message = "É obrigatório anexar os arquivos comprobatórios")
 	private List<Anexo> anexos;
 
 	@OneToOne(mappedBy = "solicitacao")

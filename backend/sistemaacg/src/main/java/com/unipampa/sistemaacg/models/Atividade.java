@@ -44,7 +44,5 @@ public class Atividade {
     private int ch;
 
 
-    // @OneToMany
-    // List<Observacao> observacao;
 
 }

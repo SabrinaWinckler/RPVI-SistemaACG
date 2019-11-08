@@ -8,7 +8,9 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unipampa.sistemaacg.dto.AvaliacaoDTO;
+import com.unipampa.sistemaacg.dto.SolicitacaoPostDTO;
 import com.unipampa.sistemaacg.models.Anexo;
+import com.unipampa.sistemaacg.models.Atividade;
 import com.unipampa.sistemaacg.models.AvaliacaoSolicitacao;
 import com.unipampa.sistemaacg.models.Solicitacao;
 import com.unipampa.sistemaacg.models.Status;
@@ -66,7 +68,7 @@ public class AvaliacaoController {
     @PostMapping("/{id}")
     public ResponseEntity postAvaliacao(@RequestBody AvaliacaoDTO avaliacao, @PathVariable long id){
 
-        AvaliacaoSolicitacao newavaliacao = new AvaliacaoSolicitacao();
+        AvaliacaoSolicitacao newAvaliacao = new AvaliacaoSolicitacao();
         Date dataAtual = new Date();
         Solicitacao avaliada = solicitacaoRepository.findById(id).get();
 
@@ -76,15 +78,16 @@ public class AvaliacaoController {
             avaliada.setStatus(Status.INDEFERIDO.toString());
         }
         avaliada.setIdSolicitacao(id);
-        avaliada.setAtividade(avaliacao.getSolicitacao().getAtividade());
+        avaliada.setAtividade(atividadeRepository.findById(avaliacao.getIdAtividade()).get());
         solicitacaoRepository.save(avaliada);
 
-        newavaliacao.setCargaHorariaAtribuida(avaliacao.getCargaHorariaAtribuida());
-        newavaliacao.setDataAvaliacao(dataAtual);
-        newavaliacao.setSolicitacao(avaliada);
-        newavaliacao.setJustificativa(avaliacao.getParecer());
+        newAvaliacao.setCargaHorariaAtribuida(avaliacao.getCargaHorariaAtribuida());
+        newAvaliacao.setDataAvaliacao(dataAtual);
+        newAvaliacao.setSolicitacao(avaliada);
+        newAvaliacao.setJustificativa(avaliacao.getParecer());
 
-        AvaliacaoSolicitacao retornableAvaliacao = avaliacaoRepository.save(newavaliacao);
+
+        AvaliacaoSolicitacao retornableAvaliacao = avaliacaoRepository.save(newAvaliacao);
 
         return ResponseEntity.ok(retornableAvaliacao);
     }
@@ -123,7 +126,7 @@ public class AvaliacaoController {
     }
 
     //pega um anexo a partir do nome do anexo, só chamar isso para cada anexo na view, ele mostra o pdf no navegador
-    @GetMapping("/files/{filename:.+}")
+    @GetMapping("/file/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {
 
@@ -132,18 +135,13 @@ public class AvaliacaoController {
                 "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
 
+    public String getAnexoByDoc(SolicitacaoPostDTO solicitacao){
+        Atividade atividade = atividadeRepository.findById(solicitacao.getIdAtividade()).get();
+        
+        return null;
 
-    //Documentação
-    //lista todos anexos
-    // @GetMapping("/anexos")
-    // public String listUploadedFiles(Model model) throws IOException {
+    }
 
-    //     model.addAttribute("files", storageService.loadAll().map(
-    //             path -> MvcUriComponentsBuilder.fromMethodName(SolicitacaoController.class,
-    //                     "serveFile", path.getFileName().toString()).build().toString())
-    //             .collect(Collectors.toList()));
 
-    //     return "uploadForm";
-    // }
 
 }

@@ -7,7 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -24,7 +24,6 @@ public class AvaliacaoSolicitacao{
 
     private String justificativa;//obrigatório if indeferido
 
-	//@NotEmpty
 	@JsonFormat(pattern="yyyy-MM-dd")
 	private Date dataAvaliacao;//atual
 
@@ -32,7 +31,7 @@ public class AvaliacaoSolicitacao{
 
 	@OneToOne
 	@JsonBackReference
-	@NotBlank
+	@NotNull
     private Solicitacao solicitacao;
 
 	public AvaliacaoSolicitacao(){}

@@ -2,10 +2,7 @@ package com.unipampa.sistemaacg.controllers;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -120,7 +117,7 @@ public class SolicitacaoController {
 
     @JsonIgnore
     @PostMapping("/")
-    public ResponseEntity postSolicitacao(@Valid @ModelAttribute SolicitacaoPostDTO solicitacao, MultipartFile files[]) throws Exception {
+    public ResponseEntity postSolicitacao(@Valid @ModelAttribute SolicitacaoPostDTO solicitacao, @RequestParam("file") MultipartFile files[]) throws Exception {
 
         Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
 
@@ -153,9 +150,13 @@ public class SolicitacaoController {
             newAnexo.setNome(storageService.store(files[j], solicitacao.getAluno()));
             newAnexo.setDoc(atividade.get().getDocs().get(j));
             newAnexo.setSolicitacao(newSolicitacao);
-            newSolicitacao.getAnexos().add(newAnexo);
+            newSolicitacao.getAnexos()[j] = newAnexo;
             anexoRepository.save(newAnexo);
         }
+
+
+
+
 
 
         Solicitacao retornableSolicitacao = solicitacaoRepository.save(newSolicitacao);

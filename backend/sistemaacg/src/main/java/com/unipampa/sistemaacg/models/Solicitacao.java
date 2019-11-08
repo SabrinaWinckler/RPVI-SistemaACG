@@ -61,7 +61,7 @@ public class Solicitacao{
 	@OneToMany(mappedBy = "solicitacao", cascade=CascadeType.ALL)
 	@JsonManagedReference
 	@NotNull(message = "É obrigatório anexar os arquivos comprobatórios")
-	private List<Anexo> anexos;
+	private Anexo[] anexos;
 
 	@OneToOne(mappedBy = "solicitacao")
 	@JsonManagedReference

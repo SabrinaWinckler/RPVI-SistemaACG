@@ -120,7 +120,7 @@ public class SolicitacaoController {
 
     @JsonIgnore
     @PostMapping("/")
-    public ResponseEntity postSolicitacao(@Valid @ModelAttribute SolicitacaoPostDTO solicitacao, MultipartFile files[]) throws Exception {
+    public ResponseEntity postSolicitacao(@Valid @ModelAttribute SolicitacaoPostDTO solicitacao, @RequestParam("file") MultipartFile files[]) throws Exception {
 
         Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
 

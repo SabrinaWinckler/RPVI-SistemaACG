@@ -28,7 +28,7 @@ public class AvaliacaoSolicitacao{
 	private long cargaHorariaAtribuida;//obrigatório if deferido
 
 	@OneToOne
-	@JoinColumn(name="id_avaliacao", unique=true)
+	@JoinColumn(name="id_solicitacao", unique=true)
 	@JsonBackReference
 	@NotNull
     private Solicitacao solicitacao;

@@ -128,34 +128,37 @@ public class SolicitacaoController {
             return ResponseEntity.badRequest().body("A Atividade com o ID " + solicitacao.getIdAtividade() + " não foi encontrada");
         }
 
-        Solicitacao newsolicitacao = new Solicitacao();
-        Anexo newAnexo = new Anexo();
-        newsolicitacao.setAtividade(atividade.get());
-        newsolicitacao.setNomeAluno(solicitacao.getAluno());
-        newsolicitacao.setMatricula(solicitacao.getMatricula());
-        newsolicitacao.setCargaHorariaSoli(solicitacao.getCargaHorariaSoli());
-        newsolicitacao.setDescricao(solicitacao.getDescricao());
-        newsolicitacao.setLocal(solicitacao.getLocal());
-        newsolicitacao.setProfRes(solicitacao.getProfRes());
+        Solicitacao newSolicitacao = new Solicitacao();
+
+        newSolicitacao.setAtividade(atividade.get());
+        newSolicitacao.setNomeAluno(solicitacao.getAluno());
+        newSolicitacao.setMatricula(solicitacao.getMatricula());
+        newSolicitacao.setCargaHorariaSoli(solicitacao.getCargaHorariaSoli());
+        newSolicitacao.setDescricao(solicitacao.getDescricao());
+        newSolicitacao.setLocal(solicitacao.getLocal());
+        newSolicitacao.setProfRes(solicitacao.getProfRes());
 
         Date dataAtual = new Date();
         SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
         Date dataTeste = formato.parse(solicitacao.getDataInicio());
-        newsolicitacao.setDataAtual(dataAtual);
-        newsolicitacao.setDataInicio(dataTeste);
-        newsolicitacao.setDataFim(dataTeste);
+        newSolicitacao.setDataAtual(dataAtual);
+        newSolicitacao.setDataInicio(dataTeste);
+        newSolicitacao.setDataFim(dataTeste);
 
-        newsolicitacao.setStatus(Status.PENDENTE.toString());
-
-        Solicitacao retornableSolicitacao = solicitacaoRepository.save(newsolicitacao);
+        newSolicitacao.setStatus(Status.PENDENTE.toString());
 
 
         for (int j = 0; j < files.length; j++) {
+            Anexo newAnexo = new Anexo();
             newAnexo.setNome(storageService.store(files[j], solicitacao.getAluno()));
             newAnexo.setDoc(atividade.get().getDocs().get(j));
+            newAnexo.setSolicitacao(newSolicitacao);
+            newSolicitacao.getAnexos().add(newAnexo);
             anexoRepository.save(newAnexo);
         }
 
+
+        Solicitacao retornableSolicitacao = solicitacaoRepository.save(newSolicitacao);
         return ResponseEntity.ok(retornableSolicitacao);
 
     }

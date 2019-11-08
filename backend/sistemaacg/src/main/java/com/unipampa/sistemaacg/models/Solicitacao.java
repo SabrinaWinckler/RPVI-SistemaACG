@@ -65,7 +65,6 @@ public class Solicitacao{
 	private List<Anexo> anexos;
 
 	@OneToOne(mappedBy = "solicitacao")
-	@NotNull
 	@JsonManagedReference
 	private AvaliacaoSolicitacao avaliacao;
 

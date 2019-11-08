@@ -39,7 +39,6 @@ public class Solicitacao{
 	private long matricula;
 
 	@JsonFormat(pattern="yyyy-MM-dd")
-	@FutureOrPresent
 	private Date dataAtual;
 
 	@JsonFormat(pattern="yyyy-MM-dd")

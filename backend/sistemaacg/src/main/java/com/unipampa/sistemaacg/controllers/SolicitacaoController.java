@@ -143,23 +143,18 @@ public class SolicitacaoController {
         newSolicitacao.setDataFim(dataTeste);
 
         newSolicitacao.setStatus(Status.PENDENTE.toString());
+        Solicitacao retornableSolicitacao = solicitacaoRepository.save(newSolicitacao);
 
+        logger.debug("Chegou aquoi");
 
         for (int j = 0; j < files.length; j++) {
             Anexo newAnexo = new Anexo();
             newAnexo.setNome(storageService.store(files[j], solicitacao.getAluno()));
             newAnexo.setDoc(atividade.get().getDocs().get(j));
-            newAnexo.setSolicitacao(newSolicitacao);
-            newSolicitacao.getAnexos()[j] = newAnexo;
+            newAnexo.setSolicitacao(retornableSolicitacao);
             anexoRepository.save(newAnexo);
         }
 
-
-
-
-
-
-        Solicitacao retornableSolicitacao = solicitacaoRepository.save(newSolicitacao);
         return ResponseEntity.ok(retornableSolicitacao);
 
     }

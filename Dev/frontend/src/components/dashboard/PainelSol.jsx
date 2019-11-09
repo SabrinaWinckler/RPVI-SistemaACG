@@ -7,7 +7,7 @@ import {
     Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar,
     Typography, Paper, Checkbox, IconButton, Tooltip, Grid, CardContent, Modal, FormControl, InputLabel,
     Button, Select, MenuItem, TextField, Chip, Avatar, Dialog, DialogActions, DialogTitle, Box, Radio,
-    RadioGroup, FormControlLabel, FormLabel, Fab, Divider, Popover  
+    RadioGroup, FormControlLabel, FormLabel, Fab, Divider  
 } from '@material-ui/core';
 import MuiExpansionPanel from '@material-ui/core/ExpansionPanel';
 import MuiExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -613,47 +613,6 @@ EnhancedTableToolbar.propTypes = {
     selectedRow: PropTypes
 };
 
-const ExpansionPanel = withStyles({
-    root: {
-      border: '1px solid rgba(0, 0, 0, .125)',
-      boxShadow: 'none',
-      '&:not(:last-child)': {
-        borderBottom: 0,
-      },
-      '&:before': {
-        display: 'none',
-      },
-      '&$expanded': {
-        margin: 'auto',
-      },
-    },
-    expanded: {},
-  })(MuiExpansionPanel);
-  
-  const ExpansionPanelSummary = withStyles({
-    root: {
-      backgroundColor: 'rgba(0, 0, 0, .03)',
-      borderBottom: '1px solid rgba(0, 0, 0, .125)',
-      marginBottom: -1,
-      minHeight: 56,
-      '&$expanded': {
-        minHeight: 56,
-      },
-    },
-    content: {
-      '&$expanded': {
-        margin: '12px 0',
-      },
-    },
-    expanded: {},
-  })(MuiExpansionPanelSummary);
-  
-  const ExpansionPanelDetails = withStyles(theme => ({
-    root: {
-      padding: theme.spacing(2),
-    },
-  }))(MuiExpansionPanelDetails);
-
 const useStyles = makeStyles(theme => ({
     root: {
         width: '100%',
@@ -706,26 +665,35 @@ export default function EnhancedTable() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [open, setOpen] = useState(false)
-    const [valueRadio, setValueRadio] = React.useState('')
-
-    const [expanded, setExpanded] = React.useState(false);
+    const [valueRadio, setValueRadio] = useState('')
+    const [avaliation, setAvaliation] = useState({
+        hourLoad: "",
+        obs: "",
+        status: ""
+    })
+    const [obsShow, setObsShow] = useState(false);
+    const [hourLoadShow, setHourLoadShow] = useState(false);
+    const [idSol, setIdsol] = useState("")
+    const [anexos, setAnexos] = useState([])
 
     const [rows, setRows] = useState([])
 
-    const handleChangeExpand = event => {
-        setExpanded(true);
+    const handleChangeDeferred = event => {
+        setHourLoadShow(true);
+        setObsShow(true);
       };
 
-    const handleChangeCollapse = event => {
-        setExpanded(false);
+    const handleChangeRejected = event => {
+        setObsShow(true);
+        setHourLoadShow(false);
       };
-    
 
     const handleChangeRadio = event => {
         setValueRadio(event.target.value);
       };
 
-    const handleModal = (index) => {
+    const handleModal = (index, id) => {
+        setIdsol(id)
         setOpen({ open: open, [index]: !open });
     };
 
@@ -741,6 +709,13 @@ export default function EnhancedTable() {
         loadSolicitations()
       }, [])
 
+    useEffect(() => {
+        async function loadAnexos() {
+          const response = await axios.get(`http://localhost:2222/avaliacao/infos/${idSol}`)
+          console.log(response.data)
+        }
+        loadAnexos()
+      }, [idSol])
 
     const handleRequestSort = (event, property) => {
         const isDesc = orderBy === property && order === 'desc';
@@ -803,24 +778,25 @@ export default function EnhancedTable() {
                                 {stableSort(rows, getSorting(order, orderBy))
                                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                     .map((row, index) => {
+                                        console.log(row)
                                         const isItemSelected = isSelected(row.name);
                                         const labelId = `enhanced-table-checkbox-${index}`;
 
                                         return (
                                             <TableRow hover onClick={event => handleClick(event, row.idSolicitacao)} role="checkbox" aria-checked={isItemSelected}
-                                                tabIndex={-1} key={row.aluno} selected={isItemSelected} >
+                                                tabIndex={-1} key={row.nomeAluno} selected={isItemSelected} >
                                                 <TableCell padding="checkbox">
                                                     <Checkbox inputProps={{ 'aria-labelledby': labelId }} />
                                                 </TableCell>
-                                                <TableCell component="th" id={labelId} scope="row" padding="none">
-                                                    {row.aluno}
+                                                <TableCell align="left" component="th" id={labelId} scope="row" padding="none">
+                                                    {row.nomeAluno}
                                                 </TableCell>
                                                 <TableCell align="left">{row.atividade.descricao}</TableCell>
                                                 <TableCell align="left">{row.atividade.grupo.nome}</TableCell>
                                                 <TableCell align="left">{row.dataAtual}</TableCell>
                                                 <TableCell align="left">{row.status}</TableCell>
                                                 <TableCell align="left">
-                                                    <IconButton onClick={() => handleModal(index)}>
+                                                    <IconButton onClick={() => handleModal(index, row.idSolicitacao)}>
                                                         <DescriptionIcon />
                                                     </IconButton>
                                                 </TableCell>
@@ -838,7 +814,7 @@ export default function EnhancedTable() {
                                                                     <Typography paragraph >
                                                                         <Grid container direction="row" justify="flex-start" alignItems="center">
                                                                             <Box fontWeight="fontWeightBold" m={1}>Aluno: </Box>
-                                                                            {row.aluno}
+                                                                            {row.nomeAluno}
                                                                         </Grid>
                                                                     </Typography>
                                                                 </Grid>
@@ -846,7 +822,7 @@ export default function EnhancedTable() {
                                                                     <Typography paragraph>
                                                                         <Grid container direction="row" justify="flex-start" alignItems="center">
                                                                             <Box fontWeight="fontWeightBold" m={1}>Matrícula: </Box>
-                                                                            
+                                                                            {row.matricula}
                                                                         </Grid>
                                                                     </Typography>
                                                                 </Grid>
@@ -905,21 +881,12 @@ export default function EnhancedTable() {
                                                                     </Typography>
                                                                 </Grid>
                                                             </Grid>
-                                                            <Grid container direction="row" justify="space-around" alignItems="center">
+                                                            <Grid container direction="row" justify="flex-start" alignItems="center">
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
                                                                         <Grid container direction="row" justify="flex-start" alignItems="center">
                                                                             <Box fontWeight="fontWeightBold" m={1}>Carga Horária Solicitada: </Box>
                                                                             {row.cargaHorariaSoli} hora(s)
-                                                                        </Grid>
-                                                                    </Typography>
-                                                                </Grid>
-                                                                <Grid item xs={6}>
-                                                                    <Typography paragraph>
-                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
-                                                                            <Box fontWeight="fontWeightBold" m={1}>Horas Aproveitadas: </Box>
-                                                                            <TextField id="usedHours" required type="number"
-                                                                            className={classes.textField} value="" margin="normal" autoComplete="off"/>
                                                                         </Grid>
                                                                     </Typography>
                                                                 </Grid>
@@ -950,10 +917,10 @@ export default function EnhancedTable() {
                                                                     <RadioGroup aria-label="position" name="position" value={valueRadio} onChange={handleChangeRadio} row required>
                                                                         <FormControlLabel value="def"
                                                                         control={<Radio color="primary" />}
-                                                                        label="Deferir" labelPlacement="end" onChange={handleChangeCollapse}/>
+                                                                        label="Deferir" labelPlacement="end" onChange={handleChangeDeferred}/>
                                                                         <FormControlLabel value="indef"
                                                                         control={<Radio color="secondary" />}
-                                                                        label="Indeferir" labelPlacement="end" onChange={handleChangeExpand}/>
+                                                                        label="Indeferir" labelPlacement="end" onChange={handleChangeRejected}/>
                                                                     </RadioGroup>
                                                                 </FormControl>
                                                                 <Button variant="contained" color="primary" className={classes.button}>
@@ -961,15 +928,10 @@ export default function EnhancedTable() {
                                                                     Confirmar
                                                                 </Button>
                                                             </Grid>
-                                                            <ExpansionPanel style={{ width: '100%' }} square expanded={expanded} >
-                                                                <ExpansionPanelSummary aria-controls="panel1d-content" id="panel1d-header">
-                                                                    <Typography>Observações:</Typography>
-                                                                </ExpansionPanelSummary>
-                                                                    <ExpansionPanelDetails>
-                                                                        <TextField id="description" type="text" required multiline rows="4" variant="filled" className={classes.textField}
-                                                                        style={{ width: '100%' }} value="" margin="normal" autoComplete="off"/>
-                                                                    </ExpansionPanelDetails>
-                                                            </ExpansionPanel>
+                                                            <TextField id="usedHours" required type="number" label="Horas Aproveitadas" style={{ width: 'fit-content', display: hourLoadShow === true ?"flex":"none" }}
+                                                                className={classes.textField} value="" margin="normal" variant="outlined" autoComplete="off"/>
+                                                            <TextField id="observation" required label="Observações" multiline rows="4" style={{ display: obsShow === true ?"flex":"none" }}
+                                                                className={classes.textField} margin="normal" variant="outlined" />
                                                         </Grid>
                                                     </CardContent>
                                                 </Modal>

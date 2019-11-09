@@ -393,8 +393,8 @@ const EnhancedTableToolbar = props => {
         console.log(JSON.stringify(data), fileList)
         const response = await sendForm(data, fileList)
         console.log(response)
-        //setSubmitMessage('Solicitação Realizada com Sucesso!')
-        //handleOpen()
+        setSubmitMessage('Solicitação Realizada com Sucesso!')
+        handleOpen()
     }
 
     return (
@@ -564,17 +564,17 @@ const EnhancedTableToolbar = props => {
                                 ) : (
                                     <Grid container direction="column" justify="center" alignItems="flex-start" style={{ width: '100%' }}>
                                         {docs.map((doc, index) => (
-                                            <Grid container direction="row" justify="center" alignItems="center" style={{ width: '100%' }}>
+                                            <Grid container direction="row" justify="center" alignItems="center" style={{ width: '100%', marginTop:16 }}>
                                                 <Grid item xs={6} style={{ maxWidth: '30%' }}>
                                                     <label htmlFor={doc.idDocNecessario}>
-                                                        <Button variant="outlined" component="span" className={classes.button} style={{ padding: '5% 13%' }}>
+                                                        <Button variant="outlined" className={classes.button} style={{ padding: '5% 13%',marginTop:0 }}>
                                                             Arquivo {index + 1}
                                                         <input required accept="image/*, .pdf" className={classes.input} onChange={(e) => {handleFile(e)}} id={doc.idDocNecessario} multiple type="file" />
                                                         </Button>
                                                     </label>
                                                 </Grid>
                                                 <Grid item xs={6}>
-                                                    <Typography className={classes.typography}>
+                                                    <Typography style={{padding:0}}className={classes.typography}>
                                                         {doc.nome}
                                                     </Typography>
                                                 </Grid>

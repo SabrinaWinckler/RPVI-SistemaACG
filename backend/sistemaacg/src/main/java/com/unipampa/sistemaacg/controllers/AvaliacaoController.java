@@ -1,15 +1,11 @@
 package com.unipampa.sistemaacg.controllers;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unipampa.sistemaacg.dto.AvaliacaoDTO;
 import com.unipampa.sistemaacg.dto.SolicitacaoPostDTO;
-import com.unipampa.sistemaacg.models.Anexo;
 import com.unipampa.sistemaacg.models.Atividade;
 import com.unipampa.sistemaacg.models.AvaliacaoSolicitacao;
 import com.unipampa.sistemaacg.models.Solicitacao;
@@ -112,26 +108,10 @@ public class AvaliacaoController {
     }
 
     @GetMapping(value = "/infos/{id}") // get infos para avaliacao
-    public HashMap<Solicitacao, List<String>> getInfos(@PathVariable long id) {
+    public ResponseEntity<Optional<Solicitacao>> getInfos(@PathVariable long id) {
         // Busca no banco pelo id
-        Solicitacao retornableSolicitacao = solicitacaoRepository.findById(id).get();
-
-        Iterable<Anexo> anexos = anexoRepository.findAll();
-
-        List<String> anexosDaSolicitacao = new ArrayList<>();
-
-        HashMap<Solicitacao, List<String>> retorno = new HashMap<>();
-
-        for (Anexo anexo : anexos) {
-            if (anexo.getSolicitacao().equals(retornableSolicitacao)) {
-                anexosDaSolicitacao.add(anexo.getNome());
-
-            }
-        }
-
-        retorno.put(retornableSolicitacao, anexosDaSolicitacao);
-
-        return retorno;
+        Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
+        return ResponseEntity.ok(retornableSolicitacao);
     }
 
     // pega um anexo a partir do nome do anexo, só chamar isso para cada anexo na

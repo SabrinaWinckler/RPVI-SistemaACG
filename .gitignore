@@ -23,3 +23,5 @@
 /Dev/frontend/yarn-error.log*
 
 *.pdf
+
+**/upload-dir

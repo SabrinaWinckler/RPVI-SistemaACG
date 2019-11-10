@@ -410,8 +410,8 @@ const EnhancedTableToolbar = props => {
         console.log(JSON.stringify(data), fileList)
         const response = await sendForm(data, fileList)
         console.log(response)
-        setSubmitMessage('Solicitação Realizada com Sucesso!')
-        handleOpen()
+        // setSubmitMessage('Solicitação Realizada com Sucesso!')
+       // handleOpen()
     }
 
     return (

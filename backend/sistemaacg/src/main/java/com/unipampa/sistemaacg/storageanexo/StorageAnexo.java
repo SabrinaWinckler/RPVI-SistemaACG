@@ -5,10 +5,10 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
-import java.util.Random;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -20,35 +20,30 @@ import org.springframework.web.multipart.MultipartFile;
 public class StorageAnexo implements StorageService {
 
     private Path rootLocation;
-    StorageProperties properties;
-
+    private static long numberinstance = 0;
+    private StorageProperties properties;
+    private Logger logger = LoggerFactory.getLogger(StorageAnexo.class);
     @Autowired
     public StorageAnexo(StorageProperties properties) {
         this.rootLocation = Paths.get(properties.getLocation());
         this.properties = properties;
     }
 
-    public String saveCaminho(String caminho) {
-
-        return "caminho";
-    }
-
     @Override
-    public String store(MultipartFile file, String nome) throws IOException, NoSuchAlgorithmException {
-        Random generator = new Random();
-        String fileName;
+    public String store(MultipartFile file, long matricula, long idSolicitacao) throws IOException {
+        String originalfilename = matricula + "_" + idSolicitacao + "_" + (numberinstance++) + "_"
+                + file.getOriginalFilename();
+        Path filename = this.rootLocation.resolve(originalfilename);
         try {
             if (file.isEmpty()) {
                 throw new StorageException("Falha ao salvar arquivo vazio" + file.getOriginalFilename());
             }
-
-            fileName = nome + "_" + generator.nextInt(30000) + "_" + file.getOriginalFilename();
-            Files.copy(file.getInputStream(), this.rootLocation.resolve(fileName));
+            Files.copy(file.getInputStream(), filename);
         } catch (IOException e) {
             throw new StorageException("Falha ao armazenar " + file.getOriginalFilename(), e);
         }
-         
-        return fileName;
+
+        return originalfilename;
     }
 
     @Override
@@ -91,9 +86,10 @@ public class StorageAnexo implements StorageService {
     @Override
     public void init() {
         try {
+
             Files.createDirectory(rootLocation);
         } catch (IOException e) {
-            throw new StorageException("Não foi possível inicializar", e);
+            logger.info("Diretório upload-dir já existente, não existe a necessidade de cria-lo");
         }
     }
 }

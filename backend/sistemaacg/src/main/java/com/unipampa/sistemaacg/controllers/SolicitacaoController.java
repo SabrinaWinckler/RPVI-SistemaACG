@@ -103,11 +103,11 @@ public class SolicitacaoController {
 
 
     @PostMapping("/uploadfiles")
-    public ArrayList postAnexos(@RequestParam("file") MultipartFile files[], String nome) throws Exception {
+    public ArrayList postAnexos(@RequestParam("file") MultipartFile files[], long nome) throws Exception {
         ArrayList<String> filesName = new ArrayList<>();
         String nomeCaminho;
         for (MultipartFile string : files) {
-            nomeCaminho = storageService.store(string, nome);
+            nomeCaminho = storageService.store(string, nome, 22222222L);
             filesName.add(nomeCaminho);
         }
 
@@ -149,7 +149,7 @@ public class SolicitacaoController {
 
         for (int j = 0; j < files.length; j++) {
             Anexo newAnexo = new Anexo();
-            newAnexo.setNome(storageService.store(files[j], solicitacao.getAluno()));
+            newAnexo.setNome(storageService.store(files[j], solicitacao.getMatricula(), retornableSolicitacao.getIdSolicitacao()));
             newAnexo.setDoc(atividade.get().getDocs().get(j));
             newAnexo.setSolicitacao(retornableSolicitacao);
             anexoRepository.save(newAnexo);

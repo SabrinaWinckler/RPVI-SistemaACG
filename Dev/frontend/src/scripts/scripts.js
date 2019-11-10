@@ -48,7 +48,6 @@ export const sendForm = async (data, files) => {
         formData.append(index, value);
     })
     formData.append("file", getFilesList(files))
-    console.log(formData)
     // const blob = new Blob([file], {
     //     type: 'application/json'
     //   });
@@ -83,7 +82,6 @@ export const deleteSolicitacao = async (itemId) => {
 export const getActivities = (array, groupKey) => {
     let activities = []
     let index
-    console.log(array, groupKey)
     for (index = 0; index < array.length; index++) {
         if(array[index].grupo.idGrupo === groupKey){
             activities.push(array[index])

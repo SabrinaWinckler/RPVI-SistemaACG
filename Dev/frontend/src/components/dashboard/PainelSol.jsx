@@ -181,6 +181,7 @@ const useToolbarStyles = makeStyles(theme => ({
 const EnhancedTableToolbar = props => {
     const classes = useToolbarStyles();
     let fileList = []
+    let fileNameList = []
     const { numSelected, selectedRow } = props;
     const { user } = useContext(UserContext)
     const [modalStyle] = useState(getModalStyle)
@@ -214,6 +215,7 @@ const EnhancedTableToolbar = props => {
     const [docsReq, setDocsReq] = useState([])
     const [activitiesByGroup, setActivitiesByGroup] = useState([])
     const [runButtons, setRunButtons] = useState(false)
+    const [fileName, setFileName] = useState([])
     const [selectValues, setSelectValues] = useState({
         group: '',
         activitie: '',
@@ -270,11 +272,20 @@ const EnhancedTableToolbar = props => {
             return
         }else{
             setDocs(docsLine)
-            setRunButtons(true)        
+            docsLine.forEach(name => {
+                name = {
+                    nameFile: ""
+                }
+                fileNameList.push(name)
+            });
+            setFileName(fileNameList)
+            console.log(fileNameList)
+            setRunButtons(true)
         }
       };
 
-    function handleFile (event){
+    function handleFile (event, idFile){
+        fileName[idFile].nameFile = event.target.files[0].name.substring(0,30).concat('...')
         if(fileList.length === 0){
             const fileData = ({
                 idDoc: event.target.id,
@@ -331,6 +342,12 @@ const EnhancedTableToolbar = props => {
 
     function handleCloseModal() {
         setOpenModal(false)
+    }
+
+    function openUpload(idUp){
+        console.log(idUp)
+        
+        //document.getElementById(idUp.toString()).click()
     }
 
     async function handleDelete() {
@@ -564,20 +581,26 @@ const EnhancedTableToolbar = props => {
                                 ) : (
                                     <Grid container direction="column" justify="center" alignItems="flex-start" style={{ width: '100%' }}>
                                         {docs.map((doc, index) => (
-                                            <Grid container direction="row" justify="center" alignItems="center" style={{ width: '100%', marginTop:16 }}>
-                                                <Grid item xs={6} style={{ maxWidth: '30%' }}>
-                                                    <label htmlFor={doc.idDocNecessario}>
-                                                        <Button variant="outlined" className={classes.button} style={{ padding: '5% 13%',marginTop:0 }}>
-                                                            Arquivo {index + 1}
-                                                        <input required accept="image/*, .pdf" className={classes.input} onChange={(e) => {handleFile(e)}} id={doc.idDocNecessario} multiple type="file" />
-                                                        </Button>
-                                                    </label>
+                                            <Grid container direction="column" justify="center" alignItems="flex-start">
+                                                <Typography variant="body2" style={{padding:0}} className={classes.typography}>
+                                                    {doc.nome}
+                                                </Typography>
+                                                <Grid container direction="row" justify="flex-start" alignItems="center" style={{ width: '100%' }}>
+                                                    <Grid item xs={6} style={{ maxWidth: '30%' }}>
+                                                        <label htmlFor={doc.idDocNecessario}>
+                                                            <Button variant="outlined" component="span" className={classes.button} style={{ padding: '5% 13%',marginTop:0 }}>
+                                                                Arquivo {index + 1}
+                                                                <input required accept="image/*, .pdf" className={classes.input} onChange={(e) => {handleFile(e, index)}} id={doc.idDocNecessario} multiple type="file" />
+                                                            </Button>
+                                                        </label>
+                                                    </Grid>
+                                                    <Grid item xs={6}>
+                                                        <Typography style={{ padding:0, marginLeft: 10 }}className={classes.typography}>
+                                                            {fileName[index].nameFile}
+                                                        </Typography>
+                                                    </Grid>
                                                 </Grid>
-                                                <Grid item xs={6}>
-                                                    <Typography style={{padding:0}}className={classes.typography}>
-                                                        {doc.nome}
-                                                    </Typography>
-                                                </Grid>
+
                                             </Grid>
                                         ))}
                                     </Grid>
@@ -673,7 +696,7 @@ export default function EnhancedTable() {
     })
     const [obsShow, setObsShow] = useState(false);
     const [hourLoadShow, setHourLoadShow] = useState(false);
-    const [idSol, setIdsol] = useState("")
+    const [idSol, setIdsol] = useState()
     const [anexos, setAnexos] = useState([])
 
     const [rows, setRows] = useState([])
@@ -710,11 +733,13 @@ export default function EnhancedTable() {
       }, [])
 
     useEffect(() => {
-        async function loadAnexos() {
-          const response = await axios.get(`http://localhost:2222/avaliacao/infos/${idSol}`)
-          console.log(response.data)
+        if(idSol){
+            async function loadAnexos() {
+              const response = await axios.get(`http://localhost:2222/avaliacao/infos/${idSol}`)
+              setAnexos(response.data.atividade.docs)
+            }
+            loadAnexos()
         }
-        loadAnexos()
       }, [idSol])
 
     const handleRequestSort = (event, property) => {
@@ -731,6 +756,32 @@ export default function EnhancedTable() {
         }
         setSelected([]);
     };
+
+    function handleAttachment (event, id){
+        console.log(event, id)
+        // if(fileList.length === 0){
+        //     const fileData = ({
+        //         idDoc: event.target.id,
+        //         file: event.target.files[0]
+        //     })
+        //     fileList.push(fileData)
+        // } else {
+        //     let index
+        //     for (index = 0; index < fileList.length; index++) {
+        //         if(fileList[index].idDoc === event.target.id){
+        //             fileList[index].file = event.target.files[0]
+        //             return
+        //         }
+        //     }
+        //     const fileData = ({
+        //         idDoc: event.target.id,
+        //         file: event.target.files[0]
+        //     })
+        //     fileList.push(fileData)
+        // }
+        // console.log(fileList)
+        //setFiles(event.target.files[0])
+    }
 
     const handleClick = (event, name) => {
         const selectedIndex = selected.indexOf(name);
@@ -778,13 +829,11 @@ export default function EnhancedTable() {
                                 {stableSort(rows, getSorting(order, orderBy))
                                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                     .map((row, index) => {
-                                        console.log(row)
                                         const isItemSelected = isSelected(row.name);
                                         const labelId = `enhanced-table-checkbox-${index}`;
-
                                         return (
                                             <TableRow hover onClick={event => handleClick(event, row.idSolicitacao)} role="checkbox" aria-checked={isItemSelected}
-                                                tabIndex={-1} key={row.nomeAluno} selected={isItemSelected} >
+                                                tabIndex={-1} key={row.idSolicitacao} selected={isItemSelected} >
                                                 <TableCell padding="checkbox">
                                                     <Checkbox inputProps={{ 'aria-labelledby': labelId }} />
                                                 </TableCell>
@@ -899,16 +948,20 @@ export default function EnhancedTable() {
                                                                     </Grid>
                                                                 </Typography>
                                                             </Grid>
-                                                            <Grid container justify="space-between" alignItems="center">
-                                                                <Typography paragraph>
-                                                                    <Grid container direction="row" justify="flex-start" alignItems="center">
-                                                                        <Box fontWeight="fontWeightBold" m={1}>Comprovantes: </Box>
-                                                                        <Fab variant="extended" color="primary" aria-label="attach" className={classes.margin}>
-                                                                            <GetAppIcon className={classes.extendedIcon} />
-                                                                            Comprovante
-                                                                        </Fab>
+                                                            <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                <Box fontWeight="fontWeightBold" style={{ width: '100%'}} m={1}>Comprovantes: </Box>
+                                                                {anexos.map((anexo, index) => (
+                                                                    <Grid item xs={4} style={{ maxWidth: '30%', margin: '1%' }}>
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="center" style={{ width: '100%', marginTop:16 }}>
+                                                                            <label htmlFor={anexo.idDocNecessario}>{anexo.nome}</label>
+                                                                            <Fab id={anexo.idDocNecessario} onClick={(e) => {handleAttachment(e.target.value, anexo.idDocNecessario)}} variant="extended" color="primary"
+                                                                                aria-label="attach" className={classes.margin}>
+                                                                                <GetAppIcon className={classes.extendedIcon} />
+                                                                                Arquivo {index + 1}
+                                                                            </Fab>
+                                                                        </Grid>
                                                                     </Grid>
-                                                                </Typography>
+                                                                ))}
                                                             </Grid>
                                                             <Divider style={{ marginBottom: "1%" }}/>
                                                             <Grid container direction="row" justify="space-between" alignItems="center">

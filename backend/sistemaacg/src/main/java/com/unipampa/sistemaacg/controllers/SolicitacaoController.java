@@ -7,6 +7,7 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
+import javax.xml.ws.Response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unipampa.sistemaacg.dto.InfosSolicitacaoDTO;
@@ -124,6 +125,9 @@ public class SolicitacaoController {
         if (!atividade.isPresent()) {
             return ResponseEntity.badRequest().body("A Atividade com o ID " + solicitacao.getIdAtividade() + " não foi encontrada");
         }
+        if (files == null){
+         return ResponseEntity.badRequest().body("Você precisa anexar os comprovantes");
+        }
 
         Solicitacao newSolicitacao = new Solicitacao();
 
@@ -137,15 +141,15 @@ public class SolicitacaoController {
 
         Date dataAtual = new Date();
         SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-        Date dataTeste = formato.parse(solicitacao.getDataInicio());
         newSolicitacao.setDataAtual(dataAtual);
-        newSolicitacao.setDataInicio(dataTeste);
-        newSolicitacao.setDataFim(dataTeste);
+        Date dataInicio = formato.parse(solicitacao.getDataInicio());
+        Date dataFim = formato.parse(solicitacao.getDataFim());
+        newSolicitacao.setDataInicio(dataInicio);
+        newSolicitacao.setDataFim(dataFim);
 
         newSolicitacao.setStatus(Status.PENDENTE.toString());
         Solicitacao retornableSolicitacao = solicitacaoRepository.save(newSolicitacao);
 
-        logger.debug("Chegou aquoi");
 
         for (int j = 0; j < files.length; j++) {
             Anexo newAnexo = new Anexo();

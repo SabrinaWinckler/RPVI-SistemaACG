@@ -186,7 +186,6 @@ const EnhancedTableToolbar = props => {
     const { user } = useContext(UserContext)
     const [modalStyle] = useState(getModalStyle)
     const [openModal, setOpenModal] = useState(false)
-    const [files, setFiles] = useState([])
     const [docs, setDocs] = useState([])
     const [values, setValues] = useState({
         location: 'unipampa',
@@ -212,7 +211,6 @@ const EnhancedTableToolbar = props => {
     const [submitMessage, setSubmitMessage] = useState('')
     const [groupKey, setGroupKey] = useState()
     const [activities, setActivities] = useState([])
-    const [docsReq, setDocsReq] = useState([])
     const [activitiesByGroup, setActivitiesByGroup] = useState([])
     const [runButtons, setRunButtons] = useState(false)
     const [fileName, setFileName] = useState([])
@@ -220,15 +218,13 @@ const EnhancedTableToolbar = props => {
         group: '',
         activitie: '',
       });
-    
-    // const open = Boolean(anchorEl);
-    // const id = open ? 'simple-popover' : undefined;
+    const [showFileName, setShowFileName] = useState(false)
+
 
     useEffect(() => {
         async function loadSolicitations() {
           const response = await axios.get('http://localhost:2222/solicitacao/infos/')
           setGroups(response.data.grupos)
-          setDocsReq(response.data.docsNecessarios)
           setActivitiesByGroup(response.data.atividades)
           setActivities(response.data.atividades)
         }
@@ -264,20 +260,18 @@ const EnhancedTableToolbar = props => {
           [event.target.name]: event.target.value,
         }));
         setValues({ ...values, [event.target.name]: event.target.value });
-        // console.log(activities)
-        // console.log(event.target.value)
         let docsLine = getDocs(activities, event.target.value)
         if(!docsLine){
             setMessage("Não foi possível verificar a documentação necessária")
             return
         }else{
             setDocs(docsLine)
-            docsLine.forEach(name => {
-                name = {
-                    nameFile: ""
-                }
-                fileNameList.push(name)
-            });
+            // docsLine.forEach(name => {
+            //     name = {
+            //         nameFile: ""
+            //     }
+            //     fileNameList.push(name)
+            // });
             setFileName(fileNameList)
             console.log(fileNameList)
             setRunButtons(true)
@@ -285,7 +279,6 @@ const EnhancedTableToolbar = props => {
       };
 
     function handleFile (event, idFile){
-        fileName[idFile].nameFile = event.target.files[0].name.substring(0,30).concat('...')
         if(fileList.length === 0){
             const fileData = ({
                 idDoc: event.target.id,
@@ -306,8 +299,6 @@ const EnhancedTableToolbar = props => {
             })
             fileList.push(fileData)
         }
-        // console.log(fileList)
-        //setFiles(event.target.files[0])
     }
 
     const handleDateChangeStart = date => {
@@ -342,12 +333,6 @@ const EnhancedTableToolbar = props => {
 
     function handleCloseModal() {
         setOpenModal(false)
-    }
-
-    function openUpload(idUp){
-        console.log(idUp)
-        
-        //document.getElementById(idUp.toString()).click()
     }
 
     async function handleDelete() {
@@ -594,11 +579,15 @@ const EnhancedTableToolbar = props => {
                                                             </Button>
                                                         </label>
                                                     </Grid>
-                                                    <Grid item xs={6}>
+                                                    {/* <Grid item xs={6}>
                                                         <Typography style={{ padding:0, marginLeft: 10 }}className={classes.typography}>
-                                                            {fileName[index].nameFile}
+                                                            {fileName[index]}
                                                         </Typography>
                                                     </Grid>
+                                                    {/* {!showFileName ? (
+                                                            <div></div>
+                                                    ) : (
+                                                    )} */} 
                                                 </Grid>
 
                                             </Grid>

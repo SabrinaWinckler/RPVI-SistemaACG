@@ -47,18 +47,26 @@ export const sendForm = async (data, files) => {
     _.forEach(data, (value, index)=>{
         formData.append(index, value);
     })
-    console.log("getfilelist", getFilesList(files))
     _.forEach(getFilesList(files), (value)=>{
         formData.append("file", value)
     })
-    for (var pair of formData.entries()) {
-        console.log(pair[0], pair[1]);
-    }
-    // const blob = new Blob([file], {
-    //     type: 'application/json'
-    //   });
-    // formData.append("file", blob)
     axios.post('http://localhost:2222/solicitacao/', formData)
+            .then(data => {
+                console.log('aqui chegou')
+                return true
+            })
+            .catch(error => {
+                console.error(error.response.data.message)
+                return false
+            })
+}
+
+export const sendAvaliation = async (data, id) => {
+    var formData = new FormData()
+    _.forEach(data, (value, index)=>{
+        formData.append(index, value);
+    })
+    axios.post(`http://localhost:2222/avaliacao/${id}`)
             .then(data => {
                 console.log(data)
                 return true
@@ -67,8 +75,6 @@ export const sendForm = async (data, files) => {
                 console.error(error.response.data.message)
                 return false
             })
-    // const response = await fetch(url, { method: method, body: JSON.stringify(json) })
-    // return response.ok;
 }
 
 export const deleteSolicitacao = async (itemId) => {

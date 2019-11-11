@@ -9,9 +9,6 @@ import {
     Button, Select, MenuItem, TextField, Chip, Avatar, Dialog, DialogActions, DialogTitle, Box, Radio,
     RadioGroup, FormControlLabel, FormLabel, Fab, Divider  
 } from '@material-ui/core';
-import MuiExpansionPanel from '@material-ui/core/ExpansionPanel';
-import MuiExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import MuiExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import { Warning as WarningIcon } from '@material-ui/icons'
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns'
@@ -21,7 +18,7 @@ import DescriptionIcon from '@material-ui/icons/Description'
 import GetAppIcon from '@material-ui/icons/GetApp'
 
 import { UserContext } from '../../context/UserContext'
-import { validateName, validateRegistration, validateDate, sendForm, deleteSolicitacao, getDocs, getActivities } from '../../scripts/scripts'
+import { validateName, validateRegistration, validateDate, sendForm, sendAvaliation, deleteSolicitacao, getDocs, getActivities } from '../../scripts/scripts'
 import './styles.css'
 
 function getModalStyle() {
@@ -68,11 +65,11 @@ const headCells = [
     { id: 'grupo', numeric: false, align: 'left', disablePadding: false, label: 'Grupo' },
     { id: 'data', numeric: true, align: 'left', disablePadding: false, label: 'Data' },
     { id: 'status', numeric: false, align: 'left', disablePadding: false, label: 'Situação' },
-    { id: 'aval', numeric: false, align: 'left', disablePadding: false, label: 'Avaliar' },
+    { id: 'actions', numeric: false, align: 'left', disablePadding: false, label: 'Ações' },
 ];
 
 function EnhancedTableHead(props) {
-    const { classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
+    const { classes, order, orderBy, onRequestSort } = props;
     const createSortHandler = property => event => {
         onRequestSort(event, property);
     };
@@ -80,10 +77,6 @@ function EnhancedTableHead(props) {
     return (
         <TableHead>
             <TableRow>
-                <TableCell padding="checkbox">
-                    <Checkbox indeterminate={numSelected > 0 && numSelected < rowCount} checked={numSelected === rowCount} onChange={onSelectAllClick}
-                        inputProps={{ 'aria-label': 'select all desserts' }} />
-                </TableCell>
                 {headCells.map(headCell => (
                     <TableCell key={headCell.id} align={'left'} sortDirection={orderBy === headCell.id ? order : false} >
                         <TableSortLabel active={orderBy === headCell.id} direction={order} onClick={createSortHandler(headCell.id)} >
@@ -183,7 +176,6 @@ const EnhancedTableToolbar = props => {
     const classes = useToolbarStyles();
     let fileList = []
     let fileNameList = []
-    const { numSelected, selectedRow } = props;
     const { user } = useContext(UserContext)
     const [modalStyle] = useState(getModalStyle)
     const [openModal, setOpenModal] = useState(false)
@@ -205,22 +197,27 @@ const EnhancedTableToolbar = props => {
     const [selectedDateEnd, setSelectedDateEnd] = useState();
     const [message, setMessage] = useState("Selecione Uma Atividade");
     const [status, setStatus] = useState({ show: false, message: '' })
-    const [actSelect, setActSelect] = useState(true)
 
+    const [actSelect, setActSelect] = useState(true)
     const [groups, setGroups] = useState([])
-    const [openDialog, setOpenDialog] = useState(false)
-    const [submitMessage, setSubmitMessage] = useState('')
-    const [groupKey, setGroupKey] = useState()
     const [activities, setActivities] = useState([])
     const [activitiesByGroup, setActivitiesByGroup] = useState([])
-    const [runButtons, setRunButtons] = useState(false)
-    const [fileName, setFileName] = useState([])
+    const [groupKey, setGroupKey] = useState()
     const [selectValues, setSelectValues] = useState({
         group: '',
         activitie: '',
       });
+
+    const [openDialog, setOpenDialog] = useState(false)
+    const [submitMessage, setSubmitMessage] = useState('')
+    const [runButtons, setRunButtons] = useState(false)
+    const [fileName, setFileName] = useState([])
     const [showFileName, setShowFileName] = useState(false)
 
+    //   function handleTeste() {
+    //     console.log(fileList)
+    //     console.log(docs)
+    //   }
 
     useEffect(() => {
         async function loadSolicitations() {
@@ -247,13 +244,7 @@ const EnhancedTableToolbar = props => {
             [event.target.name]: event.target.value,
         }));
         setValues({ ...values, [event.target.name]: event.target.value });
-        
       };
-
-    //   function handleTeste() {
-    //     console.log(fileList)
-    //     console.log(docs)
-    //   }
 
     const handleChangeSelect = event => {
         setSelectValues(oldValues => ({
@@ -267,12 +258,6 @@ const EnhancedTableToolbar = props => {
             return
         }else{
             setDocs(docsLine)
-            // docsLine.forEach(name => {
-            //     name = {
-            //         nameFile: ""
-            //     }
-            //     fileNameList.push(name)
-            // });
             setFileName(fileNameList)
             console.log(fileNameList)
             setRunButtons(true)
@@ -337,22 +322,6 @@ const EnhancedTableToolbar = props => {
         setOpenModal(false)
     }
 
-    async function handleDelete() {
-            try {
-                const response = await axios.delete(`http://localhost:2222/solicitacao/${selectedRow[0]}`)
-                .then(resp => {
-                    console.log(response)
-                })
-                .catch(error => {
-                    console.error(error.response.data.message)
-                })
-                
-            } catch (error) {
-                
-            }
-        console.log(selectedRow[0])
-    }
-
     const handleCloseMessageError = () => {
         setStatus({ show: false })
     }
@@ -367,7 +336,6 @@ const EnhancedTableToolbar = props => {
     };
 
     async function handleSubmit(event) {
-        //console.log(file)
         if(!validateName(values.name)){
             setStatus({ show: true, message: 'Nome Inválido!' })
             return
@@ -394,47 +362,36 @@ const EnhancedTableToolbar = props => {
             descricao: values.description,
             idAtividade: values.activitie.toString()
         }
-        console.log(JSON.stringify(data), fileList)
         const response = await sendForm(data, fileList)
         console.log(response)
-        setSubmitMessage('Solicitação Realizada com Sucesso!')
+        if(response){
+            setSubmitMessage('Solicitação Realizada com Sucesso!')
+        } else {
+            setSubmitMessage('Houve um problema em enviar a Solicitação!')
+        }
         handleOpen()
     }
 
     return (
         <>
-            <Toolbar className={clsx(classes.root, { [classes.highlight]: numSelected > 0, })} >
+            <Toolbar className={classes.root} >
                 <div className={classes.title}>
-                    {numSelected > 0 ? (
-                        <Typography color="inherit" variant="subtitle1">
-                            {numSelected} selected
+                        <Grid container direction="column" justify="flex-start" alignItems="flex-start">
+                        <Typography variant="h6" id="tableTitle">
+                             Solicitações
                         </Typography>
-                    ) : (
-                            <Grid container direction="column" justify="flex-start" alignItems="flex-start">
-                                <Typography variant="h6" id="tableTitle">
-                                    Solicitações
-                                </Typography>
-                                <Typography variant="subtitle2" gutterBottom>
-                                    Olá {user}
-                                </Typography>
-                            </Grid>
-                        )}
+                        <Typography variant="subtitle2" gutterBottom>
+                            Olá {user}
+                        </Typography>
+                    </Grid>
                 </div>
                 <div className={classes.spacer} />
                 <div className={classes.actions}>
-                    {numSelected > 0 ? (
-                        <Tooltip title="Delete">
-                            <IconButton aria-label="delete" onClick={handleDelete}>
-                                <DeleteIcon />
-                            </IconButton>
-                        </Tooltip>
-                    ) : (
-                            <Tooltip title="Filter list">
-                                <IconButton aria-label="filter list" onClick={handleModal}>
-                                    <AddIcon />
-                                </IconButton>
-                            </Tooltip>
-                        )}
+                    <Tooltip title="Filter list">
+                        <IconButton aria-label="filter list" onClick={handleModal}>
+                            <AddIcon />
+                        </IconButton>
+                    </Tooltip>
                 </div>
             </Toolbar>
             <Modal aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description" open={openModal} onClose={handleCloseModal} >
@@ -468,7 +425,7 @@ const EnhancedTableToolbar = props => {
                                             value={values.name} onChange={handleChange('name')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                         <Grid item xs={4}>
-                                            <TextField id="registration" required type="number" label="Matrícula" style={{ width: '100%' }} className={classes.textField}
+                                            <TextField id="registration" required type="number" label="Matrícula" style={{ width: '100%' }} maxLength="10" className={classes.textField}
                                                 value={values.registration} onChange={handleChange('registration')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                     </Grid>
@@ -545,11 +502,11 @@ const EnhancedTableToolbar = props => {
                                     </Grid>
                                     <Grid container direction="row" justify="space-around" alignItems="center">
                                         <Grid item xs={6}>
-                                            <TextField id="workload" required type="number" label="Carga horária da Atividade (em horas)" style={{ width: '95%' }}
+                                            <TextField id="workload" required type="number" label="Carga horária da Atividade (em horas)" style={{ width: '95%' }} maxLength="5"
                                                 className={classes.textField} value={values.workload} onChange={handleChange('workload')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                         <Grid item xs={6}>
-                                            <TextField id="requestedWorkload" required type="number" label="Carga horária Solicitada (em horas)" style={{ width: '95%' }}
+                                            <TextField id="requestedWorkload" required type="number" label="Carga horária Solicitada (em horas)" style={{ width: '95%' }} maxLength="5"
                                                 className={classes.textField} value={values.requestedWorkload} onChange={handleChange('requestedWorkload')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                     </Grid>
@@ -651,8 +608,15 @@ const useStyles = makeStyles(theme => ({
         top: 20,
         width: 1,
     },
+    button: {
+        marginTop: theme.spacing(2),
+        color: 'white',
+        backgroundColor: '#009045',
+    },
     margin: {
         margin: theme.spacing(1),
+        color: 'white',
+        backgroundColor: '#009045',
     },
     extendedIcon: {
         marginRight: theme.spacing(1),
@@ -673,30 +637,98 @@ export default function EnhancedTable() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [open, setOpen] = useState(false)
     const [valueRadio, setValueRadio] = useState('')
+    const [valueRadioInfo, setValueRadioInfo] = useState('')
     const [avaliation, setAvaliation] = useState({
+        activitieId: "",
         hourLoad: "",
         obs: "",
         status: ""
     })
     const [obsShow, setObsShow] = useState(false);
+    const [actSelect, setActSelect] = useState(false);
     const [hourLoadShow, setHourLoadShow] = useState(false);
+    const [changeInfo, setChangeInfo] = useState(false);
     const [idSol, setIdsol] = useState()
     const [anexos, setAnexos] = useState([])
+    const [openDialog, setOpenDialog] = useState(false)
+    const [submitMessage, setSubmitMessage] = useState('')
+
+    const [groups, setGroups] = useState([])
+    const [activities, setActivities] = useState([])
+    const [activitiesByGroup, setActivitiesByGroup] = useState([])
+    const [groupKey, setGroupKey] = useState()
+    const [selectValues, setSelectValues] = useState({
+        group: '',
+        activitie: '',
+      });
 
     const [rows, setRows] = useState([])
+
+    useEffect(() => {
+        async function loadSolicitations() {
+          const response = await axios.get('http://localhost:2222/solicitacao/infos/')
+          setGroups(response.data.grupos)
+          setActivitiesByGroup(response.data.atividades)
+          setActivities(response.data.atividades)
+        }
+        loadSolicitations()
+      }, [])
+
+      useEffect(() => {
+        setActivities(getActivities(activitiesByGroup, groupKey))
+        if(selectValues.group !== ''){
+            setActSelect(false)
+        } 
+
+      }, [activitiesByGroup, groupKey, selectValues])
+
+      const handleAvaliation = () => event => {
+        setAvaliation({ ...avaliation, [event.target.id]: event.target.value });
+    }
+
+    const handleChangeGroup = event => {
+        setGroupKey(event.target.value)
+        setSelectValues(oldValues => ({
+            ...oldValues,
+            [event.target.name]: event.target.value,
+          }));
+      };
+
+    const handleChangeSelect = event => {
+        setSelectValues(oldValues => ({
+          ...oldValues,
+          [event.target.name]: event.target.value,
+        }));
+        setAvaliation({ ...avaliation, activitieId: event.target.value })
+      };
 
     const handleChangeDeferred = event => {
         setHourLoadShow(true);
         setObsShow(true);
+        setAvaliation({ ...avaliation, status: "true" })
       };
+
+    function  handleInfoChange(resp) {
+        if(resp === 'yes') {
+            setChangeInfo(true)
+        }
+        if(resp === 'no') {
+            setChangeInfo(false)
+        }
+    }
 
     const handleChangeRejected = event => {
         setObsShow(true);
         setHourLoadShow(false);
+        setAvaliation({ ...avaliation, status: "false" })
       };
 
     const handleChangeRadio = event => {
         setValueRadio(event.target.value);
+      };
+    
+    const handleChangeRadioInfo = event => {
+        setValueRadioInfo(event.target.value);
       };
 
     const handleModal = (index, id) => {
@@ -714,17 +746,28 @@ export default function EnhancedTable() {
           setRows(response.data)
         }
         loadSolicitations()
-      }, [])
-
+    }, [])
+    
     useEffect(() => {
         if(idSol){
             async function loadAnexos() {
-              const response = await axios.get(`http://localhost:2222/avaliacao/infos/${idSol}`)
-              setAnexos(response.data.atividade.docs)
+                const response = await axios.get(`http://localhost:2222/avaliacao/infos/${idSol}`)
+                setAnexos(response.data.anexos)
+                setAvaliation({ ...avaliation,
+                    activitieId: response.data.atividade.idAtividade })
+                }
+                loadAnexos()
             }
-            loadAnexos()
-        }
-      }, [idSol])
+        }, [idSol])
+    
+    async function handleDelete (id) {
+        
+            const response = await deleteSolicitacao(id)
+            console.log('veio aqui')
+
+           
+        
+    }
 
     const handleRequestSort = (event, property) => {
         const isDesc = orderBy === property && order === 'desc';
@@ -740,32 +783,6 @@ export default function EnhancedTable() {
         }
         setSelected([]);
     };
-
-    function handleAttachment (event, id){
-        console.log(event, id)
-        // if(fileList.length === 0){
-        //     const fileData = ({
-        //         idDoc: event.target.id,
-        //         file: event.target.files[0]
-        //     })
-        //     fileList.push(fileData)
-        // } else {
-        //     let index
-        //     for (index = 0; index < fileList.length; index++) {
-        //         if(fileList[index].idDoc === event.target.id){
-        //             fileList[index].file = event.target.files[0]
-        //             return
-        //         }
-        //     }
-        //     const fileData = ({
-        //         idDoc: event.target.id,
-        //         file: event.target.files[0]
-        //     })
-        //     fileList.push(fileData)
-        // }
-        // console.log(fileList)
-        //setFiles(event.target.files[0])
-    }
 
     const handleClick = (event, name) => {
         const selectedIndex = selected.indexOf(name);
@@ -796,6 +813,36 @@ export default function EnhancedTable() {
         setPage(0);
     };
 
+    const handleOpenDialog = () => {
+        setOpenDialog(true);
+    };
+    
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+        window.location.reload()
+    };
+
+    async function handleSubmit(event) {
+        console.log(avaliation)
+
+        var data = {
+            cargaHorariaAtribuida: avaliation.hourLoad,
+            idSolicitacao: idSol.toString(),
+            idAtividade: avaliation.activitieId.toString(),
+            parecer: avaliation.obs,
+            deferido: avaliation.status
+        }
+        console.log(JSON.stringify(data))
+        const response = await sendAvaliation(data, idSol)
+        console.log(response)
+        // if(response){
+        //     setSubmitMessage('Solicitação Realizada com Sucesso!')
+        // } else {
+        //     setSubmitMessage('Houve um problema em enviar a Solicitação!')
+        // }
+        // handleOpenDialog()
+    }
+
     const isSelected = name => selected.indexOf(name) !== -1;
 
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
@@ -813,15 +860,10 @@ export default function EnhancedTable() {
                                 {stableSort(rows, getSorting(order, orderBy))
                                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                     .map((row, index) => {
-                                        const isItemSelected = isSelected(row.name);
-                                        const labelId = `enhanced-table-checkbox-${index}`;
                                         return (
-                                            <TableRow hover onClick={event => handleClick(event, row.idSolicitacao)} role="checkbox" aria-checked={isItemSelected}
-                                                tabIndex={-1} key={row.idSolicitacao} selected={isItemSelected} >
-                                                <TableCell padding="checkbox">
-                                                    <Checkbox inputProps={{ 'aria-labelledby': labelId }} />
-                                                </TableCell>
-                                                <TableCell align="left" component="th" id={labelId} scope="row" padding="none">
+                                            <TableRow onClick={event => handleClick(event, row.idSolicitacao)} role="checkbox"
+                                                tabIndex={-1} key={row.idSolicitacao} >
+                                                <TableCell align="left" component="th" id={row.idSolicitacao} scope="row" padding="none">
                                                     {row.nomeAluno}
                                                 </TableCell>
                                                 <TableCell align="left">{row.atividade.descricao}</TableCell>
@@ -832,6 +874,9 @@ export default function EnhancedTable() {
                                                     <IconButton onClick={() => handleModal(index, row.idSolicitacao)}>
                                                         <DescriptionIcon />
                                                     </IconButton>
+                                                        <IconButton onClick={() => handleDelete(row.idSolicitacao)}>
+                                                            <DeleteIcon />
+                                                        </IconButton>
                                                 </TableCell>
                                                 <Modal aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description"
                                                     open={open[index]} onClose={handleClose} >
@@ -844,102 +889,93 @@ export default function EnhancedTable() {
                                                             </Grid>
                                                             <Grid container direction="row" justify="space-around" alignItems="center">
                                                                 <Grid item xs={6}>
-                                                                    <Typography paragraph >
-                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
-                                                                            <Box fontWeight="fontWeightBold" m={1}>Aluno: </Box>
-                                                                            {row.nomeAluno}
-                                                                        </Grid>
-                                                                    </Typography>
+                                                                    <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                        <Typography paragraph >
+                                                                            <strong>Aluno: </strong>{row.nomeAluno}
+                                                                        </Typography>
+                                                                    </Grid>
                                                                 </Grid>
                                                                 <Grid item xs={6}>
-                                                                    <Typography paragraph>
-                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
-                                                                            <Box fontWeight="fontWeightBold" m={1}>Matrícula: </Box>
-                                                                            {row.matricula}
-                                                                        </Grid>
-                                                                    </Typography>
+                                                                    <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                        <Typography paragraph>
+                                                                            <strong>Matrícula: </strong>{row.matricula}
+                                                                        </Typography>
+                                                                    </Grid>
                                                                 </Grid>
                                                             </Grid>
                                                             <Grid container direction="row" justify="space-between" alignItems="center">
                                                                 <Grid item xs={6}>
-                                                                    <Typography paragraph>
-                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
-                                                                            <Box fontWeight="fontWeightBold" m={1}>Atividade: </Box>
-                                                                            {row.atividade.descricao}
-                                                                        </Grid>
+                                                                    <Typography paragraph >
+                                                                        <strong>Atividade: </strong>{row.atividade.descricao}
                                                                     </Typography>
                                                                 </Grid>
                                                                 <Grid item xs={6}>
-                                                                    <Typography paragraph>
-                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
-                                                                            <Box fontWeight="fontWeightBold" m={1}>Grupo: </Box>
-                                                                            {row.atividade.grupo.nome}
-                                                                        </Grid>
+                                                                    <Typography paragraph >
+                                                                        <strong>Grupo: </strong>{row.atividade.grupo.nome}
                                                                     </Typography>
                                                                 </Grid>
                                                             </Grid>
                                                             <Grid container direction="row" justify="space-around" alignItems="center">
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
-                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
-                                                                            <Box fontWeight="fontWeightBold" m={1}>Professor Responsável: </Box>
-                                                                            {row.profRes}
-                                                                        </Grid>
+                                                                        <strong>Professor Responsável: </strong>{row.profRes}
                                                                     </Typography>
                                                                 </Grid>
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
-                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
-                                                                            <Box fontWeight="fontWeightBold" m={1}>Local: </Box>
-                                                                            {row.local}
-                                                                        </Grid>
+                                                                        <strong>Local: </strong>{row.local}
                                                                     </Typography>
                                                                 </Grid>
                                                             </Grid>
                                                             <Grid container direction="row" justify="space-between" alignItems="center">
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
-                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
-                                                                            <Box fontWeight="fontWeightBold" m={1}>Início: </Box>
-                                                                            {row.dataInicio}
-                                                                        </Grid>
+                                                                        <strong>Início: </strong>{row.dataInicio}
                                                                     </Typography>
                                                                 </Grid>
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
-                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
-                                                                            <Box fontWeight="fontWeightBold" m={1}>Fim: </Box>
-                                                                            {row.dataFim}
-                                                                        </Grid>
+                                                                        <strong>Fim: </strong>{row.dataFim}
                                                                     </Typography>
                                                                 </Grid>
                                                             </Grid>
                                                             <Grid container direction="row" justify="flex-start" alignItems="center">
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
-                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
-                                                                            <Box fontWeight="fontWeightBold" m={1}>Carga Horária Solicitada: </Box>
-                                                                            {row.cargaHorariaSoli} hora(s)
-                                                                        </Grid>
+                                                                        <strong>Carga Horária Solicitada: </strong>{row.cargaHorariaSoli} hora(s)
                                                                     </Typography>
                                                                 </Grid>
                                                             </Grid>
                                                             <Grid container justify="space-between" alignItems="center">
                                                                 <Typography paragraph>
-                                                                    <Grid container direction="row" justify="flex-start" alignItems="center">
-                                                                        <Box fontWeight="fontWeightBold" m={1}>Descrição: </Box>
-                                                                        {row.descricao}
-                                                                    </Grid>
+                                                                    <strong>Fim: </strong>{row.descricao}
                                                                 </Typography>
                                                             </Grid>
                                                             <Grid container direction="row" justify="flex-start" alignItems="center">
-                                                                <Box fontWeight="fontWeightBold" style={{ width: '100%'}} m={1}>Comprovantes: </Box>
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph style={{ marginBottom: 0 }}>
+                                                                        <strong>Comprovantes: </strong>
+                                                                    </Typography>
+                                                                </Grid>
+                                                            </Grid>
+                                                            <Grid container direction="row" justify="flex-start" alignItems="center">
                                                                 {anexos.map((anexo, index) => (
-                                                                    <Grid item xs={4} style={{ maxWidth: '30%', margin: '1%' }}>
-                                                                        <Grid container direction="row" justify="flex-start" alignItems="center" style={{ width: '100%', marginTop:16 }}>
-                                                                            <label htmlFor={anexo.idDocNecessario}>{anexo.nome}</label>
-                                                                            <Fab id={anexo.idDocNecessario} onClick={(e) => {handleAttachment(anexo, anexo.idDocNecessario)}} variant="extended" color="primary"
-                                                                                aria-label="attach" className={classes.margin}>
+                                                                    <Grid item key={anexo.idAnexo} xs={4} style={{ maxWidth: '30%' }}>
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="flex-start" style={{ width: '100%', margin: '1%' }}>
+                                                                            <label htmlFor={anexo.idAnexo}>{anexo.doc.nome}</label>
+                                                                            <Fab 
+                                                                                id={anexo.idDocNecessario}
+                                                                                onClick={(e) => {
+                                                                                    window.open(
+                                                                                        `http://localhost:2222/avaliacao/file/${anexo.nome}`,
+                                                                                        '_blank',
+                                                                                        'noopener'
+                                                                                    )
+                                                                                }}
+                                                                                variant="extended"
+                                                                                color="primary"
+                                                                                aria-label="attach"
+                                                                                className={classes.margin}>
                                                                                 <GetAppIcon className={classes.extendedIcon} />
                                                                                 Arquivo {index + 1}
                                                                             </Fab>
@@ -960,18 +996,120 @@ export default function EnhancedTable() {
                                                                         label="Indeferir" labelPlacement="end" onChange={handleChangeRejected}/>
                                                                     </RadioGroup>
                                                                 </FormControl>
-                                                                <Button variant="contained" color="primary" className={classes.button}>
-                                                                    <DescriptionIcon />
-                                                                    Confirmar
-                                                                </Button>
                                                             </Grid>
-                                                            <TextField id="usedHours" required type="number" label="Horas Aproveitadas" style={{ width: 'fit-content', display: hourLoadShow === true ?"flex":"none" }}
-                                                                className={classes.textField} value="" margin="normal" variant="outlined" autoComplete="off"/>
-                                                            <TextField id="observation" required label="Observações" multiline rows="4" style={{ display: obsShow === true ?"flex":"none" }}
-                                                                className={classes.textField} margin="normal" variant="outlined" />
+                                                            <TextField
+                                                                id="hourLoad"
+                                                                required
+                                                                type="number"
+                                                                label="Horas Aproveitadas"
+                                                                style={{ width: 'fit-content', display: hourLoadShow === true ? "flex" : "none" }}
+                                                                className={classes.textField}
+                                                                value={avaliation.hourLoad}
+                                                                onChange={handleAvaliation('hourLoad')}
+                                                                margin="normal"
+                                                                autoComplete="off"
+                                                                maxLength="5"
+                                                            />
+                                                            <TextField
+                                                                id="obs"
+                                                                required
+                                                                label="Observações"
+                                                                multiline rows="4"
+                                                                style={{ display: obsShow === true ? "flex" : "none" }}
+                                                                className={classes.textField}
+                                                                value={avaliation.obs}
+                                                                onChange={handleAvaliation('obs')}
+                                                                margin="normal"
+                                                                variant="filled"
+                                                            />
+                                                        </Grid>
+                                                        <Grid container direction="row" justify="space-between" alignItems="center" style={{ display: hourLoadShow === true ? "flex" : "none" }}>
+                                                                <FormControl style={{ marginTop: 10 }} component="fieldset">
+                                                                    <FormLabel component="legend">Necessita mudar o Grupo e/ou Atividade?</FormLabel>
+                                                                    <RadioGroup aria-label="position" name="position" value={valueRadioInfo} onChange={handleChangeRadioInfo} row required>
+                                                                        <FormControlLabel value="yes"
+                                                                        control={<Radio color="primary" />}
+                                                                        label="Sim" labelPlacement="end" onChange={(e) => {handleInfoChange('yes')}}/>
+                                                                        <FormControlLabel value="no"
+                                                                        control={<Radio color="secondary" />}
+                                                                        label="Não" labelPlacement="end" onChange={(e) => {handleInfoChange('no')}}/>
+                                                                    </RadioGroup>
+                                                                </FormControl>
+                                                            </Grid>
+                                                        <Grid container direction="row" justify="space-between" alignItems="center">
+                                                            <div style = {{marginTop: '2%', width: '100%', display: changeInfo === true ? "flex" : "none" }}>
+                                                                <FormControl style = {{width: '35%'}}>
+                                                                    <InputLabel style = {{ position: 'relative' }}htmlFor="groupSelect">
+                                                                        Grupo da ACG
+                                                                    </InputLabel>
+                                                                    <Select
+                                                                        value={selectValues.group}
+                                                                        className={classes.textField}
+                                                                        style={{ width: '100%', marginTop: 0 }}
+                                                                        onChange={handleChangeGroup}
+                                                                        inputProps={{
+                                                                            name: 'group',
+                                                                            id: 'groupSelect',
+                                                                        }}
+                                                                        >
+                                                                        {groups.map((group, index) => (
+                                                                            <MenuItem
+                                                                                key={index}
+                                                                                value={group.idGrupo}
+                                                                                name={group.nome}
+                                                                            >
+                                                                                {group.nome}
+                                                                            </MenuItem>
+                                                                        ))}
+                                                                    </Select>
+                                                                </FormControl>
+                                                                <div style={{ margin: '2%'}}></div>
+                                                                <FormControl style = {{width: '60%' }}>
+                                                                    <InputLabel  style = {{ position: 'relative' }} htmlFor="activitieSelect">
+                                                                        Atividade
+                                                                    </InputLabel>
+                                                                    <Select
+                                                                        value={selectValues.activitie}
+                                                                        disabled={actSelect}
+                                                                        className={classes.textField}
+                                                                        style={{ width: '100%', marginTop: 0 }}
+                                                                        onChange={handleChangeSelect}
+                                                                        inputProps={{
+                                                                            name: 'activitie',
+                                                                            id: 'activitieSelect',
+                                                                        }}
+                                                                        >
+                                                                            {activities.map((activitie, index) => (
+                                                                                <MenuItem
+                                                                                key={index}
+                                                                                value={activitie.idAtividade}
+                                                                                name={activitie.descricao}
+                                                                                >
+                                                                                    {activitie.descricao}
+                                                                                </MenuItem>
+                                                                            ))}
+                                                                    </Select>
+                                                                </FormControl>
+                                                            </div>
+                                                        </Grid>
+                                                        <Grid container direction="row" justify="flex-end" alignItems="center">
+                                                            <Button style={{ marginTop: 5 }} onClick={handleSubmit} variant="contained" color="primary" className={classes.button}>
+                                                                <DescriptionIcon />
+                                                                Confirmar
+                                                            </Button>
                                                         </Grid>
                                                     </CardContent>
                                                 </Modal>
+                                                <Dialog open={openDialog} onClose={handleCloseDialog} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description" >
+                                                    <Grid container direction="column" justify="space-around" alignItems="center">
+                                                        <DialogTitle id="alert-dialog-title">{submitMessage}</DialogTitle>
+                                                        <DialogActions>
+                                                            <Button onClick={handleCloseDialog} color="primary" autoFocus>
+                                                                    OK!
+                                                                </Button>
+                                                            </DialogActions>
+                                                        </Grid>
+                                                    </Dialog>
                                             </TableRow>
                                         );
                                     })}

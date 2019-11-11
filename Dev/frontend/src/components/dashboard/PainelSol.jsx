@@ -22,6 +22,7 @@ import GetAppIcon from '@material-ui/icons/GetApp'
 
 import { UserContext } from '../../context/UserContext'
 import { validateName, validateRegistration, validateDate, sendForm, deleteSolicitacao, getDocs, getActivities } from '../../scripts/scripts'
+import './styles.css'
 
 function getModalStyle() {
     const top = 50
@@ -299,6 +300,7 @@ const EnhancedTableToolbar = props => {
             })
             fileList.push(fileData)
         }
+        console.log(fileList)
     }
 
     const handleDateChangeStart = date => {
@@ -565,32 +567,25 @@ const EnhancedTableToolbar = props => {
                                     </Typography>
                                 ) : (
                                     <Grid container direction="column" justify="center" alignItems="flex-start" style={{ width: '100%' }}>
+                                        
                                         {docs.map((doc, index) => (
-                                            <Grid container direction="column" justify="center" alignItems="flex-start">
+                                            <div style={{ marginTop: '4%' }} className="input-group">
                                                 <Typography variant="body2" style={{padding:0}} className={classes.typography}>
                                                     {doc.nome}
                                                 </Typography>
-                                                <Grid container direction="row" justify="flex-start" alignItems="center" style={{ width: '100%' }}>
-                                                    <Grid item xs={6} style={{ maxWidth: '30%' }}>
-                                                        <label htmlFor={doc.idDocNecessario}>
-                                                            <Button variant="outlined" component="span" className={classes.button} style={{ padding: '5% 13%',marginTop:0 }}>
-                                                                Arquivo {index + 1}
-                                                                <input required accept="image/*, .pdf" className={classes.input} onChange={(e) => {handleFile(e, index)}} id={doc.idDocNecessario} multiple type="file" />
-                                                            </Button>
-                                                        </label>
-                                                    </Grid>
-                                                    {/* <Grid item xs={6}>
-                                                        <Typography style={{ padding:0, marginLeft: 10 }}className={classes.typography}>
-                                                            {fileName[index]}
-                                                        </Typography>
-                                                    </Grid>
-                                                    {/* {!showFileName ? (
-                                                            <div></div>
-                                                    ) : (
-                                                    )} */} 
-                                                </Grid>
-
-                                            </Grid>
+                                                <div>
+                                                    <label className="custom-label" htmlFor={doc.idDocNecessario} />
+                                                    <input 
+                                                        required
+                                                        type="file"
+                                                        onChange={(e) => {handleFile(e, index)}} 
+                                                        value={fileList[index]}
+                                                        accept="image/*, .pdf"
+                                                        className="custom-file-input"
+                                                        id={doc.idDocNecessario}
+                                                    />
+                                                </div>
+                                            </div>
                                         ))}
                                     </Grid>
                                 )}
@@ -943,7 +938,7 @@ export default function EnhancedTable() {
                                                                     <Grid item xs={4} style={{ maxWidth: '30%', margin: '1%' }}>
                                                                         <Grid container direction="row" justify="flex-start" alignItems="center" style={{ width: '100%', marginTop:16 }}>
                                                                             <label htmlFor={anexo.idDocNecessario}>{anexo.nome}</label>
-                                                                            <Fab id={anexo.idDocNecessario} onClick={(e) => {handleAttachment(e.target.value, anexo.idDocNecessario)}} variant="extended" color="primary"
+                                                                            <Fab id={anexo.idDocNecessario} onClick={(e) => {handleAttachment(anexo, anexo.idDocNecessario)}} variant="extended" color="primary"
                                                                                 aria-label="attach" className={classes.margin}>
                                                                                 <GetAppIcon className={classes.extendedIcon} />
                                                                                 Arquivo {index + 1}

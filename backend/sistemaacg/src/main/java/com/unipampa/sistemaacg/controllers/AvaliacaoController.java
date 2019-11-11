@@ -62,15 +62,14 @@ public class AvaliacaoController {
 
     @JsonIgnore
     @PostMapping("/{id}")
-    public ResponseEntity postAvaliacao(@RequestBody AvaliacaoDTO avaliacao, @PathVariable long id) throws Exception {
+    public ResponseEntity postAvaliacao(@RequestBody AvaliacaoDTO avaliacao, @PathVariable long id) {
 
         AvaliacaoSolicitacao newAvaliacao = new AvaliacaoSolicitacao();
         Date dataAtual = new Date();
-        //Resolver erro STACKOVERFLOW.
         Solicitacao avaliada = solicitacaoRepository.findById(id).get();
         String status = avaliada.getStatus();
         if (status.equals("Deferido") || status.equals("Indeferido")) {
-            throw new Exception("LOL");
+            return ResponseEntity.badRequest().body("Essa avaliação da foi avaliada");
         }
         if (avaliacao.isDeferido()) {
             avaliada.setStatus(Status.DEFERIDO.toString());

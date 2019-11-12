@@ -125,8 +125,8 @@ public class SolicitacaoController {
         if (!atividade.isPresent()) {
             return ResponseEntity.badRequest().body("A Atividade com o ID " + solicitacao.getIdAtividade() + " não foi encontrada");
         }
-        if (files == null){
-         return ResponseEntity.badRequest().body("Você precisa anexar os comprovantes");
+        if (files.length < atividade.get().getDocs().size()){
+            return ResponseEntity.badRequest().body("Você precisa anexar todos os comprovantes");
         }
 
         Solicitacao newSolicitacao = new Solicitacao();

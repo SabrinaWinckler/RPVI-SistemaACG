@@ -62,7 +62,6 @@ public class AvaliacaoController {
 
     @JsonIgnore
     @PostMapping("/{id}")
-    @CrossOrigin(origins = "http://localhost:3000")
     public ResponseEntity postAvaliacao(@RequestBody AvaliacaoDTO avaliacao, @PathVariable long id) {
 
         AvaliacaoSolicitacao newAvaliacao = new AvaliacaoSolicitacao();

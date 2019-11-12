@@ -1,12 +1,11 @@
 import React, { useContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import clsx from 'clsx';
 import axios from 'axios'
-import { lighten, makeStyles, withStyles } from '@material-ui/core/styles';
+import { lighten, makeStyles } from '@material-ui/core/styles';
 import {
     Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar,
-    Typography, Paper, Checkbox, IconButton, Tooltip, Grid, CardContent, Modal, FormControl, InputLabel,
-    Button, Select, MenuItem, TextField, Chip, Avatar, Dialog, DialogActions, DialogTitle, Box, Radio,
+    Typography, Paper, IconButton, Tooltip, Grid, CardContent, Modal, FormControl, InputLabel,
+    Button, Select, MenuItem, TextField, Chip, Avatar, Dialog, DialogActions, DialogTitle, Radio,
     RadioGroup, FormControlLabel, FormLabel, Fab, Divider  
 } from '@material-ui/core';
 import { Warning as WarningIcon } from '@material-ui/icons'
@@ -15,6 +14,7 @@ import DateFnsUtils from '@date-io/date-fns'
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 import DescriptionIcon from '@material-ui/icons/Description'
+import VisibilityIcon from '@material-ui/icons/Visibility';
 import GetAppIcon from '@material-ui/icons/GetApp'
 
 import { UserContext } from '../../context/UserContext'
@@ -211,13 +211,6 @@ const EnhancedTableToolbar = props => {
     const [openDialog, setOpenDialog] = useState(false)
     const [submitMessage, setSubmitMessage] = useState('')
     const [runButtons, setRunButtons] = useState(false)
-    const [fileName, setFileName] = useState([])
-    const [showFileName, setShowFileName] = useState(false)
-
-    //   function handleTeste() {
-    //     console.log(fileList)
-    //     console.log(docs)
-    //   }
 
     useEffect(() => {
         async function loadSolicitations() {
@@ -258,13 +251,33 @@ const EnhancedTableToolbar = props => {
             return
         }else{
             setDocs(docsLine)
-            setFileName(fileNameList)
             console.log(fileNameList)
             setRunButtons(true)
         }
       };
 
-    function handleFile (event, idFile){
+    function handleFile (event, fileName){
+        if (!event || !event.target || !event.target.files || event.target.files.length === 0) {
+            return
+        }
+
+        const name = event.target.files[0].name
+        const lastDot = name.lastIndexOf('.')
+        const ext = name.substring(lastDot + 1).toLowerCase()
+
+        if ( ext !== 'pdf' && ext !== 'jpg' && ext !== 'jpeg' && ext !== 'png' && ext !== 'zip') {
+            const newFiles = Object.keys(fileList).reduce((object, key) => {
+                if (key !== fileName) {
+                    console.log('not deleting', key, fileName)
+                    object[key] = fileList[key]
+                }
+                return object
+            }, {})
+            console.log(newFiles)
+
+            alert('Tipo de arquivo não permitido')
+            return
+        }
         if(fileList.length === 0){
             const fileData = ({
                 idDoc: event.target.id,
@@ -285,7 +298,6 @@ const EnhancedTableToolbar = props => {
             })
             fileList.push(fileData)
         }
-        console.log(fileList)
     }
 
     const handleDateChangeStart = date => {
@@ -336,6 +348,7 @@ const EnhancedTableToolbar = props => {
     };
 
     async function handleSubmit(event) {
+        console.log(fileList)
         if(!validateName(values.name)){
             setStatus({ show: true, message: 'Nome Inválido!' })
             return
@@ -348,8 +361,9 @@ const EnhancedTableToolbar = props => {
             setStatus({ show: true, message: 'Número de Matrícula Inválido!' })
             return
         }
-        if(fileList === null){
+        if(fileList === null || fileList.length === 0 || fileList.length < docs.length){
             setStatus({ show: true, message: 'Você precisa anexar o(s) arquivo(s) necessário(s)!' })
+            return
         }
         var data = {
             local: values.location,
@@ -362,7 +376,7 @@ const EnhancedTableToolbar = props => {
             descricao: values.description,
             idAtividade: values.activitie.toString()
         }
-        const response = await sendForm(data, fileList)
+        const response = sendForm(data, fileList)
         console.log(response)
         if(response){
             setSubmitMessage('Solicitação Realizada com Sucesso!')
@@ -535,7 +549,7 @@ const EnhancedTableToolbar = props => {
                                                     <input 
                                                         required
                                                         type="file"
-                                                        onChange={(e) => {handleFile(e, index)}} 
+                                                        onChange={(e) => {handleFile(e, doc.nome)}} 
                                                         value={fileList[index]}
                                                         accept="image/*, .pdf"
                                                         className="custom-file-input"
@@ -636,6 +650,7 @@ export default function EnhancedTable() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [open, setOpen] = useState(false)
+    const [openDetails, setOpenDetails] = useState(false)
     const [valueRadio, setValueRadio] = useState('')
     const [valueRadioInfo, setValueRadioInfo] = useState('')
     const [avaliation, setAvaliation] = useState({
@@ -651,7 +666,13 @@ export default function EnhancedTable() {
     const [idSol, setIdsol] = useState()
     const [anexos, setAnexos] = useState([])
     const [openDialog, setOpenDialog] = useState(false)
+    const [status, setStatus] = useState({ show: false, message: '' })
     const [submitMessage, setSubmitMessage] = useState('')
+    const [deferred, setDeferred] = useState(false)
+    const [showButton, setShowButton] = useState(false)
+    const [respInfoChange, setRespInfoChange] = useState('')
+    const [openDialogDelete, setOpenDialogDelete] = useState(false)
+    const [idDelete, setIdDelete] = useState()
 
     const [groups, setGroups] = useState([])
     const [activities, setActivities] = useState([])
@@ -682,8 +703,12 @@ export default function EnhancedTable() {
 
       }, [activitiesByGroup, groupKey, selectValues])
 
-      const handleAvaliation = () => event => {
+    const handleAvaliation = () => event => {
         setAvaliation({ ...avaliation, [event.target.id]: event.target.value });
+    }
+
+    const handleCloseMessageError = () => {
+        setStatus({ show: false })
     }
 
     const handleChangeGroup = event => {
@@ -703,23 +728,33 @@ export default function EnhancedTable() {
       };
 
     const handleChangeDeferred = event => {
+        setDeferred(true)
         setHourLoadShow(true);
         setObsShow(true);
+        setShowButton(true)
+        if(respInfoChange === 'yes') {
+            setChangeInfo(true)
+        }
         setAvaliation({ ...avaliation, status: "true" })
       };
 
     function  handleInfoChange(resp) {
         if(resp === 'yes') {
+            setRespInfoChange('yes')
             setChangeInfo(true)
         }
         if(resp === 'no') {
+            setRespInfoChange('no')
             setChangeInfo(false)
         }
     }
 
     const handleChangeRejected = event => {
+        setDeferred(false)
         setObsShow(true);
         setHourLoadShow(false);
+        setChangeInfo(false)
+        setShowButton(true)
         setAvaliation({ ...avaliation, status: "false" })
       };
 
@@ -735,9 +770,18 @@ export default function EnhancedTable() {
         setIdsol(id)
         setOpen({ open: open, [index]: !open });
     };
+    
+    const handleModalDetails = (index, id) => {
+        setIdsol(id)
+        setOpenDetails({ openDetails: openDetails, [index]: !openDetails });
+    };
 
     const handleClose = () => {
         setOpen(false);
+    };
+
+    const handleCloseDetails = () => {
+        setOpenDetails(false);
     };
 
     useEffect(() => {
@@ -761,12 +805,15 @@ export default function EnhancedTable() {
         }, [idSol])
     
     async function handleDelete (id) {
-        
-            const response = await deleteSolicitacao(id)
+            setOpenDialogDelete(false)
+            const response = deleteSolicitacao(id)
             console.log('veio aqui')
-
-           
-        
+            if(response){
+                setSubmitMessage('Solicitação Deletada com Sucesso!')
+           } else {
+               setSubmitMessage('Houve um problema ao deletar a Solicitação!')
+           }
+           handleOpenDialog()
     }
 
     const handleRequestSort = (event, property) => {
@@ -801,29 +848,49 @@ export default function EnhancedTable() {
             );
         }
 
-        setSelected(newSelected);
+        setSelected(newSelected)
     };
 
     const handleChangePage = (event, newPage) => {
-        setPage(newPage);
+        setPage(newPage)
     };
 
     const handleChangeRowsPerPage = event => {
         setRowsPerPage(+event.target.value);
-        setPage(0);
+        setPage(0)
     };
 
     const handleOpenDialog = () => {
-        setOpenDialog(true);
+        setOpenDialog(true)
     };
     
     const handleCloseDialog = () => {
-        setOpenDialog(false);
+        setOpenDialog(false)
+        window.location.reload()
+    };
+
+    const handleOpenDialogDelete = (id) => {
+        setSubmitMessage('Tem certeza que deseja deletar essa Solicitação?')
+        setOpenDialogDelete(true)
+        setIdDelete(id)
+    };
+    
+    const handleCloseDialogDelete = () => {
+        setOpenDialogDelete(false)
         window.location.reload()
     };
 
     async function handleSubmit(event) {
-        console.log(avaliation)
+        var isEmpty = avaliation.obs.trim()
+        if(!isEmpty){
+            setStatus({ show: true, message: 'A observação (parecer) é necessária!' })
+            return
+        }
+        if(deferred) {
+            if(avaliation.hourLoad === undefined || avaliation.hourLoad === null || avaliation.hourLoad === '')
+            setStatus({ show: true, message: 'É necessário atribuir uma quantidade de horas!' })
+            return
+        }
 
         var data = {
             cargaHorariaAtribuida: avaliation.hourLoad,
@@ -833,17 +900,15 @@ export default function EnhancedTable() {
             deferido: avaliation.status
         }
         console.log(JSON.stringify(data))
-        const response = await sendAvaliation(data, idSol)
+        const response = sendAvaliation(data, idSol)
         console.log(response)
-        // if(response){
-        //     setSubmitMessage('Solicitação Realizada com Sucesso!')
-        // } else {
-        //     setSubmitMessage('Houve um problema em enviar a Solicitação!')
-        // }
-        // handleOpenDialog()
+        if(response){
+             setSubmitMessage('Solicitação Realizada com Sucesso!')
+        } else {
+            setSubmitMessage('Houve um problema em enviar a Solicitação!')
+        }
+        handleOpenDialog()
     }
-
-    const isSelected = name => selected.indexOf(name) !== -1;
 
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
 
@@ -871,16 +936,39 @@ export default function EnhancedTable() {
                                                 <TableCell align="left">{row.dataAtual}</TableCell>
                                                 <TableCell align="left">{row.status}</TableCell>
                                                 <TableCell align="left">
-                                                    <IconButton onClick={() => handleModal(index, row.idSolicitacao)}>
-                                                        <DescriptionIcon />
-                                                    </IconButton>
-                                                        <IconButton onClick={() => handleDelete(row.idSolicitacao)}>
+                                                    {row.status === 'Pendente' ? (
+                                                        <IconButton onClick={() => handleModal(index, row.idSolicitacao)}>
+                                                            <DescriptionIcon />
+                                                        </IconButton>
+                                                    ) : (
+                                                        <IconButton >
+                                                            <DescriptionIcon style={{opacity: 0.5}}/>
+                                                        </IconButton>
+                                                    )}
+                                                        <IconButton >
+                                                            <VisibilityIcon onClick={() => handleModalDetails(index, row.idSolicitacao)}/>
+                                                        </IconButton>
+                                                        <IconButton onClick={() => handleOpenDialogDelete(row.idSolicitacao)}>
                                                             <DeleteIcon />
                                                         </IconButton>
                                                 </TableCell>
                                                 <Modal aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description"
                                                     open={open[index]} onClose={handleClose} >
                                                     <CardContent style={modalStyle} className={classes.paperModal}>
+                                                        {status.show && (
+                                                            <Grid container direction="column" justify="center" alignItems="center" >
+                                                                <Chip avatar={
+                                                                        <Avatar>
+                                                                            <WarningIcon />
+                                                                        </Avatar>
+                                                                    }
+                                                                    label={status.message}
+                                                                    onDelete={handleCloseMessageError}
+                                                                    className={classes.chip}
+                                                                    style={{ color: "#222222" }}
+                                                                    />
+                                                                </Grid>
+                                                        )}
                                                         <Grid container direction="column" justify="space-evenly" alignItems="stretch" spacing={2}>
                                                             <Grid item xs>
                                                                 <Typography variant="h5" gutterBottom>
@@ -1093,9 +1181,128 @@ export default function EnhancedTable() {
                                                             </div>
                                                         </Grid>
                                                         <Grid container direction="row" justify="flex-end" alignItems="center">
-                                                            <Button style={{ marginTop: 5 }} onClick={handleSubmit} variant="contained" color="primary" className={classes.button}>
+                                                            <Button style={{ marginTop: 5, display: showButton === true ? "flex" : "none" }} onClick={handleSubmit} variant="contained" color="primary" className={classes.button}>
                                                                 <DescriptionIcon />
                                                                 Confirmar
+                                                            </Button>
+                                                        </Grid>
+                                                    </CardContent>
+                                                </Modal>
+                                                <Modal aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description"
+                                                    open={openDetails[index]} onClose={handleCloseDetails} >
+                                                    <CardContent style={modalStyle} className={classes.paperModal}>
+                                                        <Grid container direction="column" justify="space-evenly" alignItems="stretch" spacing={2}>
+                                                            <Grid item xs>
+                                                                <Typography variant="h5" gutterBottom>
+                                                                    Avaliação de Solicitação
+                                                                </Typography>
+                                                            </Grid>
+                                                            <Grid container direction="row" justify="space-around" alignItems="center">
+                                                                <Grid item xs={6}>
+                                                                    <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                        <Typography paragraph >
+                                                                            <strong>Aluno: </strong>{row.nomeAluno}
+                                                                        </Typography>
+                                                                    </Grid>
+                                                                </Grid>
+                                                                <Grid item xs={6}>
+                                                                    <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                        <Typography paragraph>
+                                                                            <strong>Matrícula: </strong>{row.matricula}
+                                                                        </Typography>
+                                                                    </Grid>
+                                                                </Grid>
+                                                            </Grid>
+                                                            <Grid container direction="row" justify="space-between" alignItems="center">
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph >
+                                                                        <strong>Atividade: </strong>{row.atividade.descricao}
+                                                                    </Typography>
+                                                                </Grid>
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph >
+                                                                        <strong>Grupo: </strong>{row.atividade.grupo.nome}
+                                                                    </Typography>
+                                                                </Grid>
+                                                            </Grid>
+                                                            <Grid container direction="row" justify="space-around" alignItems="center">
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <strong>Professor Responsável: </strong>{row.profRes}
+                                                                    </Typography>
+                                                                </Grid>
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <strong>Local: </strong>{row.local}
+                                                                    </Typography>
+                                                                </Grid>
+                                                            </Grid>
+                                                            <Grid container direction="row" justify="space-between" alignItems="center">
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <strong>Início: </strong>{row.dataInicio}
+                                                                    </Typography>
+                                                                </Grid>
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <strong>Fim: </strong>{row.dataFim}
+                                                                    </Typography>
+                                                                </Grid>
+                                                            </Grid>
+                                                            <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <strong>Carga Horária Solicitada: </strong>{row.cargaHorariaSoli} hora(s)
+                                                                    </Typography>
+                                                                </Grid>
+                                                            </Grid>
+                                                            <Grid container justify="space-between" alignItems="center">
+                                                                <Typography paragraph>
+                                                                    <strong>Descrição: </strong>{row.descricao}
+                                                                </Typography>
+                                                            </Grid>
+                                                            <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph style={{ marginBottom: 0 }}>
+                                                                        <strong>Comprovantes: </strong>
+                                                                    </Typography>
+                                                                </Grid>
+                                                            </Grid>
+                                                            <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                {anexos.map((anexo, index) => (
+                                                                    <Grid item key={anexo.idAnexo} xs={4} style={{ maxWidth: '30%' }}>
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="flex-start" style={{ width: '100%', margin: '1%' }}>
+                                                                            <label htmlFor={anexo.idAnexo}>{anexo.doc.nome}</label>
+                                                                            <Fab 
+                                                                                id={anexo.idDocNecessario}
+                                                                                onClick={(e) => {
+                                                                                    window.open(
+                                                                                        `http://localhost:2222/avaliacao/file/${anexo.nome}`,
+                                                                                        '_blank',
+                                                                                        'noopener'
+                                                                                    )
+                                                                                }}
+                                                                                variant="extended"
+                                                                                color="primary"
+                                                                                aria-label="attach"
+                                                                                className={classes.margin}>
+                                                                                <GetAppIcon className={classes.extendedIcon} />
+                                                                                Arquivo {index + 1}
+                                                                            </Fab>
+                                                                        </Grid>
+                                                                    </Grid>
+                                                                ))}
+                                                            </Grid>
+                                                            <Divider style={{ marginBottom: "1%" }}/>
+                                                        </Grid>
+                                                        <Grid container justify="space-between" alignItems="center">
+                                                                <Typography paragraph>
+                                                                    <strong>Situação: </strong>{row.status}
+                                                                </Typography>
+                                                            </Grid>
+                                                        <Grid container direction="row" justify="flex-end" alignItems="center">
+                                                            <Button style={{ marginTop: 5}} onClick={handleCloseDetails} variant="contained" color="primary" className={classes.button}>
+                                                                Fechar
                                                             </Button>
                                                         </Grid>
                                                     </CardContent>
@@ -1106,10 +1313,23 @@ export default function EnhancedTable() {
                                                         <DialogActions>
                                                             <Button onClick={handleCloseDialog} color="primary" autoFocus>
                                                                     OK!
-                                                                </Button>
-                                                            </DialogActions>
-                                                        </Grid>
-                                                    </Dialog>
+                                                            </Button>
+                                                        </DialogActions>
+                                                    </Grid>
+                                                </Dialog>
+                                                <Dialog open={openDialogDelete} onClose={handleCloseDialogDelete} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description" >
+                                                    <Grid container direction="column" justify="space-around" alignItems="center">
+                                                        <DialogTitle id="alert-dialog-title">{submitMessage}</DialogTitle>
+                                                        <DialogActions>
+                                                            <Button onClick={() => handleDelete(idDelete)} color="primary" autoFocus>
+                                                                    Confirmar
+                                                            </Button>
+                                                            <Button onClick={handleCloseDialogDelete} color="primary" autoFocus>
+                                                                    Cancelar
+                                                            </Button>
+                                                        </DialogActions>
+                                                    </Grid>
+                                                </Dialog>
                                             </TableRow>
                                         );
                                     })}

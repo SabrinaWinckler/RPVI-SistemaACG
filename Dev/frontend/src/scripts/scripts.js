@@ -50,10 +50,10 @@ export const sendForm = async (data, files) => {
     _.forEach(getFilesList(files), (value)=>{
         formData.append("file", value)
     })
-    axios.post('http://localhost:2222/solicitacao/', formData)
+    await axios.post('http://localhost:2222/solicitacao/', formData)
             .then(data => {
                 console.log('aqui chegou')
-                return true
+                return data
             })
             .catch(error => {
                 console.error(error.response.data.message)

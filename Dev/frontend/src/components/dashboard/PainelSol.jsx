@@ -863,7 +863,7 @@ export default function EnhancedTable() {
                                         return (
                                             <TableRow onClick={event => handleClick(event, row.idSolicitacao)} role="checkbox"
                                                 tabIndex={-1} key={row.idSolicitacao} >
-                                                <TableCell align="left" component="th" id={row.idSolicitacao} scope="row" padding="none">
+                                                <TableCell align="center" component="th" id={row.idSolicitacao} scope="row" padding="none">
                                                     {row.nomeAluno}
                                                 </TableCell>
                                                 <TableCell align="left">{row.atividade.descricao}</TableCell>
@@ -948,7 +948,7 @@ export default function EnhancedTable() {
                                                             </Grid>
                                                             <Grid container justify="space-between" alignItems="center">
                                                                 <Typography paragraph>
-                                                                    <strong>Fim: </strong>{row.descricao}
+                                                                    <strong>Descrição: </strong>{row.descricao}
                                                                 </Typography>
                                                             </Grid>
                                                             <Grid container direction="row" justify="flex-start" alignItems="center">

@@ -62,11 +62,8 @@ export const sendForm = async (data, files) => {
 }
 
 export const sendAvaliation = async (data, id) => {
-    var formData = new FormData()
-    _.forEach(data, (value, index)=>{
-        formData.append(index, value);
-    })
-    axios.post(`http://localhost:2222/avaliacao/${id}`)
+
+    axios.post(`http://localhost:2222/avaliacao/${id}`, data)
             .then(data => {
                 console.log(data)
                 return true

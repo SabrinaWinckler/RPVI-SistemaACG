@@ -165,11 +165,14 @@ public class SolicitacaoController {
 
     @DeleteMapping(value = "/{id}")
     public @ResponseBody
-    ResponseEntity<Optional<Solicitacao>> deleteSolicitacaobyId(@PathVariable long id) {
+    ResponseEntity deleteSolicitacaobyId(@PathVariable long id) {
         // Busca no banco pelo id
         Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
-        solicitacaoRepository.deleteById(id);
-        return ResponseEntity.ok(retornableSolicitacao);
+        if(retornableSolicitacao.get().getStatus().equals(Status.PENDENTE)){
+            solicitacaoRepository.deleteById(id);
+            return ResponseEntity.ok("Solicitação apagada com sucesso!");
+        }
+        return ResponseEntity.ok("Não é possível deletar a solicitação pois seu status é " + retornableSolicitacao.get().getStatus());
     }
 
 

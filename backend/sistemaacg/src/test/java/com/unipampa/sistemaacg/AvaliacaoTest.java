@@ -1,38 +1,22 @@
 package com.unipampa.sistemaacg;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Date;
-
 import com.unipampa.sistemaacg.controllers.AvaliacaoController;
-import com.unipampa.sistemaacg.controllers.SolicitacaoController;
 import com.unipampa.sistemaacg.dto.InfosSolicitacaoDTO;
 import com.unipampa.sistemaacg.dto.SolicitacaoPostDTO;
-import com.unipampa.sistemaacg.models.AvaliacaoSolicitacao;
 import com.unipampa.sistemaacg.models.Solicitacao;
 import com.unipampa.sistemaacg.repository.AtividadeRepository;
 import com.unipampa.sistemaacg.repository.CurriculoRepository;
 import com.unipampa.sistemaacg.repository.GrupoRepository;
 import com.unipampa.sistemaacg.repository.SolicitacaoRepository;
 import com.unipampa.sistemaacg.storageanexo.StorageAnexo;
-import com.unipampa.sistemaacg.storageanexo.StorageProperties;
 import com.unipampa.sistemaacg.storageanexo.StorageService;
 
-import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.multipart.MultipartFile;
-
-import net.bytebuddy.dynamic.DynamicType.Builder.FieldDefinition.Optional;
-
-import junit.framework.Assert;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -49,6 +48,9 @@ public class Solicitacao{
 	@JsonFormat(pattern="yyyy-MM-dd")
 	@NotNull(message = "A data de fim é obrigatória")
 	private Date dataFim;
+
+	@NotNull
+	private long cargaHorariaRealizada;
 
 	@NotNull(message = "A matrícula é obrigatória")
 	@Positive

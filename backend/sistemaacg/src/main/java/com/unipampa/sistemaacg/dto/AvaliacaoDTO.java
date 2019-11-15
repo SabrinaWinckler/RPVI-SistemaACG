@@ -1,7 +1,5 @@
 package com.unipampa.sistemaacg.dto;
 
-import com.unipampa.sistemaacg.models.Solicitacao;
-
 import lombok.Data;
 
 /**

@@ -17,6 +17,7 @@ public class SolicitacaoPostDTO {
 	private String dataInicio;
 	@JsonFormat(pattern="yyyy-MM-dd")
 	private String dataFim;
+	private long cargaHorariaRealizada;
 	private long cargaHorariaSoli;
 	private String profRes;
 	private String descricao;

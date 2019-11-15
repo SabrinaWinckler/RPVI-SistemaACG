@@ -18,7 +18,7 @@ import VisibilityIcon from '@material-ui/icons/Visibility';
 import GetAppIcon from '@material-ui/icons/GetApp'
 
 import { UserContext } from '../../context/UserContext'
-import { validateName, validateRegistration, validateDate, sendForm, sendAvaliation, deleteSolicitacao, getDocs, getActivities } from '../../scripts/scripts'
+import { validateName, validateRegistration, validateDate, validateStartEnd, deleteSolicitacao, getDocs, getActivities } from '../../scripts/scripts'
 import './styles.css'
 
 function getModalStyle() {
@@ -174,7 +174,6 @@ const useToolbarStyles = makeStyles(theme => ({
 
 const EnhancedTableToolbar = props => {
     const classes = useToolbarStyles();
-    let fileList = []
     let fileNameList = []
     const { user } = useContext(UserContext)
     const [modalStyle] = useState(getModalStyle)
@@ -197,6 +196,7 @@ const EnhancedTableToolbar = props => {
     const [selectedDateEnd, setSelectedDateEnd] = useState();
     const [message, setMessage] = useState("Selecione Uma Atividade");
     const [status, setStatus] = useState({ show: false, message: '' })
+    const [fileList, setFileList] = useState({})
 
     const [actSelect, setActSelect] = useState(true)
     const [groups, setGroups] = useState([])
@@ -268,22 +268,22 @@ const EnhancedTableToolbar = props => {
         if ( ext !== 'pdf' && ext !== 'jpg' && ext !== 'jpeg' && ext !== 'png' && ext !== 'zip') {
             const newFiles = Object.keys(fileList).reduce((object, key) => {
                 if (key !== fileName) {
-                    console.log('not deleting', key, fileName)
                     object[key] = fileList[key]
                 }
                 return object
             }, {})
-            console.log(newFiles)
-
+            setFileList(newFiles)
             alert('Tipo de arquivo não permitido')
             return
         }
         if(fileList.length === 0){
-            const fileData = ({
+            const fileData = {}
+            fileData[fileName] = ({
                 idDoc: event.target.id,
                 file: event.target.files[0]
             })
-            fileList.push(fileData)
+            setFileList({ ...fileList, ...fileData })
+            return
         } else {
             let index
             for (index = 0; index < fileList.length; index++) {
@@ -292,11 +292,12 @@ const EnhancedTableToolbar = props => {
                     return
                 }
             }
-            const fileData = ({
+            const fileData = {}
+            fileData[fileName] = ({
                 idDoc: event.target.id,
                 file: event.target.files[0]
             })
-            fileList.push(fileData)
+            setFileList({ ...fileList, ...fileData })
         }
     }
 
@@ -305,10 +306,17 @@ const EnhancedTableToolbar = props => {
             setStatus({ show: true, message: 'Data Selecionada Inválida!' })
             return
         }
+        if(selectedDateEnd){
+            if(!validateStartEnd(date, selectedDateEnd)){
+                setStatus({ show: true, message: 'A data de inicio não pode ser posterior a data de fim!' })
+                return
+            }
+        }
         setSelectedDateStart(date);
         setValues({ ...values, dateStart: new Date(date.getTime() - (date.getTimezoneOffset() * 60000 ))
             .toISOString()
-            .split("T")[0] });
+            .split("T")[0] 
+        });
     };
 
     const handleDateChangeEnd = date => {
@@ -316,10 +324,17 @@ const EnhancedTableToolbar = props => {
             setStatus({ show: true, message: 'Data Selecionada Inválida!' })
             return
         }
+        if(selectedDateEnd){
+            if(!selectedDateStart(selectedDateStart, date)){
+                setStatus({ show: true, message: 'A data de inicio não pode ser posterior a data de fim!' })
+                return
+            }
+        }
         setSelectedDateEnd(date);
         setValues({ ...values, dateEnd: new Date(date.getTime() - (date.getTimezoneOffset() * 60000 ))
             .toISOString()
-            .split("T")[0] });
+            .split("T")[0] 
+        });
     };
 
     const handleChange = () => event => {
@@ -348,7 +363,7 @@ const EnhancedTableToolbar = props => {
     };
 
     async function handleSubmit(event) {
-        console.log(fileList)
+        event.preventDefault()
         if(!validateName(values.name)){
             setStatus({ show: true, message: 'Nome Inválido!' })
             return
@@ -361,7 +376,7 @@ const EnhancedTableToolbar = props => {
             setStatus({ show: true, message: 'Número de Matrícula Inválido!' })
             return
         }
-        if(fileList === null || fileList.length === 0 || fileList.length < docs.length){
+        if(fileList.length === 0 || fileList.length < docs.length){
             setStatus({ show: true, message: 'Você precisa anexar o(s) arquivo(s) necessário(s)!' })
             return
         }
@@ -376,12 +391,20 @@ const EnhancedTableToolbar = props => {
             descricao: values.description,
             idAtividade: values.activitie.toString()
         }
-        const response = sendForm(data, fileList)
-        console.log(response)
-        if(response){
+
+        var formData = new FormData()
+        _.forEach(data, (value, index)=>{
+            formData.append(index, value);
+        })
+        _.forEach(getFilesList(files), (value)=>{
+            formData.append("file", value.file)
+        })
+        const response = await axios.post('http://localhost:2222/solicitacao/', formData)
+
+        if(response.status === 200){
             setSubmitMessage('Solicitação Realizada com Sucesso!')
         } else {
-            setSubmitMessage('Houve um problema em enviar a Solicitação!')
+            setSubmitMessage('Houve um problema ao enviar a Solicitação!')
         }
         handleOpen()
     }
@@ -410,21 +433,7 @@ const EnhancedTableToolbar = props => {
             </Toolbar>
             <Modal aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description" open={openModal} onClose={handleCloseModal} >
                 <CardContent style={modalStyle} className={classes.paper}>
-                    <div className={classes.modalRoot}>
-                    {status.show && (
-                        <Grid container direction="column" justify="center" alignItems="center" >
-                                <Chip avatar={
-                                    <Avatar>
-                                        <WarningIcon />
-                                    </Avatar>
-                                }
-                                label={status.message}
-                                onDelete={handleCloseMessageError}
-                                className={classes.chip}
-                                style={{ color: "#222222" }}
-                                />
-                            </Grid>
-                        )}
+                    <div className={classes.modalRoot}>                   
                         <form autoComplete="off">
                             <FormControl className={classes.formControl}>
                                 <Grid container direction="column" justify="space-evenly" alignItems="stretch" spacing={2}>
@@ -579,6 +588,20 @@ const EnhancedTableToolbar = props => {
                             </DialogActions>
                         </Grid>
                         </Dialog>
+                        {status.show && (
+                        <Grid container direction="column" justify="center" alignItems="center" >
+                                <Chip avatar={
+                                    <Avatar>
+                                        <WarningIcon />
+                                    </Avatar>
+                                }
+                                label={status.message}
+                                onDelete={handleCloseMessageError}
+                                className={classes.chip}
+                                style={{ color: "#222222" }}
+                                />
+                            </Grid>
+                        )}
                     </div>
                 </CardContent>
             </Modal>
@@ -887,9 +910,10 @@ export default function EnhancedTable() {
             return
         }
         if(deferred) {
-            if(avaliation.hourLoad === undefined || avaliation.hourLoad === null || avaliation.hourLoad === '')
-            setStatus({ show: true, message: 'É necessário atribuir uma quantidade de horas!' })
-            return
+            if(avaliation.hourLoad === undefined || avaliation.hourLoad === null || avaliation.hourLoad === ''){
+                setStatus({ show: true, message: 'É necessário atribuir uma quantidade de horas!' })
+                return
+            }
         }
 
         var data = {
@@ -954,21 +978,7 @@ export default function EnhancedTable() {
                                                 </TableCell>
                                                 <Modal aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description"
                                                     open={open[index]} onClose={handleClose} >
-                                                    <CardContent style={modalStyle} className={classes.paperModal}>
-                                                        {status.show && (
-                                                            <Grid container direction="column" justify="center" alignItems="center" >
-                                                                <Chip avatar={
-                                                                        <Avatar>
-                                                                            <WarningIcon />
-                                                                        </Avatar>
-                                                                    }
-                                                                    label={status.message}
-                                                                    onDelete={handleCloseMessageError}
-                                                                    className={classes.chip}
-                                                                    style={{ color: "#222222" }}
-                                                                    />
-                                                                </Grid>
-                                                        )}
+                                                    <CardContent style={modalStyle} className={classes.paperModal}>                                                        
                                                         <Grid container direction="column" justify="space-evenly" alignItems="stretch" spacing={2}>
                                                             <Grid item xs>
                                                                 <Typography variant="h5" gutterBottom>
@@ -1186,6 +1196,20 @@ export default function EnhancedTable() {
                                                                 Confirmar
                                                             </Button>
                                                         </Grid>
+                                                        {status.show && (
+                                                            <Grid container direction="column" justify="center" alignItems="center" >
+                                                                <Chip avatar={
+                                                                        <Avatar>
+                                                                            <WarningIcon />
+                                                                        </Avatar>
+                                                                    }
+                                                                    label={status.message}
+                                                                    onDelete={handleCloseMessageError}
+                                                                    className={classes.chip}
+                                                                    style={{ color: "#222222" }}
+                                                                    />
+                                                                </Grid>
+                                                        )}
                                                     </CardContent>
                                                 </Modal>
                                                 <Modal aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description"

@@ -46,7 +46,7 @@ export const validateStartEnd = (dateStart, dateEnd) => {
     }
   }
 
-function getFilesList(array) {
+export function getFilesList(array) {
     let list = []
     let index
     for (index = 0; index < array.length; index++) {

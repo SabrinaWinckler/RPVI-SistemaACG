@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios'
+import _ from "lodash"
 import { lighten, makeStyles } from '@material-ui/core/styles';
 import {
     Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar,
@@ -18,7 +19,7 @@ import VisibilityIcon from '@material-ui/icons/Visibility';
 import GetAppIcon from '@material-ui/icons/GetApp'
 
 import { UserContext } from '../../context/UserContext'
-import { validateName, validateRegistration, validateDate, validateStartEnd, deleteSolicitacao, getDocs, getActivities } from '../../scripts/scripts'
+import { validateName, validateRegistration, validateDate, validateStartEnd, deleteSolicitacao, getDocs, getActivities, getFilesList } from '../../scripts/scripts'
 import './styles.css'
 
 function getModalStyle() {
@@ -396,14 +397,17 @@ const EnhancedTableToolbar = props => {
         _.forEach(data, (value, index)=>{
             formData.append(index, value);
         })
-        _.forEach(getFilesList(files), (value)=>{
+        _.forEach(getFilesList(fileList), (value)=>{
             formData.append("file", value.file)
         })
-        const response = await axios.post('http://localhost:2222/solicitacao/', formData)
-
-        if(response.status === 200){
-            setSubmitMessage('Solicitação Realizada com Sucesso!')
-        } else {
+        try {
+            const response = await axios.post('http://localhost:2222/solicitacao/', formData)
+            console.log(response)
+            if(response.status === 200){
+                setSubmitMessage('Solicitação Realizada com Sucesso!')
+            }
+        } catch (error) {
+            console.log(error)
             setSubmitMessage('Houve um problema ao enviar a Solicitação!')
         }
         handleOpen()
@@ -549,7 +553,7 @@ const EnhancedTableToolbar = props => {
                                     <Grid container direction="column" justify="center" alignItems="flex-start" style={{ width: '100%' }}>
                                         
                                         {docs.map((doc, index) => (
-                                            <div style={{ marginTop: '4%' }} className="input-group">
+                                            <div key={index} style={{ marginTop: '4%' }} className="input-group">
                                                 <Typography variant="body2" style={{padding:0}} className={classes.typography}>
                                                     {doc.nome}
                                                 </Typography>
@@ -923,9 +927,9 @@ export default function EnhancedTable() {
             parecer: avaliation.obs,
             deferido: avaliation.status
         }
-        console.log(JSON.stringify(data))
-        const response = sendAvaliation(data, idSol)
-        console.log(response)
+
+        const response = await axios.post(`http://localhost:2222/avaliacao/${idSol}`, data)
+
         if(response){
              setSubmitMessage('Solicitação Realizada com Sucesso!')
         } else {
@@ -960,7 +964,7 @@ export default function EnhancedTable() {
                                                 <TableCell align="left">{row.dataAtual}</TableCell>
                                                 <TableCell align="left">{row.status}</TableCell>
                                                 <TableCell align="left">
-                                                    {row.status === 'Pendente' ? (
+                                                    {row.status === 'Pendente' || row.status === 'PENDENTE' || row.status === 'pendente' ? (
                                                         <IconButton onClick={() => handleModal(index, row.idSolicitacao)}>
                                                             <DescriptionIcon />
                                                         </IconButton>

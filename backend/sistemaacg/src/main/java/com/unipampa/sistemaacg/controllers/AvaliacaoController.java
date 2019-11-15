@@ -5,8 +5,6 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unipampa.sistemaacg.dto.AvaliacaoDTO;
-import com.unipampa.sistemaacg.dto.SolicitacaoPostDTO;
-import com.unipampa.sistemaacg.models.Atividade;
 import com.unipampa.sistemaacg.models.AvaliacaoSolicitacao;
 import com.unipampa.sistemaacg.models.Solicitacao;
 import com.unipampa.sistemaacg.models.Status;
@@ -60,6 +58,14 @@ public class AvaliacaoController {
         this.storageService = storageService;
     }
 
+
+    /**
+     * Metodo de salvamento da avaliação. Serve para como inclusão da avaliação de uma solicitação no banco de dados.
+     * @param avaliacao
+     * @param id
+     * @return Retorna um Ok em caso de sucesso. Em caso de erro retorna um error.
+     */
+
     @JsonIgnore
     @PostMapping("/{id}")
     public ResponseEntity postAvaliacao(@RequestBody AvaliacaoDTO avaliacao, @PathVariable long id) {
@@ -95,10 +101,15 @@ public class AvaliacaoController {
         return ResponseEntity.ok(retornableAvaliacao);
     }
 
+    /**
+     * Deleta a avaliação escolhida.
+     * @param id
+     * @return Retorna um OK caso a seja deletado com sucesso. Em caso de erro retorna um error.
+     */
     @DeleteMapping(value = "/{id}")
     public @ResponseBody
     ResponseEntity<Optional<AvaliacaoSolicitacao>> deleteAvaliacaobyId(@PathVariable long id) {
-        // Busca no banco pelo id
+
         Optional<AvaliacaoSolicitacao> retornableAvaliacao = avaliacaoRepository.findById(id);
         avaliacaoRepository.deleteById(id);
         retornableAvaliacao.get().getSolicitacao().setStatus(Status.PENDENTE.toString());
@@ -106,15 +117,22 @@ public class AvaliacaoController {
         return ResponseEntity.ok(retornableAvaliacao);
     }
 
+    /**
+     * Busca no banco pelo id
+     * @param id
+     * @return Retorna as informações da solicitacão em caso de sucesso. Em caso de erro retorna um error.
+     */
     @GetMapping(value = "/infos/{id}") // get infos para avaliacao
     public ResponseEntity<Optional<Solicitacao>> getInfos(@PathVariable long id) {
-        // Busca no banco pelo id
         Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
         return ResponseEntity.ok(retornableSolicitacao);
     }
 
-    // pega um anexo a partir do nome do anexo, só chamar isso para cada anexo na
-    // view, ele mostra o pdf no navegador
+    /**
+     * Pega um anexo a partir do nome do anexo.
+     * @param filename
+     * @return
+     */
     @GetMapping("/file/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {
@@ -125,11 +143,5 @@ public class AvaliacaoController {
                 .body(file);
     }
 
-    public String getAnexoByDoc(SolicitacaoPostDTO solicitacao) {
-        Atividade atividade = atividadeRepository.findById(solicitacao.getIdAtividade()).get();
-
-        return null;
-
-    }
 
 }

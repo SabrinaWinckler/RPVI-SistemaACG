@@ -10,7 +10,7 @@ public interface StorageService {
 
     void init();
 
-    String store(MultipartFile file, long matricula, long idSolicitacao) throws Exception;
+    String store(MultipartFile file, long matricula, long idSolicitacao);
 
     Stream<Path> loadAll();
 

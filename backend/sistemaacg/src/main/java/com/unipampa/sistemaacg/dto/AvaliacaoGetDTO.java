@@ -6,7 +6,7 @@ import lombok.Data;
  * AvaliacaoGetDTO
  */
 @Data
-public class AvaliacaoGetDTO {
+class AvaliacaoGetDTO {
 
 
 }

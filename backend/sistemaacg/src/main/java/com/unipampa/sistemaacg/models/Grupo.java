@@ -1,9 +1,6 @@
 package com.unipampa.sistemaacg.models;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 
@@ -13,7 +10,7 @@ public class Grupo {
 
 	@Id
 	@NotEmpty
-	@GeneratedValue
+	@GeneratedValue(strategy= GenerationType.IDENTITY)
 	private long idGrupo;
 
 	@NotEmpty

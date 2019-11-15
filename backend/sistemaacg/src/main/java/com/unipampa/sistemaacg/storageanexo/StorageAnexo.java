@@ -19,18 +19,23 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class StorageAnexo implements StorageService {
 
-    private Path rootLocation;
+    private final Path rootLocation;
     private static long numberinstance = 0;
-    private StorageProperties properties;
-    private Logger logger = LoggerFactory.getLogger(StorageAnexo.class);
+    private final Logger logger = LoggerFactory.getLogger(StorageAnexo.class);
     @Autowired
     public StorageAnexo(StorageProperties properties) {
         this.rootLocation = Paths.get(properties.getLocation());
-        this.properties = properties;
     }
 
+    /**
+     * Método de salvamento de anexos individualmente em uma pasta local
+     * @param file
+     * @param matricula
+     * @param idSolicitacao
+     * @return Retorna o nome do anexo, para ser armazenado em algum outro local (BD, Arquivo do Sistema ou TXT).
+     */
     @Override
-    public String store(MultipartFile file, long matricula, long idSolicitacao) throws IOException {
+    public String store(MultipartFile file, long matricula, long idSolicitacao) {
         String originalfilename = matricula + "_" + idSolicitacao + "_" + (numberinstance++) + "_"
                 + file.getOriginalFilename();
         Path filename = this.rootLocation.resolve(originalfilename);
@@ -50,7 +55,7 @@ public class StorageAnexo implements StorageService {
     public Stream<Path> loadAll() {
         try {
             return Files.walk(this.rootLocation, 1).filter(path -> !path.equals(this.rootLocation))
-                    .map(path -> this.rootLocation.relativize(path));
+                    .map(this.rootLocation::relativize);
         } catch (IOException e) {
             throw new StorageException("Falha ao ler arquivos salvos", e);
         }

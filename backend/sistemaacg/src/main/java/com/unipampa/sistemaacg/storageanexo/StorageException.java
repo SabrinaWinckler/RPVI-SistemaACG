@@ -1,6 +1,6 @@
 package com.unipampa.sistemaacg.storageanexo;
 
-public class StorageException extends RuntimeException {
+class StorageException extends RuntimeException {
 
     public StorageException(String message) {
         super(message);

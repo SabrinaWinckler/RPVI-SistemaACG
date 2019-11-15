@@ -39,6 +39,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * SolicitacaoController
  */
+@SuppressWarnings("ALL")
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("solicitacao") // localhost:8080/solicitacao
@@ -67,48 +68,55 @@ public class SolicitacaoController {
         this.storageService = storageService;
     }
 
-    @GetMapping(value = "") // Lista de solicitações no formato JSON - localhost:8080/solicitacao/
+    /**
+     * Pega todas as solicitações no banco.
+     * @return Retorna todas as solicitações em formato JSON.
+     */
+    @GetMapping(value = "")
     public @ResponseBody
     ResponseEntity<Iterable<Solicitacao>> getSolitacoes() {
         Iterable<Solicitacao> retornableSolicitacoes = solicitacaoRepository.findAll();
         return ResponseEntity.ok(retornableSolicitacoes);
     }
 
+    /**
+     * Retorna as informações dos Grupos, Atividades e Documentos Necessários.
+     * @return Todas as informações em um formato JSON.
+     */
     @GetMapping(value = "/infos")
-    // Lista de atividades, grupo e curriculo no formato JSON -  // localhost:8080/solicitacao/infos/
     public InfosSolicitacaoDTO getInfos() {
 
         InfosSolicitacaoDTO infos = new InfosSolicitacaoDTO();
         infos.setAtividades(atividadeRepository.findAll());
-        infos.setDocsNecessarios(docsRepository.findAll());//todas as infos necessárias já vao aqui
+        infos.setDocsNecessarios(docsRepository.findAll());
 
         infos.setGrupos(grupoRepository.findAll());
 
         return infos;
     }
 
-    @GetMapping(value = "/{id}") // get uma solicitação
+
+    /**
+     * Método de retorno de uma solicitação especifica, buscada pelo seu ID.
+     * @param id
+     * @return Retorna a solicitação selecionada.
+     */
+    @GetMapping(value = "/{id}")
     public @ResponseBody
     ResponseEntity<Optional<Solicitacao>> getSolicitacaobyId(@PathVariable long id) {
-        // Busca no banco pelo id
         Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
         return ResponseEntity.ok(retornableSolicitacao);
     }
 
 
-    @PostMapping("/uploadfiles")
-    public ArrayList postAnexos(@RequestParam("file") MultipartFile files[], long nome) throws Exception {
-        ArrayList<String> filesName = new ArrayList<>();
-        String nomeCaminho;
-        for (MultipartFile string : files) {
-            nomeCaminho = storageService.store(string, nome, 22222222L);
-            filesName.add(nomeCaminho);
-        }
-
-
-        return filesName;
-    }
-
+    /**
+     * Método de salvamento de solicitação de ACG. Serve para inclusão no banco das informações da solicitação ACG,
+     * bem como seus anexos e a atividade/grupo escolhida.
+     * @param solicitacao
+     * @param files
+     * @return Retorna um OK caso a operação seja efetuada com sucesso. Em caso de erro retorna um error.
+     * @throws Exception
+     */
     @JsonIgnore
     @PostMapping("/")
     public ResponseEntity postSolicitacao(@Valid @ModelAttribute SolicitacaoPostDTO solicitacao, @RequestParam("file") MultipartFile files[]) throws Exception {
@@ -162,6 +170,11 @@ public class SolicitacaoController {
 
     }
 
+    /**
+     * Deleta a solicitação escolhida
+     * @param id
+     * @return Retorna um OK caso a seja deletado com sucesso. Em caso de erro retorna um error.
+     */
     @DeleteMapping(value = "/{id}")
     public @ResponseBody
     ResponseEntity deleteSolicitacaobyId(@PathVariable long id) {

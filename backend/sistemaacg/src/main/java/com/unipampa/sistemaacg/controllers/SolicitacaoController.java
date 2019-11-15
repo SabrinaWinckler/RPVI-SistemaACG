@@ -1,13 +1,9 @@
 package com.unipampa.sistemaacg.controllers;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import javax.validation.constraints.Size;
-import javax.xml.ws.Response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unipampa.sistemaacg.dto.InfosSolicitacaoDTO;
@@ -27,9 +23,6 @@ import com.unipampa.sistemaacg.storageanexo.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -130,11 +123,17 @@ public class SolicitacaoController {
         }
 
         Solicitacao newSolicitacao = new Solicitacao();
+        if(atividade.get().isPrecisaCalcular()){
+            newSolicitacao.setCargaHorariaSoli(solicitacao.getCargaHorariaRealizada()*atividade.get().getCh());
+        } else {
+            newSolicitacao.setCargaHorariaSoli(atividade.get().getCh());
+        }
+        newSolicitacao.setCargaHorariaRealizada(solicitacao.getCargaHorariaRealizada());
+
 
         newSolicitacao.setAtividade(atividade.get());
         newSolicitacao.setNomeAluno(solicitacao.getAluno());
         newSolicitacao.setMatricula(solicitacao.getMatricula());
-        newSolicitacao.setCargaHorariaSoli(solicitacao.getCargaHorariaSoli());
         newSolicitacao.setDescricao(solicitacao.getDescricao());
         newSolicitacao.setLocal(solicitacao.getLocal());
         newSolicitacao.setProfRes(solicitacao.getProfRes());

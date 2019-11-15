@@ -6,9 +6,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.ManyToMany;
 import javax.persistence.JoinTable;
@@ -30,6 +27,9 @@ public class Atividade {
 
 	@NotEmpty
 	private String descricao;
+
+	@NotEmpty
+	private boolean precisaCalcular;
 
 	@ManyToOne
 	private Grupo grupo;

@@ -33,6 +33,19 @@ export const validateDate = (date) => {
     }
 }
 
+export const validateStartEnd = (dateStart, dateEnd) => {
+    var varDateStart = new Date(dateStart);
+    var varDateEnd = new Date(dateEnd);
+    varDateStart.setHours(0, 0, 0, 0)
+    varDateEnd.setHours(0, 0, 0, 0)
+
+    if (varDateStart < varDateEnd) {
+      return false
+    } else {
+      return true
+    }
+  }
+
 function getFilesList(array) {
     let list = []
     let index

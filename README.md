@@ -4,7 +4,9 @@
 
 **História de Usuário**
 HU4: Como discente eu quero solicitar (incluir e excluir) o aproveitamento de ACG's, anexando as comprovações necessárias.
+
 HU2: Como coordenador eu quero avaliar (incluir e excluir) as solicitações de ACG's feitas pelos discentes dos cursos.
+
 HU6: Como coordenador ou discente eu quero consultar as solicitações de ACG's incluindo suas respectivas avaliações
 
 

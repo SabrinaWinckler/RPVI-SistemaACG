@@ -175,7 +175,6 @@ const useToolbarStyles = makeStyles(theme => ({
 
 const EnhancedTableToolbar = props => {
     const classes = useToolbarStyles();
-    let fileNameList = []
     const { user } = useContext(UserContext)
     const [modalStyle] = useState(getModalStyle)
     const [openModal, setOpenModal] = useState(false)
@@ -185,29 +184,30 @@ const EnhancedTableToolbar = props => {
         name: 'Juca',
         dateStart: '2019-01-02',
         dateEnd: '2019-01-03',
-        requestedWorkload: '1',
         teacher: 'Berna',
         description: 'Foi top',
-        activitie: '1',
+        activity: '1',
         registration: '1234567890',
         group: '1',
-        workload: '2',
+        workload: '',
     });
+    const [requestedWorkload, setRequestedWorkload] = useState()
     const [selectedDateStart, setSelectedDateStart] = useState(new Date());
     const [selectedDateEnd, setSelectedDateEnd] = useState();
     const [message, setMessage] = useState("Selecione Uma Atividade");
     const [status, setStatus] = useState({ show: false, message: '' })
     const [fileList, setFileList] = useState({})
+    const [needCalc, setNeedCalc] = useState(false)
 
     const [actSelect, setActSelect] = useState(true)
     const [groups, setGroups] = useState([])
     const [activities, setActivities] = useState([])
     const [activitiesByGroup, setActivitiesByGroup] = useState([])
     const [groupKey, setGroupKey] = useState()
-    const [selectValues, setSelectValues] = useState({
-        group: '',
-        activitie: '',
-      });
+    const [selectActivity, setSelectActivity] = useState({});
+    const [selectResume, setSelectResume] = useState();
+    const [selectGroup, setSelectGroup] = useState();
+    const [activityIndex, setactivityIndex] = useState()
 
     const [openDialog, setOpenDialog] = useState(false)
     const [submitMessage, setSubmitMessage] = useState('')
@@ -221,40 +221,50 @@ const EnhancedTableToolbar = props => {
           setActivities(response.data.atividades)
         }
         loadSolicitations()
-      }, [])
+    }, [])
 
-      useEffect(() => {
+    useEffect(() => {
         setActivities(getActivities(activitiesByGroup, groupKey))
-        if(selectValues.group !== ''){
+        if(selectGroup !== ''){
             setActSelect(false)
-        } 
+        }
+    }, [selectGroup, activitiesByGroup, groupKey])
 
-      }, [selectValues.group, activitiesByGroup, groupKey])
+    useEffect(()=>{
+        if(selectActivity){
+            if(!selectActivity.docs){
+                setMessage("Não foi possível verificar a documentação necessária")
+                return
+            }else{
+                setDocs(selectActivity.docs)
+                setRunButtons(true)
+            }
+        }
+    }, [selectActivity])
+
+    const handleChangeResume = event => {
+        setSelectResume(event.target.value)
+      }
 
     const handleChangeGroup = event => {
         setGroupKey(event.target.value)
-        setSelectValues(oldValues => ({
-            ...oldValues,
-            [event.target.name]: event.target.value,
-        }));
-        setValues({ ...values, [event.target.name]: event.target.value });
-      };
+        setSelectGroup(event.target.value)
+        setValues({ ...values, [event.target.name]: event.target.value })
+    }
 
     const handleChangeSelect = event => {
-        setSelectValues(oldValues => ({
-          ...oldValues,
-          [event.target.name]: event.target.value,
-        }));
+        setNeedCalc(activities[event.target.value].precisaCalcular)
+        setactivityIndex(event.target.value)
+        setSelectActivity(activities[event.target.value]);
         setValues({ ...values, [event.target.name]: event.target.value });
-        let docsLine = getDocs(activities, event.target.value)
-        if(!docsLine){
-            setMessage("Não foi possível verificar a documentação necessária")
-            return
-        }else{
-            setDocs(docsLine)
-            console.log(fileNameList)
-            setRunButtons(true)
-        }
+      
+        
+            // }else{
+                // let docsLine = getDocs(activities, event.target.value)
+        //     setDocs(activities[event.target.value].docs)
+        //     console.log(fileNameList)
+        //     setRunButtons(true)
+        // }
       };
 
     function handleFile (event, fileName){
@@ -390,7 +400,7 @@ const EnhancedTableToolbar = props => {
             cargaHorariaSoli: values.requestedWorkload,
             profRes: values.teacher,
             descricao: values.description,
-            idAtividade: values.activitie.toString()
+            idAtividade: values.activity.toString()
         }
 
         var formData = new FormData()
@@ -457,9 +467,23 @@ const EnhancedTableToolbar = props => {
                                         </Grid>
                                     </Grid>
                                     <Grid container direction="row" justify="space-between" alignItems="center">
-                                            <FormControl style={{ width: '35%' }}>
+                                            <FormControl style={{ width: '15%' }}>
+                                                <InputLabel style={{ position: 'relative' }} htmlFor="resumeSelect">Currículo</InputLabel>
+                                                <Select value={selectResume} className={classes.textField} style={{ width: '100%' }}
+                                                onChange={handleChangeResume}
+                                                inputProps={{
+                                                    name: 'resume',
+                                                    id: 'resumeSelect',
+                                                }} >
+                                                    {groups.map((group, index) => (
+                                                        <MenuItem key={index} value={group.curriculo.idCurriculo} name={group.curriculo.ano} >{group.curriculo.ano}</MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                            <div style={{ width: '5%' }}></div>
+                                            <FormControl style={{ width: '15%' }}>
                                                 <InputLabel style={{ position: 'relative' }} htmlFor="groupSelect">Grupo da ACG</InputLabel>
-                                                <Select value={selectValues.group} className={classes.textField} style={{ width: '100%' }}
+                                                <Select value={selectGroup} className={classes.textField} style={{ width: '100%' }}
                                                 onChange={handleChangeGroup}
                                                 inputProps={{
                                                     name: 'group',
@@ -470,16 +494,17 @@ const EnhancedTableToolbar = props => {
                                                     ))}
                                                 </Select>
                                             </FormControl>
+                                            <div style={{ width: '5%' }}></div>
                                             <FormControl style={{ width: '60%' }}>
-                                                <InputLabel style={{ position: 'relative' }} htmlFor="activitieSelect">Atividade</InputLabel>
-                                                <Select disabled={actSelect} value={selectValues.activitie} className={classes.textField} style={{ width: '100%' }}
+                                                <InputLabel style={{ position: 'relative' }} htmlFor="activitySelect">Atividade</InputLabel>
+                                                <Select disabled={actSelect} value={activityIndex} className={classes.textField} style={{ width: '100%' }}
                                                 onChange={handleChangeSelect}
                                                 inputProps={{
-                                                    name: 'activitie',
-                                                    id: 'activitieSelect',
+                                                    name: 'activity',
+                                                    id: 'activitySelect',
                                                 }} >
-                                                    {activities.map((activitie, index) => (
-                                                        <MenuItem key={index} value={activitie.idAtividade} name={activitie.descricao} >{activitie.descricao}</MenuItem>
+                                                    {activities.map((activity, index) => (
+                                                        <MenuItem key={index} value={index} name={activity.descricao} >{activity.descricao}</MenuItem>
                                                     ))}
                                                 </Select>
                                             </FormControl>
@@ -529,12 +554,32 @@ const EnhancedTableToolbar = props => {
                                     </Grid>
                                     <Grid container direction="row" justify="space-around" alignItems="center">
                                         <Grid item xs={6}>
-                                            <TextField id="workload" required type="number" label="Carga horária da Atividade (em horas)" style={{ width: '95%' }} maxLength="5"
+                                            <TextField id="workload" required disabled={!needCalc} type="number" label="Carga horária Realizada (em horas)" style={{ width: '95%' }}
                                                 className={classes.textField} value={values.workload} onChange={handleChange('workload')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                         <Grid item xs={6}>
-                                            <TextField id="requestedWorkload" required type="number" label="Carga horária Solicitada (em horas)" style={{ width: '95%' }} maxLength="5"
-                                                className={classes.textField} value={values.requestedWorkload} onChange={handleChange('requestedWorkload')} margin="normal" autoComplete="off"/>
+                                            <TextField id="requestedWorkload"
+                                                required
+                                                disabled
+                                                type="number"
+                                                label="Carga horária a ser Solicitada (em horas)"
+                                                style={{ width: '95%' }}
+                                                className={classes.textField}
+                                                InputLabelProps={{
+                                                    shrink: true,
+                                                  }}
+                                                value={
+                                                    selectActivity.precisaCalcular ?
+                                                        selectActivity ?
+                                                            values.workload ?
+                                                                parseInt(values.workload) * selectActivity.ch :
+                                                            0 :
+                                                        "" :
+                                                    selectActivity.ch
+                                                }
+                                                onChange={handleChange('requestedWorkload')}
+                                                margin="normal"
+                                                autoComplete="off"/>
                                         </Grid>
                                     </Grid>
                                     <Grid container justify="space-between" alignItems="center">
@@ -681,7 +726,7 @@ export default function EnhancedTable() {
     const [valueRadio, setValueRadio] = useState('')
     const [valueRadioInfo, setValueRadioInfo] = useState('')
     const [avaliation, setAvaliation] = useState({
-        activitieId: "",
+        activityId: "",
         hourLoad: "",
         obs: "",
         status: ""
@@ -707,7 +752,7 @@ export default function EnhancedTable() {
     const [groupKey, setGroupKey] = useState()
     const [selectValues, setSelectValues] = useState({
         group: '',
-        activitie: '',
+        activity: '',
       });
 
     const [rows, setRows] = useState([])
@@ -751,7 +796,7 @@ export default function EnhancedTable() {
           ...oldValues,
           [event.target.name]: event.target.value,
         }));
-        setAvaliation({ ...avaliation, activitieId: event.target.value })
+        setAvaliation({ ...avaliation, activityId: event.target.value })
       };
 
     const handleChangeDeferred = event => {
@@ -825,7 +870,7 @@ export default function EnhancedTable() {
                 const response = await axios.get(`http://localhost:2222/avaliacao/infos/${idSol}`)
                 setAnexos(response.data.anexos)
                 setAvaliation({ ...avaliation,
-                    activitieId: response.data.atividade.idAtividade })
+                    activityId: response.data.atividade.idAtividade })
                 }
                 loadAnexos()
             }
@@ -923,7 +968,7 @@ export default function EnhancedTable() {
         var data = {
             cargaHorariaAtribuida: avaliation.hourLoad,
             idSolicitacao: idSol.toString(),
-            idAtividade: avaliation.activitieId.toString(),
+            idAtividade: avaliation.activityId.toString(),
             parecer: avaliation.obs,
             deferido: avaliation.status
         }
@@ -1167,27 +1212,27 @@ export default function EnhancedTable() {
                                                                 </FormControl>
                                                                 <div style={{ margin: '2%'}}></div>
                                                                 <FormControl style = {{width: '60%' }}>
-                                                                    <InputLabel  style = {{ position: 'relative' }} htmlFor="activitieSelect">
+                                                                    <InputLabel  style = {{ position: 'relative' }} htmlFor="activitySelect">
                                                                         Atividade
                                                                     </InputLabel>
                                                                     <Select
-                                                                        value={selectValues.activitie}
+                                                                        value={selectValues.activity}
                                                                         disabled={actSelect}
                                                                         className={classes.textField}
                                                                         style={{ width: '100%', marginTop: 0 }}
                                                                         onChange={handleChangeSelect}
                                                                         inputProps={{
-                                                                            name: 'activitie',
-                                                                            id: 'activitieSelect',
+                                                                            name: 'activity',
+                                                                            id: 'activitySelect',
                                                                         }}
                                                                         >
-                                                                            {activities.map((activitie, index) => (
+                                                                            {activities.map((activity, index) => (
                                                                                 <MenuItem
                                                                                 key={index}
-                                                                                value={activitie.idAtividade}
-                                                                                name={activitie.descricao}
+                                                                                value={activity.idAtividade}
+                                                                                name={activity.descricao}
                                                                                 >
-                                                                                    {activitie.descricao}
+                                                                                    {activity.descricao}
                                                                                 </MenuItem>
                                                                             ))}
                                                                     </Select>

@@ -112,6 +112,17 @@ export const getActivities = (array, groupKey) => {
     return activities
 }
 
+export const getGroups = (array, resumeKey) => {
+    let groups = []
+    let index
+    for (index = 0; index < array.length; index++) {
+        if(array[index].curriculo.idCurriculo === resumeKey){
+            groups.push(array[index])
+        }
+    }
+    return groups
+}
+
 export const getDocs = (array, actId) => {
     let docs = []
     let index

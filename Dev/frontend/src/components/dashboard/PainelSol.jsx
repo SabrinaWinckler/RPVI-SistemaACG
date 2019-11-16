@@ -14,13 +14,15 @@ import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/picker
 import DateFnsUtils from '@date-io/date-fns'
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
-import DescriptionIcon from '@material-ui/icons/Description'
+import PostAddIcon from '@material-ui/icons/PostAdd';
+import HighlightOffIcon from '@material-ui/icons/HighlightOff'
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import GetAppIcon from '@material-ui/icons/GetApp'
 
 import { UserContext } from '../../context/UserContext'
-import { validateName, validateRegistration, validateDate, validateStartEnd, deleteSolicitacao, getDocs, getActivities, getFilesList } from '../../scripts/scripts'
+import { validateName, validateRegistration, validateDate, validateStartEnd, deleteSolicitacao, getGroups, getActivities, getFilesList } from '../../scripts/scripts'
 import './styles.css'
+import { red } from '@material-ui/core/colors';
 
 function getModalStyle() {
     const top = 50
@@ -199,15 +201,19 @@ const EnhancedTableToolbar = props => {
     const [fileList, setFileList] = useState({})
     const [needCalc, setNeedCalc] = useState(false)
 
+    const [grpSelect, setGrpSelect] = useState(true)
     const [actSelect, setActSelect] = useState(true)
     const [groups, setGroups] = useState([])
     const [activities, setActivities] = useState([])
+    const [resumes, setResumes] = useState([])
     const [activitiesByGroup, setActivitiesByGroup] = useState([])
+    const [groupByResume, setGroupByResume] = useState([])
+    const [resumeKey, setResumeKey] = useState()
     const [groupKey, setGroupKey] = useState()
     const [selectActivity, setSelectActivity] = useState({});
     const [selectResume, setSelectResume] = useState();
     const [selectGroup, setSelectGroup] = useState();
-    const [activityIndex, setactivityIndex] = useState()
+    const [activityIndex, setActivityIndex] = useState()
 
     const [openDialog, setOpenDialog] = useState(false)
     const [submitMessage, setSubmitMessage] = useState('')
@@ -216,12 +222,19 @@ const EnhancedTableToolbar = props => {
     useEffect(() => {
         async function loadSolicitations() {
           const response = await axios.get('http://localhost:2222/solicitacao/infos/')
-          setGroups(response.data.grupos)
+          setGroupByResume(response.data.grupos)
           setActivitiesByGroup(response.data.atividades)
-          setActivities(response.data.atividades)
+          setResumes(response.data.curriculo)
         }
         loadSolicitations()
     }, [])
+
+    useEffect(() => {
+        setGroups(getGroups(groupByResume, resumeKey))
+        if(selectResume !== ''){
+            setGrpSelect(false)
+        }
+    }, [selectResume, groupByResume, resumeKey])
 
     useEffect(() => {
         setActivities(getActivities(activitiesByGroup, groupKey))
@@ -229,6 +242,7 @@ const EnhancedTableToolbar = props => {
             setActSelect(false)
         }
     }, [selectGroup, activitiesByGroup, groupKey])
+
 
     useEffect(()=>{
         if(selectActivity){
@@ -243,10 +257,12 @@ const EnhancedTableToolbar = props => {
     }, [selectActivity])
 
     const handleChangeResume = event => {
+        setResumeKey(event.target.value)
         setSelectResume(event.target.value)
       }
 
     const handleChangeGroup = event => {
+        setActivityIndex()
         setGroupKey(event.target.value)
         setSelectGroup(event.target.value)
         setValues({ ...values, [event.target.name]: event.target.value })
@@ -254,7 +270,7 @@ const EnhancedTableToolbar = props => {
 
     const handleChangeSelect = event => {
         setNeedCalc(activities[event.target.value].precisaCalcular)
-        setactivityIndex(event.target.value)
+        setActivityIndex(event.target.value)
         setSelectActivity(activities[event.target.value]);
         setValues({ ...values, [event.target.name]: event.target.value });
       
@@ -351,6 +367,11 @@ const EnhancedTableToolbar = props => {
     const handleChange = () => event => {
         setValues({ ...values, [event.target.id]: event.target.value });
     }
+    
+    // const handleChangeRequestWorkload = () => event => {
+    //     console.log(event.target.value)
+    //     setRequestedWorkload(event.target.value);
+    // }
 
     function handleModal() {
         setOpenModal(true)
@@ -391,23 +412,31 @@ const EnhancedTableToolbar = props => {
             setStatus({ show: true, message: 'Você precisa anexar o(s) arquivo(s) necessário(s)!' })
             return
         }
+
+        let hours = parseInt(values.workload) * selectActivity.ch
+        
+        
+        console.log(hours)
+
         var data = {
             local: values.location,
             aluno: values.name,
             matricula: values.registration,
             dataInicio: values.dateStart,
             dataFim: values.dateEnd,
-            cargaHorariaSoli: values.requestedWorkload,
+            cargaHorariaRealizada: values.workload,
+            cargaHorariaSoli: hours.toString(),
             profRes: values.teacher,
             descricao: values.description,
-            idAtividade: values.activity.toString()
+            idAtividade: selectActivity.idAtividade.toString()
         }
+        
 
         var formData = new FormData()
         _.forEach(data, (value, index)=>{
             formData.append(index, value);
         })
-        _.forEach(getFilesList(fileList), (value)=>{
+        _.forEach(fileList, (value)=>{
             formData.append("file", value.file)
         })
         try {
@@ -475,15 +504,15 @@ const EnhancedTableToolbar = props => {
                                                     name: 'resume',
                                                     id: 'resumeSelect',
                                                 }} >
-                                                    {groups.map((group, index) => (
-                                                        <MenuItem key={index} value={group.curriculo.idCurriculo} name={group.curriculo.ano} >{group.curriculo.ano}</MenuItem>
+                                                    {resumes.map((resume, index) => (
+                                                        <MenuItem key={index} value={resume.idCurriculo} name={resume.ano} >{resume.ano}</MenuItem>
                                                     ))}
                                                 </Select>
                                             </FormControl>
                                             <div style={{ width: '5%' }}></div>
                                             <FormControl style={{ width: '15%' }}>
                                                 <InputLabel style={{ position: 'relative' }} htmlFor="groupSelect">Grupo da ACG</InputLabel>
-                                                <Select value={selectGroup} className={classes.textField} style={{ width: '100%' }}
+                                                <Select disabled={grpSelect} value={selectGroup} className={classes.textField} style={{ width: '100%' }}
                                                 onChange={handleChangeGroup}
                                                 inputProps={{
                                                     name: 'group',
@@ -577,7 +606,6 @@ const EnhancedTableToolbar = props => {
                                                         "" :
                                                     selectActivity.ch
                                                 }
-                                                onChange={handleChange('requestedWorkload')}
                                                 margin="normal"
                                                 autoComplete="off"/>
                                         </Grid>
@@ -744,7 +772,9 @@ export default function EnhancedTable() {
     const [showButton, setShowButton] = useState(false)
     const [respInfoChange, setRespInfoChange] = useState('')
     const [openDialogDelete, setOpenDialogDelete] = useState(false)
+    const [openDialogDeleteAvaliation, setOpenDialogDeleteAvaliation] = useState(false)
     const [idDelete, setIdDelete] = useState()
+    const [idDeleteAvaliation, setIdDeleteAvaliation] = useState()
 
     const [groups, setGroups] = useState([])
     const [activities, setActivities] = useState([])
@@ -877,14 +907,33 @@ export default function EnhancedTable() {
         }, [idSol])
     
     async function handleDelete (id) {
+            console.log(id)
             setOpenDialogDelete(false)
-            const response = deleteSolicitacao(id)
-            console.log('veio aqui')
-            if(response){
-                setSubmitMessage('Solicitação Deletada com Sucesso!')
-           } else {
-               setSubmitMessage('Houve um problema ao deletar a Solicitação!')
-           }
+            try {
+                const response = await axios.delete(`http://localhost:2222/solicitacao/${id}`, { params: { id: id } })
+                console.log(response)
+                if(response === 200){
+                    setSubmitMessage('Solicitação Deletada com Sucesso!')
+                }
+            } catch (error) {
+                console.log(error)
+                setSubmitMessage('Houve um problema ao deletar a Solicitação!')
+            }
+           //handleOpenDialog()
+    }
+    
+    
+    async function handleDeleteAvaliation (id) {
+            setOpenDialogDelete(false)
+            try {
+                const response = await axios.delete(`http://localhost:2222/avaliacao/${id}`, { params: { id: id } })
+                if(response === 200){
+                    setSubmitMessage('Solicitação Deletada com Sucesso!')
+                }
+            } catch (error) {
+                console.log(error)
+                setSubmitMessage('Houve um problema ao deletar a Solicitação!')
+            }
            handleOpenDialog()
     }
 
@@ -946,9 +995,20 @@ export default function EnhancedTable() {
         setOpenDialogDelete(true)
         setIdDelete(id)
     };
+
+    const handleOpenDialogDeleteAvaliation = (id) => {
+        setSubmitMessage('Tem certeza que deseja remover a Avaliação?')
+        setOpenDialogDeleteAvaliation(true)
+        setIdDeleteAvaliation(id)
+    };
     
     const handleCloseDialogDelete = () => {
         setOpenDialogDelete(false)
+        window.location.reload()
+    };
+    
+    const handleCloseDialogDeleteAvaliation = () => {
+        setOpenDialogDeleteAvaliation(false)
         window.location.reload()
     };
 
@@ -1011,11 +1071,11 @@ export default function EnhancedTable() {
                                                 <TableCell align="left">
                                                     {row.status === 'Pendente' || row.status === 'PENDENTE' || row.status === 'pendente' ? (
                                                         <IconButton onClick={() => handleModal(index, row.idSolicitacao)}>
-                                                            <DescriptionIcon />
+                                                            <PostAddIcon />
                                                         </IconButton>
                                                     ) : (
-                                                        <IconButton >
-                                                            <DescriptionIcon style={{opacity: 0.5}}/>
+                                                        <IconButton onClick={() => handleOpenDialogDeleteAvaliation(row.idSolicitacao)}>
+                                                            <HighlightOffIcon style={{color: 'red'}}/>
                                                         </IconButton>
                                                     )}
                                                         <IconButton >
@@ -1241,7 +1301,7 @@ export default function EnhancedTable() {
                                                         </Grid>
                                                         <Grid container direction="row" justify="flex-end" alignItems="center">
                                                             <Button style={{ marginTop: 5, display: showButton === true ? "flex" : "none" }} onClick={handleSubmit} variant="contained" color="primary" className={classes.button}>
-                                                                <DescriptionIcon />
+                                                                <PostAddIcon />
                                                                 Confirmar
                                                             </Button>
                                                         </Grid>
@@ -1398,6 +1458,19 @@ export default function EnhancedTable() {
                                                                     Confirmar
                                                             </Button>
                                                             <Button onClick={handleCloseDialogDelete} color="primary" autoFocus>
+                                                                    Cancelar
+                                                            </Button>
+                                                        </DialogActions>
+                                                    </Grid>
+                                                </Dialog>
+                                                <Dialog open={openDialogDeleteAvaliation} onClose={handleCloseDialogDeleteAvaliation} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description" >
+                                                    <Grid container direction="column" justify="space-around" alignItems="center">
+                                                        <DialogTitle id="alert-dialog-title">{submitMessage}</DialogTitle>
+                                                        <DialogActions>
+                                                            <Button onClick={() => handleDeleteAvaliation(idDeleteAvaliation)} color="primary" autoFocus>
+                                                                    Confirmar
+                                                            </Button>
+                                                            <Button onClick={handleCloseDialogDeleteAvaliation} color="primary" autoFocus>
                                                                     Cancelar
                                                             </Button>
                                                         </DialogActions>

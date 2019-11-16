@@ -1,0 +1,1 @@
+INSERT INTO `curriculo`(`id_curriculo`,`ano`,`status`)  VALUES (1,2011,true);

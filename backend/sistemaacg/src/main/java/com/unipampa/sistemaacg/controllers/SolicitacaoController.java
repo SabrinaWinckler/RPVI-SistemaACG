@@ -75,7 +75,7 @@ public class SolicitacaoController {
     @GetMapping(value = "")
     public @ResponseBody
     ResponseEntity<Iterable<Solicitacao>> getSolitacoes() {
-        final Iterable<Solicitacao> retornableSolicitacoes = solicitacaoRepository.findAll();
+        Iterable<Solicitacao> retornableSolicitacoes = solicitacaoRepository.findAll();
         return ResponseEntity.ok(retornableSolicitacoes);
     }
 
@@ -86,7 +86,7 @@ public class SolicitacaoController {
     @GetMapping(value = "/infos")
     public InfosSolicitacaoDTO getInfos() {
 
-        final InfosSolicitacaoDTO infos = new InfosSolicitacaoDTO();
+        InfosSolicitacaoDTO infos = new InfosSolicitacaoDTO();
         infos.setAtividades(atividadeRepository.findAll());
         infos.setDocsNecessarios(docsRepository.findAll());
         infos.setCurriculo(curriculoRepository.findAll());
@@ -103,7 +103,7 @@ public class SolicitacaoController {
      */
     @GetMapping(value = "/{id}")
     public @ResponseBody
-    ResponseEntity<Optional<Solicitacao>> getSolicitacaobyId(@PathVariable final long id) {
+    ResponseEntity<Optional<Solicitacao>> getSolicitacaobyId(@PathVariable long id) {
         final Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
         return ResponseEntity.ok(retornableSolicitacao);
     }
@@ -119,9 +119,9 @@ public class SolicitacaoController {
      */
     @JsonIgnore
     @PostMapping("/")
-    public ResponseEntity postSolicitacao(@Valid @ModelAttribute final SolicitacaoPostDTO solicitacao, @RequestParam("file") final MultipartFile files[]) throws Exception {
+    public ResponseEntity postSolicitacao(@Valid @ModelAttribute SolicitacaoPostDTO solicitacao, @RequestParam("file") MultipartFile files[]) throws Exception {
 
-        final Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
+        Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
 
         if (!atividade.isPresent()) {
             return ResponseEntity.badRequest().body("A Atividade com o ID " + solicitacao.getIdAtividade() + " não foi encontrada");
@@ -146,20 +146,20 @@ public class SolicitacaoController {
         newSolicitacao.setLocal(solicitacao.getLocal());
         newSolicitacao.setProfRes(solicitacao.getProfRes());
 
-        final Date dataAtual = new Date();
-        final SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+        Date dataAtual = new Date();
+        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
         newSolicitacao.setDataAtual(dataAtual);
-        final Date dataInicio = formato.parse(solicitacao.getDataInicio());
-        final Date dataFim = formato.parse(solicitacao.getDataFim());
+        Date dataInicio = formato.parse(solicitacao.getDataInicio());
+        Date dataFim = formato.parse(solicitacao.getDataFim());
         newSolicitacao.setDataInicio(dataInicio);
         newSolicitacao.setDataFim(dataFim);
 
         newSolicitacao.setStatus(Status.PENDENTE.toString());
-        final Solicitacao retornableSolicitacao = solicitacaoRepository.save(newSolicitacao);
+        Solicitacao retornableSolicitacao = solicitacaoRepository.save(newSolicitacao);
 
 
         for (int j = 0; j < files.length; j++) {
-            final Anexo newAnexo = new Anexo();
+            Anexo newAnexo = new Anexo();
             newAnexo.setNome(storageService.store(files[j], solicitacao.getMatricula(), retornableSolicitacao.getIdSolicitacao()));
             newAnexo.setDoc(atividade.get().getDocs().get(j));
             newAnexo.setSolicitacao(retornableSolicitacao);
@@ -177,9 +177,9 @@ public class SolicitacaoController {
      */
     @DeleteMapping(value = "/{id}")
     public @ResponseBody
-    ResponseEntity deleteSolicitacaobyId(@PathVariable final long id) {
+    ResponseEntity deleteSolicitacaobyId(@PathVariable long id) {
         // Busca no banco pelo id
-        final Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
+        Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
         if(retornableSolicitacao.get().getStatus().equalsIgnoreCase("PENDENTE")){
             solicitacaoRepository.deleteById(id);
             return ResponseEntity.ok("Solicitação apagada com sucesso!");

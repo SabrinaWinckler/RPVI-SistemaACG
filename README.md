@@ -3,6 +3,7 @@
 ##### A aplicação  Programa integrado de gerenciamento de ACG (P.IN.G.A) é um sistema cujo o principal objetivo é o gerenciamento de ACGs. Ele foi desenvolvido pelos alunos de Engenharia de Software na disciplina de Resolução de Problemas VI. As principais funcionalidades são descritas nas seguintes histórias de usuário:
 
 **História de Usuário**
+
 HU4: Como discente eu quero solicitar (incluir e excluir) o aproveitamento de ACG's, anexando as comprovações necessárias.
 
 HU2: Como coordenador eu quero avaliar (incluir e excluir) as solicitações de ACG's feitas pelos discentes dos cursos.

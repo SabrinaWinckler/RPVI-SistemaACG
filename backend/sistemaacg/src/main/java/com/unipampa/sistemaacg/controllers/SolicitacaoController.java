@@ -180,7 +180,7 @@ public class SolicitacaoController {
     ResponseEntity deleteSolicitacaobyId(@PathVariable final long id) {
         // Busca no banco pelo id
         final Optional<Solicitacao> retornableSolicitacao = solicitacaoRepository.findById(id);
-        if(retornableSolicitacao.get().getStatus().equals(Status.PENDENTE)){
+        if(retornableSolicitacao.get().getStatus().equalsIgnoreCase("PENDENTE")){
             solicitacaoRepository.deleteById(id);
             return ResponseEntity.ok("Solicitação apagada com sucesso!");
         }

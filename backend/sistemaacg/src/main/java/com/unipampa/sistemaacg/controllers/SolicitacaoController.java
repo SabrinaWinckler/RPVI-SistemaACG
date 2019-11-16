@@ -130,7 +130,7 @@ public class SolicitacaoController {
             return ResponseEntity.badRequest().body("Você precisa anexar todos os comprovantes");
         }
 
-        final Solicitacao newSolicitacao = new Solicitacao();
+        Solicitacao newSolicitacao = new Solicitacao();
         if(atividade.get().isPrecisaCalcular()){
             newSolicitacao.setCargaHorariaSoli(solicitacao.getCargaHorariaRealizada()*atividade.get().getCh());
         } else {

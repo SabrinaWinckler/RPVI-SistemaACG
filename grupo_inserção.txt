@@ -1,0 +1,4 @@
+INSERT INTO `grupo`(`id_grupo`,`nome`,`curriculo_id_curriculo`)  VALUES (1,"Atividades de Ensino",1);
+INSERT INTO `grupo`(`id_grupo`,`nome`,`curriculo_id_curriculo`)  VALUES (2,"Atividades de Pesquisa",1);
+INSERT INTO `grupo`(`id_grupo`,`nome`,`curriculo_id_curriculo`)  VALUES (3,"Atividades de Extensão",1);
+INSERT INTO `grupo`(`id_grupo`,`nome`,`curriculo_id_curriculo`)  VALUES (4,"Atividades Culturais e Artísticas, Sociais e de Gestão",1);

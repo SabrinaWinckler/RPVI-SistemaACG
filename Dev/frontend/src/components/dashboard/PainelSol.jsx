@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios'
+import _ from "lodash"
 import { lighten, makeStyles } from '@material-ui/core/styles';
 import {
     Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar,
@@ -13,13 +14,15 @@ import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/picker
 import DateFnsUtils from '@date-io/date-fns'
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
-import DescriptionIcon from '@material-ui/icons/Description'
+import PostAddIcon from '@material-ui/icons/PostAdd';
+import HighlightOffIcon from '@material-ui/icons/HighlightOff'
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import GetAppIcon from '@material-ui/icons/GetApp'
 
 import { UserContext } from '../../context/UserContext'
-import { validateName, validateRegistration, validateDate, validateStartEnd, deleteSolicitacao, getDocs, getActivities } from '../../scripts/scripts'
+import { validateName, validateRegistration, validateDate, validateStartEnd, deleteSolicitacao, getGroups, getActivities, getFilesList } from '../../scripts/scripts'
 import './styles.css'
+import { red } from '@material-ui/core/colors';
 
 function getModalStyle() {
     const top = 50
@@ -174,7 +177,6 @@ const useToolbarStyles = makeStyles(theme => ({
 
 const EnhancedTableToolbar = props => {
     const classes = useToolbarStyles();
-    let fileNameList = []
     const { user } = useContext(UserContext)
     const [modalStyle] = useState(getModalStyle)
     const [openModal, setOpenModal] = useState(false)
@@ -184,29 +186,34 @@ const EnhancedTableToolbar = props => {
         name: 'Juca',
         dateStart: '2019-01-02',
         dateEnd: '2019-01-03',
-        requestedWorkload: '1',
         teacher: 'Berna',
         description: 'Foi top',
-        activitie: '1',
+        activity: '1',
         registration: '1234567890',
         group: '1',
-        workload: '2',
+        workload: '',
     });
+    const [requestedWorkload, setRequestedWorkload] = useState()
     const [selectedDateStart, setSelectedDateStart] = useState(new Date());
     const [selectedDateEnd, setSelectedDateEnd] = useState();
     const [message, setMessage] = useState("Selecione Uma Atividade");
     const [status, setStatus] = useState({ show: false, message: '' })
     const [fileList, setFileList] = useState({})
+    const [needCalc, setNeedCalc] = useState(false)
 
+    const [grpSelect, setGrpSelect] = useState(true)
     const [actSelect, setActSelect] = useState(true)
     const [groups, setGroups] = useState([])
     const [activities, setActivities] = useState([])
+    const [resumes, setResumes] = useState([])
     const [activitiesByGroup, setActivitiesByGroup] = useState([])
+    const [groupByResume, setGroupByResume] = useState([])
+    const [resumeKey, setResumeKey] = useState()
     const [groupKey, setGroupKey] = useState()
-    const [selectValues, setSelectValues] = useState({
-        group: '',
-        activitie: '',
-      });
+    const [selectActivity, setSelectActivity] = useState({});
+    const [selectResume, setSelectResume] = useState();
+    const [selectGroup, setSelectGroup] = useState();
+    const [activityIndex, setActivityIndex] = useState()
 
     const [openDialog, setOpenDialog] = useState(false)
     const [submitMessage, setSubmitMessage] = useState('')
@@ -215,45 +222,65 @@ const EnhancedTableToolbar = props => {
     useEffect(() => {
         async function loadSolicitations() {
           const response = await axios.get('http://localhost:2222/solicitacao/infos/')
-          setGroups(response.data.grupos)
+          setGroupByResume(response.data.grupos)
           setActivitiesByGroup(response.data.atividades)
-          setActivities(response.data.atividades)
+          setResumes(response.data.curriculo)
         }
         loadSolicitations()
-      }, [])
+    }, [])
 
-      useEffect(() => {
+    useEffect(() => {
+        setGroups(getGroups(groupByResume, resumeKey))
+        if(selectResume !== ''){
+            setGrpSelect(false)
+        }
+    }, [selectResume, groupByResume, resumeKey])
+
+    useEffect(() => {
         setActivities(getActivities(activitiesByGroup, groupKey))
-        if(selectValues.group !== ''){
+        if(selectGroup !== ''){
             setActSelect(false)
-        } 
+        }
+    }, [selectGroup, activitiesByGroup, groupKey])
 
-      }, [selectValues.group, activitiesByGroup, groupKey])
+
+    useEffect(()=>{
+        if(selectActivity){
+            if(!selectActivity.docs){
+                setMessage("Não foi possível verificar a documentação necessária")
+                return
+            }else{
+                setDocs(selectActivity.docs)
+                setRunButtons(true)
+            }
+        }
+    }, [selectActivity])
+
+    const handleChangeResume = event => {
+        setResumeKey(event.target.value)
+        setSelectResume(event.target.value)
+      }
 
     const handleChangeGroup = event => {
+        setActivityIndex()
         setGroupKey(event.target.value)
-        setSelectValues(oldValues => ({
-            ...oldValues,
-            [event.target.name]: event.target.value,
-        }));
-        setValues({ ...values, [event.target.name]: event.target.value });
-      };
+        setSelectGroup(event.target.value)
+        setValues({ ...values, [event.target.name]: event.target.value })
+    }
 
     const handleChangeSelect = event => {
-        setSelectValues(oldValues => ({
-          ...oldValues,
-          [event.target.name]: event.target.value,
-        }));
+        setNeedCalc(activities[event.target.value].precisaCalcular)
+        setActivityIndex(event.target.value)
+        setSelectActivity(activities[event.target.value]);
         setValues({ ...values, [event.target.name]: event.target.value });
-        let docsLine = getDocs(activities, event.target.value)
-        if(!docsLine){
-            setMessage("Não foi possível verificar a documentação necessária")
-            return
-        }else{
-            setDocs(docsLine)
-            console.log(fileNameList)
-            setRunButtons(true)
-        }
+      
+        
+            // }else{
+                // let docsLine = getDocs(activities, event.target.value)
+        //     setDocs(activities[event.target.value].docs)
+        //     console.log(fileNameList)
+        //     setRunButtons(true)
+        // }
       };
 
     function handleFile (event, fileName){
@@ -340,6 +367,11 @@ const EnhancedTableToolbar = props => {
     const handleChange = () => event => {
         setValues({ ...values, [event.target.id]: event.target.value });
     }
+    
+    // const handleChangeRequestWorkload = () => event => {
+    //     console.log(event.target.value)
+    //     setRequestedWorkload(event.target.value);
+    // }
 
     function handleModal() {
         setOpenModal(true)
@@ -380,30 +412,41 @@ const EnhancedTableToolbar = props => {
             setStatus({ show: true, message: 'Você precisa anexar o(s) arquivo(s) necessário(s)!' })
             return
         }
+
+        let hours = parseInt(values.workload) * selectActivity.ch
+        
+        
+        console.log(hours)
+
         var data = {
             local: values.location,
             aluno: values.name,
             matricula: values.registration,
             dataInicio: values.dateStart,
             dataFim: values.dateEnd,
-            cargaHorariaSoli: values.requestedWorkload,
+            cargaHorariaRealizada: values.workload,
+            cargaHorariaSoli: hours.toString(),
             profRes: values.teacher,
             descricao: values.description,
-            idAtividade: values.activitie.toString()
+            idAtividade: selectActivity.idAtividade.toString()
         }
+        
 
         var formData = new FormData()
         _.forEach(data, (value, index)=>{
             formData.append(index, value);
         })
-        _.forEach(getFilesList(files), (value)=>{
+        _.forEach(fileList, (value)=>{
             formData.append("file", value.file)
         })
-        const response = await axios.post('http://localhost:2222/solicitacao/', formData)
-
-        if(response.status === 200){
-            setSubmitMessage('Solicitação Realizada com Sucesso!')
-        } else {
+        try {
+            const response = await axios.post('http://localhost:2222/solicitacao/', formData)
+            console.log(response)
+            if(response.status === 200){
+                setSubmitMessage('Solicitação Realizada com Sucesso!')
+            }
+        } catch (error) {
+            console.log(error)
             setSubmitMessage('Houve um problema ao enviar a Solicitação!')
         }
         handleOpen()
@@ -453,9 +496,23 @@ const EnhancedTableToolbar = props => {
                                         </Grid>
                                     </Grid>
                                     <Grid container direction="row" justify="space-between" alignItems="center">
-                                            <FormControl style={{ width: '35%' }}>
+                                            <FormControl style={{ width: '15%' }}>
+                                                <InputLabel style={{ position: 'relative' }} htmlFor="resumeSelect">Currículo</InputLabel>
+                                                <Select value={selectResume} className={classes.textField} style={{ width: '100%' }}
+                                                onChange={handleChangeResume}
+                                                inputProps={{
+                                                    name: 'resume',
+                                                    id: 'resumeSelect',
+                                                }} >
+                                                    {resumes.map((resume, index) => (
+                                                        <MenuItem key={index} value={resume.idCurriculo} name={resume.ano} >{resume.ano}</MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                            <div style={{ width: '5%' }}></div>
+                                            <FormControl style={{ width: '15%' }}>
                                                 <InputLabel style={{ position: 'relative' }} htmlFor="groupSelect">Grupo da ACG</InputLabel>
-                                                <Select value={selectValues.group} className={classes.textField} style={{ width: '100%' }}
+                                                <Select disabled={grpSelect} value={selectGroup} className={classes.textField} style={{ width: '100%' }}
                                                 onChange={handleChangeGroup}
                                                 inputProps={{
                                                     name: 'group',
@@ -466,16 +523,17 @@ const EnhancedTableToolbar = props => {
                                                     ))}
                                                 </Select>
                                             </FormControl>
+                                            <div style={{ width: '5%' }}></div>
                                             <FormControl style={{ width: '60%' }}>
-                                                <InputLabel style={{ position: 'relative' }} htmlFor="activitieSelect">Atividade</InputLabel>
-                                                <Select disabled={actSelect} value={selectValues.activitie} className={classes.textField} style={{ width: '100%' }}
+                                                <InputLabel style={{ position: 'relative' }} htmlFor="activitySelect">Atividade</InputLabel>
+                                                <Select disabled={actSelect} value={activityIndex} className={classes.textField} style={{ width: '100%' }}
                                                 onChange={handleChangeSelect}
                                                 inputProps={{
-                                                    name: 'activitie',
-                                                    id: 'activitieSelect',
+                                                    name: 'activity',
+                                                    id: 'activitySelect',
                                                 }} >
-                                                    {activities.map((activitie, index) => (
-                                                        <MenuItem key={index} value={activitie.idAtividade} name={activitie.descricao} >{activitie.descricao}</MenuItem>
+                                                    {activities.map((activity, index) => (
+                                                        <MenuItem key={index} value={index} name={activity.descricao} >{activity.descricao}</MenuItem>
                                                     ))}
                                                 </Select>
                                             </FormControl>
@@ -525,12 +583,31 @@ const EnhancedTableToolbar = props => {
                                     </Grid>
                                     <Grid container direction="row" justify="space-around" alignItems="center">
                                         <Grid item xs={6}>
-                                            <TextField id="workload" required type="number" label="Carga horária da Atividade (em horas)" style={{ width: '95%' }} maxLength="5"
+                                            <TextField id="workload" required disabled={!needCalc} type="number" label="Carga horária Realizada (em horas)" style={{ width: '95%' }}
                                                 className={classes.textField} value={values.workload} onChange={handleChange('workload')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                         <Grid item xs={6}>
-                                            <TextField id="requestedWorkload" required type="number" label="Carga horária Solicitada (em horas)" style={{ width: '95%' }} maxLength="5"
-                                                className={classes.textField} value={values.requestedWorkload} onChange={handleChange('requestedWorkload')} margin="normal" autoComplete="off"/>
+                                            <TextField id="requestedWorkload"
+                                                required
+                                                disabled
+                                                type="number"
+                                                label="Carga horária a ser Solicitada (em horas)"
+                                                style={{ width: '95%' }}
+                                                className={classes.textField}
+                                                InputLabelProps={{
+                                                    shrink: true,
+                                                  }}
+                                                value={
+                                                    selectActivity.precisaCalcular ?
+                                                        selectActivity ?
+                                                            values.workload ?
+                                                                parseInt(values.workload) * selectActivity.ch :
+                                                            0 :
+                                                        "" :
+                                                    selectActivity.ch
+                                                }
+                                                margin="normal"
+                                                autoComplete="off"/>
                                         </Grid>
                                     </Grid>
                                     <Grid container justify="space-between" alignItems="center">
@@ -549,7 +626,7 @@ const EnhancedTableToolbar = props => {
                                     <Grid container direction="column" justify="center" alignItems="flex-start" style={{ width: '100%' }}>
                                         
                                         {docs.map((doc, index) => (
-                                            <div style={{ marginTop: '4%' }} className="input-group">
+                                            <div key={index} style={{ marginTop: '4%' }} className="input-group">
                                                 <Typography variant="body2" style={{padding:0}} className={classes.typography}>
                                                     {doc.nome}
                                                 </Typography>
@@ -677,7 +754,7 @@ export default function EnhancedTable() {
     const [valueRadio, setValueRadio] = useState('')
     const [valueRadioInfo, setValueRadioInfo] = useState('')
     const [avaliation, setAvaliation] = useState({
-        activitieId: "",
+        activityId: "",
         hourLoad: "",
         obs: "",
         status: ""
@@ -695,7 +772,9 @@ export default function EnhancedTable() {
     const [showButton, setShowButton] = useState(false)
     const [respInfoChange, setRespInfoChange] = useState('')
     const [openDialogDelete, setOpenDialogDelete] = useState(false)
+    const [openDialogDeleteAvaliation, setOpenDialogDeleteAvaliation] = useState(false)
     const [idDelete, setIdDelete] = useState()
+    const [idDeleteAvaliation, setIdDeleteAvaliation] = useState()
 
     const [groups, setGroups] = useState([])
     const [activities, setActivities] = useState([])
@@ -703,7 +782,7 @@ export default function EnhancedTable() {
     const [groupKey, setGroupKey] = useState()
     const [selectValues, setSelectValues] = useState({
         group: '',
-        activitie: '',
+        activity: '',
       });
 
     const [rows, setRows] = useState([])
@@ -747,7 +826,7 @@ export default function EnhancedTable() {
           ...oldValues,
           [event.target.name]: event.target.value,
         }));
-        setAvaliation({ ...avaliation, activitieId: event.target.value })
+        setAvaliation({ ...avaliation, activityId: event.target.value })
       };
 
     const handleChangeDeferred = event => {
@@ -821,21 +900,40 @@ export default function EnhancedTable() {
                 const response = await axios.get(`http://localhost:2222/avaliacao/infos/${idSol}`)
                 setAnexos(response.data.anexos)
                 setAvaliation({ ...avaliation,
-                    activitieId: response.data.atividade.idAtividade })
+                    activityId: response.data.atividade.idAtividade })
                 }
                 loadAnexos()
             }
         }, [idSol])
     
     async function handleDelete (id) {
+            console.log(id)
             setOpenDialogDelete(false)
-            const response = deleteSolicitacao(id)
-            console.log('veio aqui')
-            if(response){
-                setSubmitMessage('Solicitação Deletada com Sucesso!')
-           } else {
-               setSubmitMessage('Houve um problema ao deletar a Solicitação!')
-           }
+            try {
+                const response = await axios.delete(`http://localhost:2222/solicitacao/${id}`, { params: { id: id } })
+                console.log(response)
+                if(response === 200){
+                    setSubmitMessage('Solicitação Deletada com Sucesso!')
+                }
+            } catch (error) {
+                console.log(error)
+                setSubmitMessage('Houve um problema ao deletar a Solicitação!')
+            }
+           //handleOpenDialog()
+    }
+    
+    
+    async function handleDeleteAvaliation (id) {
+            setOpenDialogDelete(false)
+            try {
+                const response = await axios.delete(`http://localhost:2222/avaliacao/${id}`, { params: { id: id } })
+                if(response === 200){
+                    setSubmitMessage('Solicitação Deletada com Sucesso!')
+                }
+            } catch (error) {
+                console.log(error)
+                setSubmitMessage('Houve um problema ao deletar a Solicitação!')
+            }
            handleOpenDialog()
     }
 
@@ -897,9 +995,20 @@ export default function EnhancedTable() {
         setOpenDialogDelete(true)
         setIdDelete(id)
     };
+
+    const handleOpenDialogDeleteAvaliation = (id) => {
+        setSubmitMessage('Tem certeza que deseja remover a Avaliação?')
+        setOpenDialogDeleteAvaliation(true)
+        setIdDeleteAvaliation(id)
+    };
     
     const handleCloseDialogDelete = () => {
         setOpenDialogDelete(false)
+        window.location.reload()
+    };
+    
+    const handleCloseDialogDeleteAvaliation = () => {
+        setOpenDialogDeleteAvaliation(false)
         window.location.reload()
     };
 
@@ -919,13 +1028,13 @@ export default function EnhancedTable() {
         var data = {
             cargaHorariaAtribuida: avaliation.hourLoad,
             idSolicitacao: idSol.toString(),
-            idAtividade: avaliation.activitieId.toString(),
+            idAtividade: avaliation.activityId.toString(),
             parecer: avaliation.obs,
             deferido: avaliation.status
         }
-        console.log(JSON.stringify(data))
-        const response = sendAvaliation(data, idSol)
-        console.log(response)
+
+        const response = await axios.post(`http://localhost:2222/avaliacao/${idSol}`, data)
+
         if(response){
              setSubmitMessage('Solicitação Realizada com Sucesso!')
         } else {
@@ -960,13 +1069,13 @@ export default function EnhancedTable() {
                                                 <TableCell align="left">{row.dataAtual}</TableCell>
                                                 <TableCell align="left">{row.status}</TableCell>
                                                 <TableCell align="left">
-                                                    {row.status === 'Pendente' ? (
+                                                    {row.status === 'Pendente' || row.status === 'PENDENTE' || row.status === 'pendente' ? (
                                                         <IconButton onClick={() => handleModal(index, row.idSolicitacao)}>
-                                                            <DescriptionIcon />
+                                                            <PostAddIcon />
                                                         </IconButton>
                                                     ) : (
-                                                        <IconButton >
-                                                            <DescriptionIcon style={{opacity: 0.5}}/>
+                                                        <IconButton onClick={() => handleOpenDialogDeleteAvaliation(row.idSolicitacao)}>
+                                                            <HighlightOffIcon style={{color: 'red'}}/>
                                                         </IconButton>
                                                     )}
                                                         <IconButton >
@@ -1163,27 +1272,27 @@ export default function EnhancedTable() {
                                                                 </FormControl>
                                                                 <div style={{ margin: '2%'}}></div>
                                                                 <FormControl style = {{width: '60%' }}>
-                                                                    <InputLabel  style = {{ position: 'relative' }} htmlFor="activitieSelect">
+                                                                    <InputLabel  style = {{ position: 'relative' }} htmlFor="activitySelect">
                                                                         Atividade
                                                                     </InputLabel>
                                                                     <Select
-                                                                        value={selectValues.activitie}
+                                                                        value={selectValues.activity}
                                                                         disabled={actSelect}
                                                                         className={classes.textField}
                                                                         style={{ width: '100%', marginTop: 0 }}
                                                                         onChange={handleChangeSelect}
                                                                         inputProps={{
-                                                                            name: 'activitie',
-                                                                            id: 'activitieSelect',
+                                                                            name: 'activity',
+                                                                            id: 'activitySelect',
                                                                         }}
                                                                         >
-                                                                            {activities.map((activitie, index) => (
+                                                                            {activities.map((activity, index) => (
                                                                                 <MenuItem
                                                                                 key={index}
-                                                                                value={activitie.idAtividade}
-                                                                                name={activitie.descricao}
+                                                                                value={activity.idAtividade}
+                                                                                name={activity.descricao}
                                                                                 >
-                                                                                    {activitie.descricao}
+                                                                                    {activity.descricao}
                                                                                 </MenuItem>
                                                                             ))}
                                                                     </Select>
@@ -1192,7 +1301,7 @@ export default function EnhancedTable() {
                                                         </Grid>
                                                         <Grid container direction="row" justify="flex-end" alignItems="center">
                                                             <Button style={{ marginTop: 5, display: showButton === true ? "flex" : "none" }} onClick={handleSubmit} variant="contained" color="primary" className={classes.button}>
-                                                                <DescriptionIcon />
+                                                                <PostAddIcon />
                                                                 Confirmar
                                                             </Button>
                                                         </Grid>
@@ -1349,6 +1458,19 @@ export default function EnhancedTable() {
                                                                     Confirmar
                                                             </Button>
                                                             <Button onClick={handleCloseDialogDelete} color="primary" autoFocus>
+                                                                    Cancelar
+                                                            </Button>
+                                                        </DialogActions>
+                                                    </Grid>
+                                                </Dialog>
+                                                <Dialog open={openDialogDeleteAvaliation} onClose={handleCloseDialogDeleteAvaliation} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description" >
+                                                    <Grid container direction="column" justify="space-around" alignItems="center">
+                                                        <DialogTitle id="alert-dialog-title">{submitMessage}</DialogTitle>
+                                                        <DialogActions>
+                                                            <Button onClick={() => handleDeleteAvaliation(idDeleteAvaliation)} color="primary" autoFocus>
+                                                                    Confirmar
+                                                            </Button>
+                                                            <Button onClick={handleCloseDialogDeleteAvaliation} color="primary" autoFocus>
                                                                     Cancelar
                                                             </Button>
                                                         </DialogActions>

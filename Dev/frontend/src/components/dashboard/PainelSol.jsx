@@ -20,9 +20,8 @@ import VisibilityIcon from '@material-ui/icons/Visibility';
 import GetAppIcon from '@material-ui/icons/GetApp'
 
 import { UserContext } from '../../context/UserContext'
-import { validateName, validateRegistration, validateDate, validateStartEnd, deleteSolicitacao, getGroups, getActivities, getFilesList } from '../../scripts/scripts'
+import { validateName, validateRegistration, validateDate, validateStartEnd, getGroups, getActivities } from '../../scripts/scripts'
 import './styles.css'
-import { red } from '@material-ui/core/colors';
 
 function getModalStyle() {
     const top = 50
@@ -99,7 +98,6 @@ function EnhancedTableHead(props) {
 
 EnhancedTableHead.propTypes = {
     classes: PropTypes.object.isRequired,
-    numSelected: PropTypes.number.isRequired,
     onRequestSort: PropTypes.func.isRequired,
     onSelectAllClick: PropTypes.func.isRequired,
     order: PropTypes.oneOf(['asc', 'desc']).isRequired,
@@ -182,18 +180,17 @@ const EnhancedTableToolbar = props => {
     const [openModal, setOpenModal] = useState(false)
     const [docs, setDocs] = useState([])
     const [values, setValues] = useState({
-        location: 'unipampa',
-        name: 'Juca',
-        dateStart: '2019-01-02',
-        dateEnd: '2019-01-03',
-        teacher: 'Berna',
-        description: 'Foi top',
-        activity: '1',
-        registration: '1234567890',
-        group: '1',
-        workload: '',
+        location: '',
+        name: '',
+        dateStart: '',
+        dateEnd: '',
+        teacher: '',
+        description: '',
+        activity: '',
+        registration: '',
+        group: '',
+        workload: '0',
     });
-    const [requestedWorkload, setRequestedWorkload] = useState()
     const [selectedDateStart, setSelectedDateStart] = useState(new Date());
     const [selectedDateEnd, setSelectedDateEnd] = useState();
     const [message, setMessage] = useState("Selecione Uma Atividade");
@@ -273,14 +270,6 @@ const EnhancedTableToolbar = props => {
         setActivityIndex(event.target.value)
         setSelectActivity(activities[event.target.value]);
         setValues({ ...values, [event.target.name]: event.target.value });
-      
-        
-            // }else{
-                // let docsLine = getDocs(activities, event.target.value)
-        //     setDocs(activities[event.target.value].docs)
-        //     console.log(fileNameList)
-        //     setRunButtons(true)
-        // }
       };
 
     function handleFile (event, fileName){
@@ -367,11 +356,6 @@ const EnhancedTableToolbar = props => {
     const handleChange = () => event => {
         setValues({ ...values, [event.target.id]: event.target.value });
     }
-    
-    // const handleChangeRequestWorkload = () => event => {
-    //     console.log(event.target.value)
-    //     setRequestedWorkload(event.target.value);
-    // }
 
     function handleModal() {
         setOpenModal(true)
@@ -413,9 +397,13 @@ const EnhancedTableToolbar = props => {
             return
         }
 
-        let hours = parseInt(values.workload) * selectActivity.ch
-        
-        
+        let hours
+        if(values.workload !== '0'){
+            hours = parseInt(values.workload) * selectActivity.ch
+        } else {
+            hours = selectActivity.ch
+        }
+
         console.log(hours)
 
         var data = {
@@ -583,7 +571,7 @@ const EnhancedTableToolbar = props => {
                                     <Grid container direction="row" justify="space-around" alignItems="center">
                                         <Grid item xs={6}>
                                             <TextField id="workload" required disabled={!needCalc} type="number" label="Carga horária Realizada (em horas)" style={{ width: '95%' }}
-                                                className={classes.textField} value={values.workload} onChange={handleChange('workload')} margin="normal" autoComplete="off"/>
+                                                className={classes.textField} InputLabelProps={{ shrink: true }}value={values.workload} onChange={handleChange('workload')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                         <Grid item xs={6}>
                                             <TextField id="requestedWorkload"
@@ -683,11 +671,6 @@ const EnhancedTableToolbar = props => {
             </Modal>
         </>
     );
-};
-
-EnhancedTableToolbar.propTypes = {
-    numSelected: PropTypes.number.isRequired,
-    selectedRow: PropTypes
 };
 
 const useStyles = makeStyles(theme => ({
@@ -1050,10 +1033,10 @@ export default function EnhancedTable() {
         <div className={classes.root}>
             <Grid container direction="row" justify="center" alignItems="center">
                 <Paper className={classes.paper} style={{ marginBottom: '4%' }}>
-                    <EnhancedTableToolbar numSelected={selected.length} selectedRow={selected} />
+                    <EnhancedTableToolbar />
                     <div className={classes.tableWrapper}>
                         <Table className={classes.table} aria-labelledby="tableTitle" size={'medium'} >
-                            <EnhancedTableHead classes={classes} numSelected={selected.length} selectedRow={selected} order={order} orderBy={orderBy}
+                            <EnhancedTableHead classes={classes} order={order} orderBy={orderBy}
                                 onSelectAllClick={handleSelectAllClick} onRequestSort={handleRequestSort} rowCount={rows.length} />
                             <TableBody>
                                 {stableSort(rows, getSorting(order, orderBy))

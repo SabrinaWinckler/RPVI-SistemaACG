@@ -13,7 +13,7 @@ export const validateName = (name) => {
 
 export const validateRegistration = (number) => {
     var size = number.toString().length
-    if (size === 10) {
+    if (size === 10 || size === 9) {
         return true
     } else {
         return false

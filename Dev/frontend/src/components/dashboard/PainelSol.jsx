@@ -430,7 +430,6 @@ const EnhancedTableToolbar = props => {
             descricao: values.description,
             idAtividade: selectActivity.idAtividade.toString()
         }
-        
 
         var formData = new FormData()
         _.forEach(data, (value, index)=>{
@@ -444,12 +443,12 @@ const EnhancedTableToolbar = props => {
             console.log(response)
             if(response.status === 200){
                 setSubmitMessage('Solicitação Realizada com Sucesso!')
+                handleOpen()
             }
         } catch (error) {
             console.log(error)
             setSubmitMessage('Houve um problema ao enviar a Solicitação!')
         }
-        handleOpen()
     }
 
     return (
@@ -1016,7 +1015,7 @@ export default function EnhancedTable() {
 
     async function handleSubmit(event) {
         var isEmpty = avaliation.obs.trim()
-        if(!isEmpty){
+        if(!isEmpty && avaliation.status !== "true"){
             setStatus({ show: true, message: 'A observação (parecer) é necessária!' })
             return
         }
@@ -1038,11 +1037,11 @@ export default function EnhancedTable() {
         const response = await axios.post(`http://localhost:2222/avaliacao/${idSol}`, data)
 
         if(response){
-             setSubmitMessage('Avaliação Realizada com Sucesso!')
+            setSubmitMessage('Avaliação Realizada com Sucesso!')
+            handleOpenDialog()
         } else {
             setSubmitMessage('Houve um problema ao realizar a Avaliação!')
         }
-        handleOpenDialog()
     }
 
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);

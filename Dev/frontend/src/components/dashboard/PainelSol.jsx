@@ -68,7 +68,7 @@ const headCells = [
     { id: 'grupo', numeric: false, align: 'left', disablePadding: false, label: 'Grupo' },
     { id: 'data', numeric: true, align: 'left', disablePadding: false, label: 'Data' },
     { id: 'status', numeric: false, align: 'left', disablePadding: false, label: 'Situação' },
-    { id: 'actions', numeric: false, align: 'left', disablePadding: false, label: 'Ações' },
+    { id: 'actions', numeric: false, align: 'center', disablePadding: false, label: 'Ações' },
 ];
 
 function EnhancedTableHead(props) {
@@ -907,34 +907,34 @@ export default function EnhancedTable() {
         }, [idSol])
     
     async function handleDelete (id) {
-            console.log(id)
-            setOpenDialogDelete(false)
-            try {
-                const response = await axios.delete(`http://localhost:2222/solicitacao/${id}`, { params: { id: id } })
-                console.log(response)
-                if(response === 200){
-                    setSubmitMessage('Solicitação Deletada com Sucesso!')
-                }
-            } catch (error) {
-                console.log(error)
-                setSubmitMessage('Houve um problema ao deletar a Solicitação!')
+        console.log(id)
+        setOpenDialogDelete(false)
+        try {
+            const response = await axios.delete(`http://localhost:2222/solicitacao/${id}`, { params: { id: id } })
+            console.log(response)
+            if(response === 200){
+                setSubmitMessage('Solicitação Deletada com Sucesso!')
             }
-           //handleOpenDialog()
+        } catch (error) {
+            console.log(error)
+            setSubmitMessage('Houve um problema ao deletar a Solicitação!')
+        }
+        handleOpenDialog()
     }
     
     
     async function handleDeleteAvaliation (id) {
-            setOpenDialogDelete(false)
-            try {
-                const response = await axios.delete(`http://localhost:2222/avaliacao/${id}`, { params: { id: id } })
-                if(response === 200){
-                    setSubmitMessage('Solicitação Deletada com Sucesso!')
-                }
-            } catch (error) {
-                console.log(error)
-                setSubmitMessage('Houve um problema ao deletar a Solicitação!')
+        setOpenDialogDeleteAvaliation(false)
+        try {
+            const response = await axios.delete(`http://localhost:2222/avaliacao/${id}`, { params: { id: id } })
+            if(response === 200){
+                setSubmitMessage('Avaliação Deletada com Sucesso!')
             }
-           handleOpenDialog()
+        } catch (error) {
+            console.log(error)
+            setSubmitMessage('Houve um problema ao deletar a Avaliação!')
+        }
+        handleOpenDialog()
     }
 
     const handleRequestSort = (event, property) => {
@@ -1036,9 +1036,9 @@ export default function EnhancedTable() {
         const response = await axios.post(`http://localhost:2222/avaliacao/${idSol}`, data)
 
         if(response){
-             setSubmitMessage('Solicitação Realizada com Sucesso!')
+             setSubmitMessage('Avaliação Realizada com Sucesso!')
         } else {
-            setSubmitMessage('Houve um problema em enviar a Solicitação!')
+            setSubmitMessage('Houve um problema ao realizar a Avaliação!')
         }
         handleOpenDialog()
     }
@@ -1061,7 +1061,7 @@ export default function EnhancedTable() {
                                         return (
                                             <TableRow onClick={event => handleClick(event, row.idSolicitacao)} role="checkbox"
                                                 tabIndex={-1} key={row.idSolicitacao} >
-                                                <TableCell align="center" component="th" id={row.idSolicitacao} scope="row" padding="none">
+                                                <TableCell align="left" component="th" id={row.idSolicitacao} style={{ padding: 14 }} scope="row" padding="none">
                                                     {row.nomeAluno}
                                                 </TableCell>
                                                 <TableCell align="left">{row.atividade.descricao}</TableCell>
@@ -1069,21 +1069,36 @@ export default function EnhancedTable() {
                                                 <TableCell align="left">{row.dataAtual}</TableCell>
                                                 <TableCell align="left">{row.status}</TableCell>
                                                 <TableCell align="left">
+                                                    <Grid container direction="row" justify="flex-start" alignItems="center">
                                                     {row.status === 'Pendente' || row.status === 'PENDENTE' || row.status === 'pendente' ? (
-                                                        <IconButton onClick={() => handleModal(index, row.idSolicitacao)}>
-                                                            <PostAddIcon />
-                                                        </IconButton>
+                                                        <div>
+                                                            <IconButton onClick={() => handleModal(index, row.idSolicitacao)}>
+                                                                <PostAddIcon style={{color: 'green'}} />
+                                                            </IconButton>
+                                                            <IconButton disabled >
+                                                                <HighlightOffIcon style={{ opacity: 0.5 }}/>
+                                                            </IconButton>
+                                                            <IconButton onClick={() => handleOpenDialogDelete(row.idSolicitacao)}>
+                                                                <DeleteIcon style={{color: 'red'}} />
+                                                            </IconButton>
+                                                        </div>
                                                     ) : (
-                                                        <IconButton onClick={() => handleOpenDialogDeleteAvaliation(row.idSolicitacao)}>
-                                                            <HighlightOffIcon style={{color: 'red'}}/>
-                                                        </IconButton>
+                                                        <div>
+                                                            <IconButton disabled >
+                                                                <PostAddIcon style={{ opacity: 0.5 }} />
+                                                            </IconButton>
+                                                            <IconButton onClick={() => handleOpenDialogDeleteAvaliation(row.idSolicitacao)}>
+                                                                <HighlightOffIcon style={{color: 'red'}}/>
+                                                            </IconButton>
+                                                            <IconButton disabled >
+                                                                <DeleteIcon style={{ opacity: 0.5 }} />
+                                                            </IconButton>
+                                                        </div>
                                                     )}
-                                                        <IconButton >
-                                                            <VisibilityIcon onClick={() => handleModalDetails(index, row.idSolicitacao)}/>
+                                                        <IconButton onClick={() => handleModalDetails(index, row.idSolicitacao)}>
+                                                            <VisibilityIcon style={{color: 'blue'}}/>
                                                         </IconButton>
-                                                        <IconButton onClick={() => handleOpenDialogDelete(row.idSolicitacao)}>
-                                                            <DeleteIcon />
-                                                        </IconButton>
+                                                    </Grid>
                                                 </TableCell>
                                                 <Modal aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description"
                                                     open={open[index]} onClose={handleClose} >
@@ -1113,12 +1128,12 @@ export default function EnhancedTable() {
                                                             <Grid container direction="row" justify="space-between" alignItems="center">
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph >
-                                                                        <strong>Atividade: </strong>{row.atividade.descricao}
+                                                                        <strong>Grupo: </strong>{row.atividade.grupo.nome}
                                                                     </Typography>
                                                                 </Grid>
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph >
-                                                                        <strong>Grupo: </strong>{row.atividade.grupo.nome}
+                                                                        <strong>Atividade: </strong>{row.atividade.descricao}
                                                                     </Typography>
                                                                 </Grid>
                                                             </Grid>
@@ -1327,7 +1342,7 @@ export default function EnhancedTable() {
                                                         <Grid container direction="column" justify="space-evenly" alignItems="stretch" spacing={2}>
                                                             <Grid item xs>
                                                                 <Typography variant="h5" gutterBottom>
-                                                                    Avaliação de Solicitação
+                                                                    Solicitação
                                                                 </Typography>
                                                             </Grid>
                                                             <Grid container direction="row" justify="space-around" alignItems="center">
@@ -1349,7 +1364,7 @@ export default function EnhancedTable() {
                                                             <Grid container direction="row" justify="space-between" alignItems="center">
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph >
-                                                                        <strong>Atividade: </strong>{row.atividade.descricao}
+                                                                        <strong>Currículo: </strong>{row.atividade.grupo.curriculo.ano}
                                                                     </Typography>
                                                                 </Grid>
                                                                 <Grid item xs={6}>
@@ -1360,13 +1375,13 @@ export default function EnhancedTable() {
                                                             </Grid>
                                                             <Grid container direction="row" justify="space-around" alignItems="center">
                                                                 <Grid item xs={6}>
-                                                                    <Typography paragraph>
-                                                                        <strong>Professor Responsável: </strong>{row.profRes}
+                                                                    <Typography paragraph >
+                                                                        <strong>Atividade: </strong>{row.atividade.descricao}
                                                                     </Typography>
                                                                 </Grid>
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
-                                                                        <strong>Local: </strong>{row.local}
+                                                                        <strong>Professor Responsável: </strong>{row.profRes}
                                                                     </Typography>
                                                                 </Grid>
                                                             </Grid>
@@ -1383,6 +1398,11 @@ export default function EnhancedTable() {
                                                                 </Grid>
                                                             </Grid>
                                                             <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                <Grid item xs={6}>
+                                                                    <Typography paragraph>
+                                                                        <strong>Local: </strong>{row.local}
+                                                                    </Typography>
+                                                                </Grid>
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
                                                                         <strong>Carga Horária Solicitada: </strong>{row.cargaHorariaSoli} hora(s)
@@ -1404,7 +1424,7 @@ export default function EnhancedTable() {
                                                             <Grid container direction="row" justify="flex-start" alignItems="center">
                                                                 {anexos.map((anexo, index) => (
                                                                     <Grid item key={anexo.idAnexo} xs={4} style={{ maxWidth: '30%' }}>
-                                                                        <Grid container direction="row" justify="flex-start" alignItems="flex-start" style={{ width: '100%', margin: '1%' }}>
+                                                                        <Grid container direction="row" justify="center" alignItems="center" style={{ width: '100%', margin: '1%' }}>
                                                                             <label htmlFor={anexo.idAnexo}>{anexo.doc.nome}</label>
                                                                             <Fab 
                                                                                 id={anexo.idDocNecessario}
@@ -1428,11 +1448,49 @@ export default function EnhancedTable() {
                                                             </Grid>
                                                             <Divider style={{ marginBottom: "1%" }}/>
                                                         </Grid>
-                                                        <Grid container justify="space-between" alignItems="center">
+                                                        <Grid container direction="column" justify="space-evenly" alignItems="stretch" spacing={2}>
+                                                            <Grid container justify="flex-start" alignItems="center">
                                                                 <Typography paragraph>
                                                                     <strong>Situação: </strong>{row.status}
                                                                 </Typography>
                                                             </Grid>
+                                                        </Grid>
+                                                        {row.status === "Deferido" ? (
+                                                            <Grid container direction="column" justify="space-evenly" alignItems="stretch" spacing={2}>
+                                                                <Grid container direction="row" justify="space-around" alignItems="center">
+                                                                    <Grid item xs={6}>
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                            <Typography paragraph >
+                                                                                <strong>Horas(s) Atribuída(s): </strong>{row.avaliacao.cargaHorariaAtribuida}
+                                                                            </Typography>
+                                                                        </Grid>
+                                                                    </Grid>
+                                                                    <Grid item xs={6}>
+                                                                        <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                            <Typography paragraph>
+                                                                                <strong>Data da Avaliação: </strong>{row.avaliacao.dataAvaliacao}
+                                                                            </Typography>
+                                                                        </Grid>
+                                                                    </Grid>
+                                                                </Grid>
+                                                                <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                    <Grid item xs={12}>
+                                                                        <Typography paragraph >
+                                                                            <strong>Parecer: </strong>{row.avaliacao.justificativa}
+                                                                        </Typography>
+                                                                    </Grid>
+                                                                </Grid>
+                                                            </Grid>
+                                                        ) : (
+                                                            <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                                <Grid item xs={12}>
+                                                                    <Typography paragraph >
+                                                                        <strong>Parecer: </strong>{row.avaliacao.justificativa}
+                                                                    </Typography>
+                                                                </Grid>
+                                                            </Grid>
+                                                        )}
+                                                            
                                                         <Grid container direction="row" justify="flex-end" alignItems="center">
                                                             <Button style={{ marginTop: 5}} onClick={handleCloseDetails} variant="contained" color="primary" className={classes.button}>
                                                                 Fechar

@@ -927,7 +927,8 @@ export default function EnhancedTable() {
         setOpenDialogDeleteAvaliation(false)
         try {
             const response = await axios.delete(`http://localhost:2222/avaliacao/${id}`, { params: { id: id } })
-            if(response === 200){
+            console.log(response)
+            if(response.status === 200){
                 setSubmitMessage('Avaliação Deletada com Sucesso!')
             }
         } catch (error) {
@@ -997,6 +998,7 @@ export default function EnhancedTable() {
     };
 
     const handleOpenDialogDeleteAvaliation = (id) => {
+        console.log(id)
         setSubmitMessage('Tem certeza que deseja remover a Avaliação?')
         setOpenDialogDeleteAvaliation(true)
         setIdDeleteAvaliation(id)
@@ -1087,7 +1089,7 @@ export default function EnhancedTable() {
                                                             <IconButton disabled >
                                                                 <PostAddIcon style={{ opacity: 0.5 }} />
                                                             </IconButton>
-                                                            <IconButton onClick={() => handleOpenDialogDeleteAvaliation(row.idSolicitacao)}>
+                                                            <IconButton onClick={() => handleOpenDialogDeleteAvaliation(row.avaliacao.idAvaliacao)}>
                                                                 <HighlightOffIcon style={{color: 'red'}}/>
                                                             </IconButton>
                                                             <IconButton disabled >
@@ -1234,7 +1236,7 @@ export default function EnhancedTable() {
                                                             />
                                                             <TextField
                                                                 id="obs"
-                                                                required
+                                                                required={!hourLoadShow}
                                                                 label="Observações"
                                                                 multiline rows="4"
                                                                 style={{ display: obsShow === true ? "flex" : "none" }}
@@ -1455,7 +1457,7 @@ export default function EnhancedTable() {
                                                                 </Typography>
                                                             </Grid>
                                                         </Grid>
-                                                        {row.status === "Deferido" ? (
+                                                        {row.avaliacao !== null ? (
                                                             <Grid container direction="column" justify="space-evenly" alignItems="stretch" spacing={2}>
                                                                 <Grid container direction="row" justify="space-around" alignItems="center">
                                                                     <Grid item xs={6}>
@@ -1482,10 +1484,10 @@ export default function EnhancedTable() {
                                                                 </Grid>
                                                             </Grid>
                                                         ) : (
-                                                            <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                            <Grid container direction="row" justify="center" alignItems="center">
                                                                 <Grid item xs={12}>
                                                                     <Typography paragraph >
-                                                                        <strong>Parecer: </strong>{row.avaliacao.justificativa}
+                                                                        <strong>Solicitação Pendente</strong>
                                                                     </Typography>
                                                                 </Grid>
                                                             </Grid>

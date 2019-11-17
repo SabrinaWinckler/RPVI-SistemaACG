@@ -419,6 +419,8 @@ const EnhancedTableToolbar = props => {
             idAtividade: selectActivity.idAtividade.toString()
         }
 
+        console.log(data)
+
         var formData = new FormData()
         _.forEach(data, (value, index)=>{
             formData.append(index, value);

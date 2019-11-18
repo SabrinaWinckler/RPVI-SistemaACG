@@ -6,7 +6,7 @@ import { lighten, makeStyles } from '@material-ui/core/styles';
 import {
     Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar,
     Typography, Paper, IconButton, Tooltip, Grid, CardContent, Modal, FormControl, InputLabel,
-    Button, Select, MenuItem, TextField, Chip, Avatar, Dialog, DialogActions, DialogTitle, Radio,
+    Button, Select,Zoom, MenuItem, TextField, Chip, Avatar, Dialog, DialogActions, DialogTitle, Radio,
     RadioGroup, FormControlLabel, FormLabel, Fab, Divider  
 } from '@material-ui/core';
 import { Warning as WarningIcon } from '@material-ui/icons'
@@ -18,7 +18,6 @@ import PostAddIcon from '@material-ui/icons/PostAdd';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff'
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import GetAppIcon from '@material-ui/icons/GetApp'
-
 import { UserContext } from '../../context/UserContext'
 import { validateName, validateRegistration, validateDate, validateStartEnd, getGroups, getActivities } from '../../scripts/scripts'
 import './styles.css'
@@ -904,13 +903,15 @@ export default function EnhancedTable() {
             const response = await axios.delete(`http://localhost:2222/solicitacao/${id}`, { params: { id: id } })
             console.log(response)
             if(response === 200){
+                console.log("foi")
                 setSubmitMessage('Solicitação Deletada com Sucesso!')
             }
         } catch (error) {
             console.log(error)
             setSubmitMessage('Houve um problema ao deletar a Solicitação!')
+        }finally{
+            handleOpenDialog()
         }
-        handleOpenDialog()
     }
     
     
@@ -925,8 +926,9 @@ export default function EnhancedTable() {
         } catch (error) {
             console.log(error)
             setSubmitMessage('Houve um problema ao deletar a Avaliação!')
+        }finally{
+            handleOpenDialog()
         }
-        handleOpenDialog()
     }
 
     const handleRequestSort = (event, property) => {
@@ -1059,38 +1061,60 @@ export default function EnhancedTable() {
                                                 </TableCell>
                                                 <TableCell align="left">{row.atividade.descricao}</TableCell>
                                                 <TableCell align="left">{row.atividade.grupo.nome}</TableCell>
-                                                <TableCell align="left">{row.dataAtual}</TableCell>
+                                                <TableCell align="left">{new Date(row.dataAtual).toLocaleDateString(
+                                                    'pt-BR'
+                                                )}</TableCell>
                                                 <TableCell align="left">{row.status}</TableCell>
                                                 <TableCell align="left">
                                                     <Grid container direction="row" justify="flex-start" alignItems="center">
                                                     {row.status === 'Pendente' || row.status === 'PENDENTE' || row.status === 'pendente' ? (
                                                         <div>
+                                                        <Tooltip TransitionComponent={Zoom} placement="top" title='Avaliar'>
                                                             <IconButton onClick={() => handleModal(index, row.idSolicitacao)}>
                                                                 <PostAddIcon style={{color: 'green'}} />
                                                             </IconButton>
-                                                            <IconButton disabled >
-                                                                <HighlightOffIcon style={{ opacity: 0.5 }}/>
-                                                            </IconButton>
+                                                        </Tooltip>
+                                                        <Tooltip TransitionComponent={Zoom} placement="top" title='Deletar Avaliação'>
+                                                            <span>
+                                                                <IconButton disabled >
+                                                                    <HighlightOffIcon style={{ opacity: 0.5 }}/>
+                                                                </IconButton>
+                                                            </span>
+                                                        </Tooltip>
+                                                        <Tooltip TransitionComponent={Zoom} placement="top" title='Deletar Solicitação'>
                                                             <IconButton onClick={() => handleOpenDialogDelete(row.idSolicitacao)}>
                                                                 <DeleteIcon style={{color: 'red'}} />
                                                             </IconButton>
+                                                        </Tooltip>
                                                         </div>
                                                     ) : (
                                                         <div>
-                                                            <IconButton disabled >
-                                                                <PostAddIcon style={{ opacity: 0.5 }} />
-                                                            </IconButton>
-                                                            <IconButton onClick={() => handleOpenDialogDeleteAvaliation(row.avaliacao.idAvaliacao)}>
+                                                        <Tooltip TransitionComponent={Zoom} placement="top" title='Avaliar'>
+                                                            <span>
+                                                                <IconButton disabled >
+                                                                    <PostAddIcon style={{ opacity: 0.5 }} />
+                                                                </IconButton>
+                                                            </span>    
+                                                        </Tooltip>
+                                                        <Tooltip TransitionComponent={Zoom} placement="top" title='Deletar Avaliação'>
+                                                        <IconButton onClick={() => handleOpenDialogDeleteAvaliation(row.avaliacao.idAvaliacao)}>
                                                                 <HighlightOffIcon style={{color: 'red'}}/>
                                                             </IconButton>
+                                                        </Tooltip>
+                                                        <Tooltip TransitionComponent={Zoom} placement="top" title='Deletar Solicitação'>
+                                                        <span>    
                                                             <IconButton disabled >
                                                                 <DeleteIcon style={{ opacity: 0.5 }} />
                                                             </IconButton>
-                                                        </div>
+                                                        </span>
+                                                       </Tooltip>
+                                                            </div>
                                                     )}
+                                                    <Tooltip TransitionComponent={Zoom} placement="top" title='Informações'>
                                                         <IconButton onClick={() => handleModalDetails(index, row.idSolicitacao)}>
                                                             <VisibilityIcon style={{color: 'blue'}}/>
                                                         </IconButton>
+                                                    </Tooltip>
                                                     </Grid>
                                                 </TableCell>
                                                 <Modal aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description"
@@ -1145,12 +1169,16 @@ export default function EnhancedTable() {
                                                             <Grid container direction="row" justify="space-between" alignItems="center">
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
-                                                                        <strong>Início: </strong>{row.dataInicio}
+                                                                        <strong>Início: </strong>{new Date(row.dataInicio).toLocaleDateString(
+                                                                            'pt-BR'
+                                                                        )}
                                                                     </Typography>
                                                                 </Grid>
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
-                                                                        <strong>Fim: </strong>{row.dataFim}
+                                                                        <strong>Fim: </strong>{new Date(row.dataFim).toLocaleDateString(
+                                                                            'pt-BR'
+                                                                        )}
                                                                     </Typography>
                                                                 </Grid>
                                                             </Grid>
@@ -1381,12 +1409,16 @@ export default function EnhancedTable() {
                                                             <Grid container direction="row" justify="space-between" alignItems="center">
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
-                                                                        <strong>Início: </strong>{row.dataInicio}
+                                                                        <strong>Início: </strong>{new Date(row.dataInicio).toLocaleDateString(
+                                                                            'pt-BR'
+                                                                        )}
                                                                     </Typography>
                                                                 </Grid>
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
-                                                                        <strong>Fim: </strong>{row.dataFim}
+                                                                        <strong>Fim: </strong>{new Date(row.dataFim).toLocaleDateString(
+                                                                            'pt-BR'
+                                                                        )}
                                                                     </Typography>
                                                                 </Grid>
                                                             </Grid>

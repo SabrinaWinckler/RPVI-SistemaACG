@@ -1,4 +1,4 @@
-﻿INSERT INTO curriculo (curriculo.id_curriculo, curriculo.ano, curriculo.status)
+INSERT INTO curriculo (curriculo.id_curriculo, curriculo.ano, curriculo.status)
 VALUES(1, 2018, 1), (2, 2010, 1);
 
 INSERT INTO grupo(grupo.id_grupo, grupo.nome, grupo.curriculo_id_curriculo)

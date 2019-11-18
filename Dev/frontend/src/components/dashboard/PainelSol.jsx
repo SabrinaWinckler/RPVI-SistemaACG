@@ -331,8 +331,6 @@ const EnhancedTableToolbar = props => {
             }
         }
         setSelectedDateStart(date);
-        console.log('date', date)
-        console.log('date2', new Date(date.getTime() - (date.getTimezoneOffset() * 60000 )))
         setValues({ ...values, dateStart: new Date(date.getTime() - (date.getTimezoneOffset() * 60000 ))
             .toISOString()
             .split("T")[0] 
@@ -351,8 +349,6 @@ const EnhancedTableToolbar = props => {
             }
         }
         setSelectedDateEnd(date);
-        console.log('date', date)
-        console.log('date2', new Date(date.getTime() - (date.getTimezoneOffset() * 60000 )))
         setValues({ ...values, dateEnd: new Date(date.getTime() - (date.getTimezoneOffset() * 60000 ))
             .toISOString()
             .split("T")[0] 
@@ -360,13 +356,18 @@ const EnhancedTableToolbar = props => {
     };
 
     const handleChange = () => event => {
-        if(event.target.id='registration'){
+        if(event.target.id === 'registration'){
             event.target.value = event.target.value.replace(/\D/g, '')
             if(_.size(event.target.value)>10){
                 event.target.value=event.target.value.slice(0,10)
             }
-        }else if(event.target.type==='number' && event.target.value>99999){
-            event.target.value=event.target.value.slice(0,5)
+        }else if(event.target.type==='number'){
+            if(event.target.value>0){
+                event.target.value = event.target.value.replace(/^0+/, '')
+            }
+            if(event.target.value>99999){
+                event.target.value=event.target.value.slice(0,5)
+            }
         }
         setValues({ ...values, [event.target.id]: event.target.value });
     }
@@ -422,7 +423,6 @@ const EnhancedTableToolbar = props => {
             hours = selectActivity.ch
         }
 
-        console.log(hours)
 
         var data = {
             local: values.location,
@@ -437,7 +437,6 @@ const EnhancedTableToolbar = props => {
             idAtividade: selectActivity.idAtividade.toString()
         }
 
-        console.log(data)
 
         var formData = new FormData()
         _.forEach(data, (value, index)=>{
@@ -453,7 +452,7 @@ const EnhancedTableToolbar = props => {
                 setSubmitMessage('Solicitação Realizada com Sucesso!')
             }
         } catch (error) {
-            console.log(error)
+            console.log(error.response)
             setSubmitMessage('Houve um problema ao enviar a Solicitação!')
         }finally{
             handleOpen()
@@ -920,7 +919,7 @@ export default function EnhancedTable() {
                 setSubmitMessage('Solicitação Deletada com Sucesso!')
             }
         } catch (error) {
-            console.log(error)
+            console.log(error.response)
             setSubmitMessage('Houve um problema ao deletar a Solicitação!')
         }finally{
             handleOpenDialog()
@@ -937,7 +936,7 @@ export default function EnhancedTable() {
                 setSubmitMessage('Avaliação Deletada com Sucesso!')
             }
         } catch (error) {
-            console.log(error)
+            console.log(error.response)
             setSubmitMessage('Houve um problema ao deletar a Avaliação!')
         }finally{
             handleOpenDialog()

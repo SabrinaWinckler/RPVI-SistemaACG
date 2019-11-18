@@ -244,7 +244,7 @@ const EnhancedTableToolbar = props => {
 
 
     useEffect(()=>{
-        if(selectActivity){
+        if(selectActivity.idAtividade){
             if(!selectActivity.docs){
                 setMessage("Não foi possível verificar a documentação necessária")
                 return
@@ -360,6 +360,14 @@ const EnhancedTableToolbar = props => {
     };
 
     const handleChange = () => event => {
+        if(event.target.id='registration'){
+            event.target.value = event.target.value.replace(/\D/g, '')
+            if(_.size(event.target.value)>10){
+                event.target.value=event.target.value.slice(0,10)
+            }
+        }else if(event.target.type==='number' && event.target.value>99999){
+            event.target.value=event.target.value.slice(0,5)
+        }
         setValues({ ...values, [event.target.id]: event.target.value });
     }
 
@@ -396,6 +404,10 @@ const EnhancedTableToolbar = props => {
         }
         if(!validateRegistration(values.registration)){
             setStatus({ show: true, message: 'Número de Matrícula Inválido!' })
+            return
+        }
+        if(selectActivity.idAtividade==null){
+            setStatus({ show: true, message: 'Você precisa selecionar uma atividade!' })
             return
         }
         if(_.size(fileList) === 0 || _.size(fileList) < docs.length){
@@ -439,11 +451,12 @@ const EnhancedTableToolbar = props => {
             console.log(response)
             if(response.status === 200){
                 setSubmitMessage('Solicitação Realizada com Sucesso!')
-                handleOpen()
             }
         } catch (error) {
             console.log(error)
             setSubmitMessage('Houve um problema ao enviar a Solicitação!')
+        }finally{
+            handleOpen()
         }
     }
 
@@ -1035,6 +1048,7 @@ export default function EnhancedTable() {
             handleOpenDialog()
         } else {
             setSubmitMessage('Houve um problema ao realizar a Avaliação!')
+            handleOpenDialog()
         }
     }
 

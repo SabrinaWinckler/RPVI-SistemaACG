@@ -179,11 +179,14 @@ const EnhancedTableToolbar = props => {
     const [modalStyle] = useState(getModalStyle)
     const [openModal, setOpenModal] = useState(false)
     const [docs, setDocs] = useState([])
+    const daty =  new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000 ))
+    .toISOString()
+    .split("T")[0] 
     const [values, setValues] = useState({
         location: '',
         name: '',
-        dateStart: '',
-        dateEnd: '',
+        dateStart: daty,
+        dateEnd: daty,
         teacher: '',
         description: '',
         activity: '',
@@ -329,6 +332,8 @@ const EnhancedTableToolbar = props => {
             }
         }
         setSelectedDateStart(date);
+        console.log('date', date)
+        console.log('date2', new Date(date.getTime() - (date.getTimezoneOffset() * 60000 )))
         setValues({ ...values, dateStart: new Date(date.getTime() - (date.getTimezoneOffset() * 60000 ))
             .toISOString()
             .split("T")[0] 
@@ -341,12 +346,14 @@ const EnhancedTableToolbar = props => {
             return
         }
         if(selectedDateEnd){
-            if(!selectedDateStart(selectedDateStart, date)){
+            if(!validateStartEnd(selectedDateStart, date)){
                 setStatus({ show: true, message: 'A data de inicio não pode ser posterior a data de fim!' })
                 return
             }
         }
         setSelectedDateEnd(date);
+        console.log('date', date)
+        console.log('date2', new Date(date.getTime() - (date.getTimezoneOffset() * 60000 )))
         setValues({ ...values, dateEnd: new Date(date.getTime() - (date.getTimezoneOffset() * 60000 ))
             .toISOString()
             .split("T")[0] 
@@ -392,7 +399,7 @@ const EnhancedTableToolbar = props => {
             setStatus({ show: true, message: 'Número de Matrícula Inválido!' })
             return
         }
-        if(fileList.length === 0 || fileList.length < docs.length){
+        if(_.size(fileList) === 0 || _.size(fileList) < docs.length){
             setStatus({ show: true, message: 'Você precisa anexar o(s) arquivo(s) necessário(s)!' })
             return
         }

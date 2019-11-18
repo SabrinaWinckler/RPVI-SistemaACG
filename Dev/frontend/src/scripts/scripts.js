@@ -2,7 +2,7 @@ import axios from 'axios'
 import _ from 'lodash'
 
 export const validateName = (name) => {
-    var regName = /^[a-zA-Z\s]*$/;
+    var regName = /^[a-zA-Z\sáàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ]*$/;
 
     if (!regName.test(name)) {
         return false;

@@ -395,6 +395,10 @@ const EnhancedTableToolbar = props => {
 
     async function handleSubmit(event) {
         event.preventDefault()
+        if(_.size(values.name) <= 0){
+            setStatus({ show: true, message: 'O Nome é obrigatório!' })
+            return
+        }
         if(!validateName(values.name)){
             setStatus({ show: true, message: 'Nome Inválido!' })
             return
@@ -405,6 +409,10 @@ const EnhancedTableToolbar = props => {
         }
         if(!validateRegistration(values.registration)){
             setStatus({ show: true, message: 'Número de Matrícula Inválido!' })
+            return
+        }
+        if(_.size(values.description) <= 0){
+            setStatus({ show: true, message: 'A descrição da atividade é obrigatória!' })
             return
         }
         if(selectActivity.idAtividade==null){
@@ -547,11 +555,11 @@ const EnhancedTableToolbar = props => {
                                     </Grid>
                                     <Grid container direction="row" justify="space-around" alignItems="center">
                                         <Grid item xs={6}>
-                                            <TextField id="teacher" required label="Professor Responsável" style={{ width: '95%' }} className={classes.textField}
+                                            <TextField id="teacher"  label="Professor Responsável" style={{ width: '95%' }} className={classes.textField}
                                                 value={values.teacher} type="text" onChange={handleChange('teacher')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                         <Grid item xs={6}>
-                                            <TextField id="location" required label="Local da atividade" style={{ width: '100%' }} className={classes.textField}
+                                            <TextField id="location"  label="Local da atividade" style={{ width: '100%' }} className={classes.textField}
                                                 value={values.location} type="text" onChange={handleChange('location')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                     </Grid>

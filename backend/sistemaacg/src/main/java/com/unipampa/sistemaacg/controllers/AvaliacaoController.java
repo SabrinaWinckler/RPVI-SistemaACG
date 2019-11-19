@@ -72,7 +72,7 @@ public class AvaliacaoController {
 
         AvaliacaoSolicitacao newAvaliacao = new AvaliacaoSolicitacao();
         Date dataAtual = new Date();
-       Optional< Solicitacao> avaliada = solicitacaoRepository.findById(id);
+        Optional< Solicitacao> avaliada = solicitacaoRepository.findById(id);
         if(!avaliada.isPresent()){
             return ResponseEntity.badRequest().body("A solicitação com ID "+id+" não foi encontrada");
         }
@@ -83,7 +83,8 @@ public class AvaliacaoController {
         }
         if (avaliacao.isDeferido()) {
             solicitacaoAvaliada.setStatus(Status.DEFERIDO.toString());
-            newAvaliacao.setNovaAtividade(atividadeRepository.findById(avaliacao.getIdAtividade()).get());
+            if(atividadeRepository.findById(avaliacao.getIdAtividade()).isPresent())
+                newAvaliacao.setNovaAtividade(atividadeRepository.findById(avaliacao.getIdAtividade()).get());
             newAvaliacao.setCargaHorariaAtribuida(avaliacao.getCargaHorariaAtribuida());
         } else {
             solicitacaoAvaliada.setStatus(Status.INDEFERIDO.toString());

@@ -1063,11 +1063,12 @@ export default function EnhancedTable() {
         var data = {
             cargaHorariaAtribuida: avaliation.hourLoad,
             idSolicitacao: idSol.toString(),
-            idAtividade: avaliation.activityId.toString(),
             parecer: avaliation.obs,
             deferido: avaliation.status
         }
-
+        if(changeInfo){
+            data['idAtividade']= avaliation.activityId.toString()
+        }
         const response = await axios.post(`http://localhost:2222/avaliacao/${idSol}`, data)
 
         if(response){

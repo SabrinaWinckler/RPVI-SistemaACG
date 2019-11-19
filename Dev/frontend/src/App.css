@@ -4,3 +4,6 @@
   min-height: 100%;
   
 }
+.MuiTableCell-alignLeft{
+  white-space: nowrap;
+}

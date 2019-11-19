@@ -579,7 +579,7 @@ const EnhancedTableToolbar = props => {
                                         <Grid item xs={2} style={{ alignSelf: 'flex-end' }}>
                                             <div style={{ width: '100%' }}>
                                                 <Typography variant="h6" gutterBottom>
-                                                    a
+                                                    até
                                                 </Typography>
                                             </div>
                                         </Grid>
@@ -919,36 +919,31 @@ export default function EnhancedTable() {
     async function handleDelete (id) {
         console.log(id)
         setOpenDialogDelete(false)
-        try {
-            const response = await axios.delete(`http://localhost:2222/solicitacao/${id}`, { params: { id: id } })
-            console.log(response)
-            if(response === 200){
+            axios.delete(`http://localhost:2222/solicitacao/${id}`, { params: { id: id } })
+            .then(response=>{
+                console.log(response)
                 console.log("foi")
                 setSubmitMessage('Solicitação Deletada com Sucesso!')
-            }
-        } catch (error) {
+                handleOpenDialog()
+            }).catch(error=> {
             console.log(error.response)
             setSubmitMessage('Houve um problema ao deletar a Solicitação!')
-        }finally{
             handleOpenDialog()
-        }
+        })
     }
     
     
     async function handleDeleteAvaliation (id) {
         setOpenDialogDeleteAvaliation(false)
-        try {
-            const response = await axios.delete(`http://localhost:2222/avaliacao/${id}`, { params: { id: id } })
-            console.log(response)
-            if(response.status === 200){
+        axios.delete(`http://localhost:2222/avaliacao/${id}`, { params: { id: id } })
+            .then(response=>{
+                console.log(response)
                 setSubmitMessage('Avaliação Deletada com Sucesso!')
-            }
-        } catch (error) {
-            console.log(error.response)
-            setSubmitMessage('Houve um problema ao deletar a Avaliação!')
-        }finally{
-            handleOpenDialog()
-        }
+                handleOpenDialog()
+            }).catch (error=> {
+                console.log(error.response)
+                setSubmitMessage('Houve um problema ao deletar a Avaliação!')
+            })
     }
 
     const handleRequestSort = (event, property) => {
@@ -1080,16 +1075,22 @@ export default function EnhancedTable() {
                                                 <TableCell align="left" component="th" id={row.idSolicitacao} style={{ padding: 14 }} scope="row" padding="none">
                                                     {row.nomeAluno}
                                                 </TableCell>
-                                                <TableCell align="left">{row.atividade.descricao}</TableCell>
+                                                <TableCell align="left">
+                                                    <Tooltip TransitionComponent={Zoom} placement="top" title={row.atividade.descricao}>
+                                                    <span>
+                                                    {_.size(row.atividade.descricao)>33?row.atividade.descricao.slice(0,30)+'...':row.atividade.descricao}
+                                                    </span>
+                                                    </Tooltip>
+                                                </TableCell>
                                                 <TableCell align="left">{row.atividade.grupo.nome}</TableCell>
                                                 <TableCell align="left">{new Date(row.dataAtual).toLocaleDateString(
                                                     'pt-BR'
                                                 )}</TableCell>
                                                 <TableCell align="left">{row.status}</TableCell>
                                                 <TableCell align="left">
-                                                    <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                    <Grid container direction="row" justify="flex-start" alignItems="center" style={{flexWrap:'nowrap'}}>
                                                     {row.status === 'Pendente' || row.status === 'PENDENTE' || row.status === 'pendente' ? (
-                                                        <div>
+                                                        <>
                                                         <Tooltip TransitionComponent={Zoom} placement="top" title='Avaliar'>
                                                             <IconButton onClick={() => handleModal(index, row.idSolicitacao)}>
                                                                 <PostAddIcon style={{color: 'green'}} />
@@ -1107,9 +1108,9 @@ export default function EnhancedTable() {
                                                                 <DeleteIcon style={{color: 'red'}} />
                                                             </IconButton>
                                                         </Tooltip>
-                                                        </div>
+                                                        </>
                                                     ) : (
-                                                        <div>
+                                                        <>
                                                         <Tooltip TransitionComponent={Zoom} placement="top" title='Avaliar'>
                                                             <span>
                                                                 <IconButton disabled >
@@ -1129,7 +1130,7 @@ export default function EnhancedTable() {
                                                             </IconButton>
                                                         </span>
                                                        </Tooltip>
-                                                            </div>
+                                                            </>
                                                     )}
                                                     <Tooltip TransitionComponent={Zoom} placement="top" title='Informações'>
                                                         <IconButton onClick={() => handleModalDetails(index, row.idSolicitacao)}>

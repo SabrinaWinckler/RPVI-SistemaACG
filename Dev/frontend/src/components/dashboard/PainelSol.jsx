@@ -252,6 +252,9 @@ const EnhancedTableToolbar = props => {
                 setDocs(selectActivity.docs)
                 setRunButtons(true)
             }
+            if(selectActivity.precisaCalcular!==true){
+                setValues(v=>({ ...v, workload: 0 }));
+            }
         }
     }, [selectActivity])
 
@@ -423,9 +426,16 @@ const EnhancedTableToolbar = props => {
             setStatus({ show: true, message: 'Você precisa anexar o(s) arquivo(s) necessário(s)!' })
             return
         }
+        if(selectActivity.precisaCalcular ===true && (values.workload==null ) ){
+            setStatus({ show: true, message: 'Você precisa informar a carga Horaria realizada da atividade!' })
+            return
+        }if(selectActivity.precisaCalcular ===true && (values.workload<=0) ){
+            setStatus({ show: true, message: 'A carga horária da atividade precisa ser maior que 0!' })
+            return
+        }
 
         let hours
-        if(values.workload !== '0'){
+        if(selectActivity.precisaCalcular===true){
             hours = parseInt(values.workload) * selectActivity.ch
         } else {
             hours = selectActivity.ch
@@ -539,16 +549,16 @@ const EnhancedTableToolbar = props => {
                                                 </Select>
                                             </FormControl>
                                             <div style={{ width: '5%' }}></div>
-                                            <FormControl style={{ width: '60%' }}>
+                                            <FormControl style={{ width: '60%', maxWidth: '40vw'}}>
                                                 <InputLabel style={{ position: 'relative' }} htmlFor="activitySelect">Atividade</InputLabel>
-                                                <Select disabled={actSelect} value={activityIndex} className={classes.textField} style={{ width: '100%' }}
+                                                <Select disabled={actSelect} value={activityIndex} className={classes.textField} 
                                                 onChange={handleChangeSelect}
                                                 inputProps={{
                                                     name: 'activity',
                                                     id: 'activitySelect',
                                                 }} >
                                                     {activities.map((activity, index) => (
-                                                        <MenuItem key={index} value={index} name={activity.descricao} >{activity.descricao}</MenuItem>
+                                                        <MenuItem style={{ maxWidth: '80vw', whiteSpace:'normal', borderBottom:'1px solid #000'}} key={index} value={index} name={activity.descricao} >{activity.descricao}</MenuItem>
                                                     ))}
                                                 </Select>
                                             </FormControl>

@@ -83,12 +83,12 @@ public class AvaliacaoController {
         }
         if (avaliacao.isDeferido()) {
             solicitacaoAvaliada.setStatus(Status.DEFERIDO.toString());
+            newAvaliacao.setNovaAtividade(atividadeRepository.findById(avaliacao.getIdAtividade()).get());
+            newAvaliacao.setCargaHorariaAtribuida(avaliacao.getCargaHorariaAtribuida());
         } else {
             solicitacaoAvaliada.setStatus(Status.INDEFERIDO.toString());
         }
         solicitacaoRepository.save(solicitacaoAvaliada);
-        newAvaliacao.setNovaAtividade(atividadeRepository.findById(avaliacao.getIdAtividade()).get());
-        newAvaliacao.setCargaHorariaAtribuida(avaliacao.getCargaHorariaAtribuida());
         newAvaliacao.setDataAvaliacao(dataAtual);
         newAvaliacao.setSolicitacao(solicitacaoAvaliada);
 

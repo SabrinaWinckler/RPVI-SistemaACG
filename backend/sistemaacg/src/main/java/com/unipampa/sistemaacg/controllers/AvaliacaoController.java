@@ -72,28 +72,31 @@ public class AvaliacaoController {
 
         AvaliacaoSolicitacao newAvaliacao = new AvaliacaoSolicitacao();
         Date dataAtual = new Date();
-        Solicitacao avaliada = solicitacaoRepository.findById(id).get();
-        String status = avaliada.getStatus();
+       Optional< Solicitacao> avaliada = solicitacaoRepository.findById(id);
+        if(!avaliada.isPresent()){
+            return ResponseEntity.badRequest().body("A solicitação com ID "+id+" não foi encontrada");
+        }
+        Solicitacao solicitacaoAvaliada = avaliada.get();
+        String status = solicitacaoAvaliada.getStatus();
         if (status.equals("Deferido") || status.equals("Indeferido")) {
             return ResponseEntity.badRequest().body("Essa avaliação da foi avaliada");
         }
         if (avaliacao.isDeferido()) {
-            avaliada.setStatus(Status.DEFERIDO.toString());
+            solicitacaoAvaliada.setStatus(Status.DEFERIDO.toString());
         } else {
-            avaliada.setStatus(Status.INDEFERIDO.toString());
+            solicitacaoAvaliada.setStatus(Status.INDEFERIDO.toString());
         }
-        avaliada.setIdSolicitacao(id);
-        avaliada.setAtividade(atividadeRepository.findById(avaliacao.getIdAtividade()).get());
-        solicitacaoRepository.save(avaliada);
+        solicitacaoRepository.save(solicitacaoAvaliada);
+        newAvaliacao.setNovaAtividade(atividadeRepository.findById(avaliacao.getIdAtividade()).get());
         newAvaliacao.setCargaHorariaAtribuida(avaliacao.getCargaHorariaAtribuida());
         newAvaliacao.setDataAvaliacao(dataAtual);
-        newAvaliacao.setSolicitacao(avaliada);
+        newAvaliacao.setSolicitacao(solicitacaoAvaliada);
 
         newAvaliacao.setJustificativa(avaliacao.getParecer());
         try {
             newAvaliacao.verificaDeferimento();
         } catch (Exception e) {
-            return ResponseEntity.ok("Não foi possível realizar a avaliação, pois: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Não foi possível realizar a avaliação, pois: " + e.getMessage());
 
         }
         AvaliacaoSolicitacao retornableAvaliacao = avaliacaoRepository.save(newAvaliacao);

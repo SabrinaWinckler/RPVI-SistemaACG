@@ -31,7 +31,10 @@ public class AvaliacaoSolicitacao{
 	@JoinColumn(name="id_solicitacao", unique=true)
 	@JsonBackReference
 	@NotNull
-    private Solicitacao solicitacao;
+	private Solicitacao solicitacao;
+	
+	@ManyToOne
+	private Atividade novaAtividade;
 
 	public AvaliacaoSolicitacao(){}
 

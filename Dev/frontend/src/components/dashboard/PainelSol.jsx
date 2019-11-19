@@ -171,7 +171,10 @@ const useToolbarStyles = makeStyles(theme => ({
         padding: theme.spacing(2),
       },
 }));
-
+function parseDate(input) {
+    var parts = input.split('-');
+    return new Date(parts[0], parts[1]-1, parts[2]); // Note: months are 0-based
+  }
 const EnhancedTableToolbar = props => {
     const classes = useToolbarStyles();
     const { user } = useContext(UserContext)
@@ -359,16 +362,19 @@ const EnhancedTableToolbar = props => {
     };
 
     const handleChange = () => event => {
+        console.log('event.target.id', event.target.id)
         if(event.target.id === 'registration'){
             event.target.value = event.target.value.replace(/\D/g, '')
             if(_.size(event.target.value)>10){
                 event.target.value=event.target.value.slice(0,10)
             }
-        }else if(event.target.type==='number'){
+        }else if(event.target.id==='workload'){
+            console.log('event.target.value', event.target.value)
+            event.target.value = event.target.value.replace(/[^0-9]+/g, '')
             if(event.target.value>0){
                 event.target.value = event.target.value.replace(/^0+/, '')
             }
-            if(event.target.value>99999){
+            if(_.size(event.target.value)>5){
                 event.target.value=event.target.value.slice(0,5)
             }
         }
@@ -608,7 +614,7 @@ const EnhancedTableToolbar = props => {
                                     </Grid>
                                     <Grid container direction="row" justify="space-around" alignItems="center">
                                         <Grid item xs={6}>
-                                            <TextField id="workload" required disabled={!needCalc} type="number" label="Carga horária Realizada (em horas)" style={{ width: '95%' }}
+                                            <TextField id="workload" required disabled={!needCalc} label="Carga horária Realizada (em horas)" style={{ width: '95%' }}
                                                 className={classes.textField} InputLabelProps={{ shrink: true }}value={values.workload} onChange={handleChange('workload')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                         <Grid item xs={6}>
@@ -826,6 +832,15 @@ export default function EnhancedTable() {
       }, [activitiesByGroup, groupKey, selectValues])
 
     const handleAvaliation = () => event => {
+        if(event.target.id==='hourLoad'){
+            event.target.value = event.target.value.replace(/[^0-9]+/g, '')
+            if(event.target.value>0){
+                event.target.value = event.target.value.replace(/^0+/, '')
+            }
+            if(_.size(event.target.value)>5){
+                event.target.value=event.target.value.slice(0,5)
+            }
+        }
         setAvaliation({ ...avaliation, [event.target.id]: event.target.value });
     }
 
@@ -1079,6 +1094,12 @@ export default function EnhancedTable() {
                                 {stableSort(rows, getSorting(order, orderBy))
                                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                     .map((row, index) => {
+                                        console.log(row)
+                                        let atividade
+                                        if(row.avaliacao && row.avaliacao.novaAtividade !=null )
+                                            atividade = row.avaliacao.novaAtividade 
+                                        else 
+                                            atividade = row.atividade
                                         return (
                                             <TableRow onClick={event => handleClick(event, row.idSolicitacao)} role="checkbox"
                                                 tabIndex={-1} key={row.idSolicitacao} >
@@ -1086,14 +1107,14 @@ export default function EnhancedTable() {
                                                     {row.nomeAluno}
                                                 </TableCell>
                                                 <TableCell align="left">
-                                                    <Tooltip TransitionComponent={Zoom} placement="top" title={row.atividade.descricao}>
+                                                    <Tooltip TransitionComponent={Zoom} placement="top" title={atividade.descricao}>
                                                     <span>
-                                                    {_.size(row.atividade.descricao)>33?row.atividade.descricao.slice(0,30)+'...':row.atividade.descricao}
+                                                    {_.size(atividade.descricao)>33?atividade.descricao.slice(0,30)+'...':atividade.descricao}
                                                     </span>
                                                     </Tooltip>
                                                 </TableCell>
-                                                <TableCell align="left">{row.atividade.grupo.nome}</TableCell>
-                                                <TableCell align="left">{new Date(row.dataAtual).toLocaleDateString(
+                                                <TableCell align="left">{atividade.grupo.nome}</TableCell>
+                                                <TableCell align="left">{parseDate(row.dataAtual).toLocaleDateString(
                                                     'pt-BR'
                                                 )}</TableCell>
                                                 <TableCell align="left">{row.status}</TableCell>
@@ -1201,14 +1222,14 @@ export default function EnhancedTable() {
                                                             <Grid container direction="row" justify="space-between" alignItems="center">
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
-                                                                        <strong>Início: </strong>{new Date(row.dataInicio).toLocaleDateString(
+                                                                        <strong>Início: </strong>{parseDate(row.dataInicio).toLocaleDateString(
                                                                             'pt-BR'
                                                                         )}
                                                                     </Typography>
                                                                 </Grid>
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
-                                                                        <strong>Fim: </strong>{new Date(row.dataFim).toLocaleDateString(
+                                                                        <strong>Fim: </strong>{parseDate(row.dataFim).toLocaleDateString(
                                                                             'pt-BR'
                                                                         )}
                                                                     </Typography>
@@ -1233,12 +1254,12 @@ export default function EnhancedTable() {
                                                                     </Typography>
                                                                 </Grid>
                                                             </Grid>
-                                                            <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                            <Grid container direction="column" justify="center" alignItems="flex-start">
                                                                 {anexos.map((anexo, index) => (
-                                                                    <Grid item key={anexo.idAnexo} xs={4} style={{ maxWidth: '30%' }}>
+                                                                    <Grid item key={anexo.idAnexo} >
                                                                         <Grid container direction="row" justify="flex-start" alignItems="flex-start" style={{ width: '100%', margin: '1%' }}>
-                                                                            <label htmlFor={anexo.idAnexo}>{anexo.doc.nome}</label>
                                                                             <Fab 
+                                                                                style={{padding:'3px 8px', borderRadius:4}}
                                                                                 id={anexo.idDocNecessario}
                                                                                 onClick={(e) => {
                                                                                     window.open(
@@ -1252,7 +1273,7 @@ export default function EnhancedTable() {
                                                                                 aria-label="attach"
                                                                                 className={classes.margin}>
                                                                                 <GetAppIcon className={classes.extendedIcon} />
-                                                                                Arquivo {index + 1}
+                                                                                {anexo.doc.nome}
                                                                             </Fab>
                                                                         </Grid>
                                                                     </Grid>
@@ -1275,7 +1296,6 @@ export default function EnhancedTable() {
                                                             <TextField
                                                                 id="hourLoad"
                                                                 required
-                                                                type="number"
                                                                 label="Horas Aproveitadas"
                                                                 style={{ width: 'fit-content', display: hourLoadShow === true ? "flex" : "none" }}
                                                                 className={classes.textField}
@@ -1339,7 +1359,7 @@ export default function EnhancedTable() {
                                                                     </Select>
                                                                 </FormControl>
                                                                 <div style={{ margin: '2%'}}></div>
-                                                                <FormControl style = {{width: '60%' }}>
+                                                                <FormControl  style={{ width: '60%', maxWidth: '40vw'}}>
                                                                     <InputLabel  style = {{ position: 'relative' }} htmlFor="activitySelect">
                                                                         Atividade
                                                                     </InputLabel>
@@ -1356,6 +1376,7 @@ export default function EnhancedTable() {
                                                                         >
                                                                             {activities.map((activity, index) => (
                                                                                 <MenuItem
+                                                                                style={{ maxWidth: '80vw', whiteSpace:'normal', borderBottom:'1px solid #000'}}
                                                                                 key={index}
                                                                                 value={activity.idAtividade}
                                                                                 name={activity.descricao}
@@ -1441,14 +1462,14 @@ export default function EnhancedTable() {
                                                             <Grid container direction="row" justify="space-between" alignItems="center">
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
-                                                                        <strong>Início: </strong>{new Date(row.dataInicio).toLocaleDateString(
+                                                                        <strong>Início: </strong>{parseDate(row.dataInicio).toLocaleDateString(
                                                                             'pt-BR'
                                                                         )}
                                                                     </Typography>
                                                                 </Grid>
                                                                 <Grid item xs={6}>
                                                                     <Typography paragraph>
-                                                                        <strong>Fim: </strong>{new Date(row.dataFim).toLocaleDateString(
+                                                                        <strong>Fim: </strong>{parseDate(row.dataFim).toLocaleDateString(
                                                                             'pt-BR'
                                                                         )}
                                                                     </Typography>
@@ -1478,12 +1499,12 @@ export default function EnhancedTable() {
                                                                     </Typography>
                                                                 </Grid>
                                                             </Grid>
-                                                            <Grid container direction="row" justify="flex-start" alignItems="center">
+                                                            <Grid container direction="column" justify="center" alignItems="flex-start">
                                                                 {anexos.map((anexo, index) => (
-                                                                    <Grid item key={anexo.idAnexo} xs={4} style={{ maxWidth: '30%' }}>
+                                                                    <Grid item key={anexo.idAnexo} >
                                                                         <Grid container direction="row" justify="center" alignItems="center" style={{ width: '100%', margin: '1%' }}>
-                                                                            <label htmlFor={anexo.idAnexo}>{anexo.doc.nome}</label>
                                                                             <Fab 
+                                                                            style={{padding:'3px 8px', borderRadius:4}}
                                                                                 id={anexo.idDocNecessario}
                                                                                 onClick={(e) => {
                                                                                     window.open(
@@ -1497,7 +1518,7 @@ export default function EnhancedTable() {
                                                                                 aria-label="attach"
                                                                                 className={classes.margin}>
                                                                                 <GetAppIcon className={classes.extendedIcon} />
-                                                                                Arquivo {index + 1}
+                                                                                {anexo.doc.nome}
                                                                             </Fab>
                                                                         </Grid>
                                                                     </Grid>
@@ -1508,11 +1529,11 @@ export default function EnhancedTable() {
                                                         <Grid container direction="column" justify="space-evenly" alignItems="stretch" spacing={2}>
                                                             <Grid container justify="flex-start" alignItems="center">
                                                                 <Typography paragraph>
-                                                                    <strong>Situação: </strong>{row.status}
+                                                                    <strong>Situação: </strong><p style={{marginTop:0,fontSize:20,fontWeight:'bold',color:row.status!='Pendente'?row.status==='Deferido'?'#0A0':'#A00':"#00A"}}>{row.status}</p>
                                                                 </Typography>
                                                             </Grid>
                                                         </Grid>
-                                                        {row.avaliacao !== null ? (
+                                                        {row.avaliacao != null ? (
                                                             <Grid container direction="column" justify="space-evenly" alignItems="stretch" spacing={2}>
                                                                 <Grid container direction="row" justify="space-around" alignItems="center">
                                                                     <Grid item xs={6}>
@@ -1525,7 +1546,9 @@ export default function EnhancedTable() {
                                                                     <Grid item xs={6}>
                                                                         <Grid container direction="row" justify="flex-start" alignItems="center">
                                                                             <Typography paragraph>
-                                                                                <strong>Data da Avaliação: </strong>{row.avaliacao.dataAvaliacao}
+                                                                                <strong>Data da Avaliação: </strong>{parseDate(row.avaliacao.dataAvaliacao).toLocaleDateString(
+                                                                                    'pt-BR'
+                                                                                )}
                                                                             </Typography>
                                                                         </Grid>
                                                                     </Grid>
@@ -1533,20 +1556,28 @@ export default function EnhancedTable() {
                                                                 <Grid container direction="row" justify="flex-start" alignItems="center">
                                                                     <Grid item xs={12}>
                                                                         <Typography paragraph >
-                                                                            <strong>Parecer: </strong>{row.avaliacao.justificativa}
+                                                                            <strong>Parecer do coordenador: </strong>{row.avaliacao.justificativa}
                                                                         </Typography>
                                                                     </Grid>
                                                                 </Grid>
+                                                                {row.avaliacao.novaAtividade?
+                                                                    <Grid container direction="row" justify="flex-start" alignItems="flex-start">
+                                                                        <Grid item xs={6}>
+                                                                            <Typography paragraph >
+                                                                                <strong>Novo Grupo: </strong>{row.avaliacao.novaAtividade.grupo.nome}
+                                                                            </Typography>
+                                                                        </Grid>
+                                                                        <Grid item xs={6}>
+                                                                            <Typography paragraph >
+                                                                                <strong>Nova Atividade: </strong>{row.avaliacao.novaAtividade.descricao}
+                                                                            </Typography>
+                                                                        </Grid>
+                                                                    </Grid>
+                                                                :null}
                                                             </Grid>
-                                                        ) : (
-                                                            <Grid container direction="row" justify="center" alignItems="center">
-                                                                <Grid item xs={12}>
-                                                                    <Typography paragraph >
-                                                                        <strong>Solicitação Pendente</strong>
-                                                                    </Typography>
-                                                                </Grid>
-                                                            </Grid>
-                                                        )}
+                                                        ) : 
+                                                            null
+                                                        }
                                                             
                                                         <Grid container direction="row" justify="flex-end" alignItems="center">
                                                             <Button style={{ marginTop: 5}} onClick={handleCloseDetails} variant="contained" color="primary" className={classes.button}>

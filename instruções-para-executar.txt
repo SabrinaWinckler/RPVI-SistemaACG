@@ -1,0 +1,11 @@
+INSTRUÇÕES PARA COMPILAR:
+
+Backend: 
+	Executar Mysql e Tomcat;
+	Criar base de dados "sistemaacg" no phpmyadmin;
+	Executar pela opção "Run" a classe SistemaAcgAplication.java;
+
+Frontend:
+	npm i;
+	npm start;
+

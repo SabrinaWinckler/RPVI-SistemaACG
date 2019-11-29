@@ -50,9 +50,6 @@ public class Solicitacao{
 	@ManyToOne
 	private Atividade atividade;
 
-	@NotEmpty
-	private String nomeAnexo;
-
 	public boolean verificaTamanho(long tamanho) {
 		return tamanho <= 20;
 	}

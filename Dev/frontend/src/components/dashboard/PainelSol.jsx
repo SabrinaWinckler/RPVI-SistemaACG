@@ -6,18 +6,16 @@ import { lighten, makeStyles } from '@material-ui/core/styles';
 import {
     Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar,
     Typography, Paper, Checkbox, IconButton, Tooltip, Grid, CardContent, Modal, FormControl, InputLabel,
-    Button, Select, MenuItem, TextField
+    Button, Select, MenuItem, TextField, Chip, Avatar, Dialog, DialogActions, DialogTitle 
 } from '@material-ui/core';
+import { Warning as WarningIcon } from '@material-ui/icons'
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns'
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 
 import { UserContext } from '../../context/UserContext'
-
-function createData(aluno, atividade, grupo, data, status) {
-    return { aluno, atividade, grupo, data, status };
-}
+import { validateName, validateRegistration, validateDate, sendForm, deleteSolicitacao } from '../../scripts/scripts'
 
 function getModalStyle() {
     const top = 50
@@ -29,23 +27,9 @@ function getModalStyle() {
         transform: `translate(-${top}%, -${left}%)`,
         minWidth: '55%',
         maxHeight: '90%',
+        overflow:'scroll',
     };
 }
-
-// const rows = [
-//     createData('Matheus Colina', 'Cursos na área de interesse em função do perfil do egresso', 'Grupo I', '27/08/2019', 'pendente'),
-//     createData('Mathias Baldigraxa', 'Participação em projeto de ensino em outras IES', 'Grupo IV', '25/09/2019', 'pendente'),
-//     createData('Débora Molheira', 'Organização de eventos de ensino', 'Grupo II', '27/08/2019', 'pendente'),
-//     createData('Sandro Boizera', 'Cursos de língua estrangeira inglês', 'Grupo III', '02/08/2019', 'aprovado'),
-//     createData('Sabrina Paulé', 'Apresentação de trabalho em eventos de ensino', 'Grupo I', '20/06/2019', 'aprovado'),
-//     createData('Juca', 'bla bla bla', 'Grupo III', '27/03/2008', 'aprovado'),
-//     createData('Judith', 'bla bla bla', 'Grupo II', '09/08/2019', 'pendente'),
-//     createData('Micael', 'bla bla bla', 'Grupo I', '18/08/2019', 'pendente'),
-//     createData('Sam', 'bla bla bla', 'Grupo III', '23/08/2019', 'aprovado'),
-//     createData('João Pablo', 'bla bla bla', 'Grupo IV', '20/08/2019', 'pendente'),
-//     createData('Bernadino', 'bla bla bla', 'Grupo IV', '12/08/2019', 'aprovado'),
-//     createData('Eu', 'bla bla bla', 'Grupo III', '01/08/2019', 'pendente'),
-// ];
 
 function desc(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -151,6 +135,8 @@ const useToolbarStyles = makeStyles(theme => ({
     button: {
         display: 'block',
         marginTop: theme.spacing(2),
+        color: 'white',
+        backgroundColor: '#009045',
     },
     formControl: {
         margin: theme.spacing(1),
@@ -174,68 +160,165 @@ const useToolbarStyles = makeStyles(theme => ({
     menu: {
         width: 200,
     },
+    input: {
+        display: 'none',
+    },
+    avatar: {
+        margin: theme.spacing(1),
+    },
 }));
 
 const EnhancedTableToolbar = props => {
     const classes = useToolbarStyles();
-    const { numSelected } = props;
+    const { numSelected, selectedRow } = props;
     const { user } = useContext(UserContext)
     const [modalStyle] = useState(getModalStyle)
     const [openModal, setOpenModal] = useState(false)
-    const [openSelectGroup, setOpenSelectGroup] = useState(false)
-    const [openSelectActivitie, setOpenSelectActivitie] = useState(false)
-    const [values, setValues] = React.useState({
-        name: '',
-        registration: '',
+    const [file, setFile] = useState(null)
+    const [values, setValues] = useState({
+        location: 'unipampa',
+        name: 'Juca',
+        dateStart: '2019-01-02',
+        dateEnd: '2019-01-03',
+        requestedWorkload: '1',
+        teacher: 'Berna',
+        description: 'Foi top',
+        activitie: '1',
+        registration: '1234567890',
+        group: '1',
+        workload: '2',
+    });
+    const [selectedDateStart, setSelectedDateStart] = useState(new Date());
+    const [selectedDateEnd, setSelectedDateEnd] = useState();
+    const [status, setStatus] = useState({ show: false, message: '' })
+
+    const [groups, setGroups] = useState([])
+    const [openDialog, setOpenDialog] = useState(false)
+    const [submitMessage, setSubmitMessage] = useState('')
+    const [activities, setActivities] = useState([])
+    const [selectValues, setselectValues] = useState({
         group: '',
         activitie: '',
-        teacher: '',
-        location: '',
-        dateStart: '',
-        dateEnd: '',
-        workload: '',
-        requestedWorkload: '',
-        description: '',
-    });
-    const [selectedDate, setSelectedDate] = React.useState(new Date('2014-08-18T21:11:54'));
+      });
 
-    const handleDateChange = date => {
-        setSelectedDate(date);
+    useEffect(() => {
+        async function loadSolicitations() {
+          const response = await axios.get('http://localhost:8081/solicitacao/infos/')
+          setGroups(response.data.grupos)
+          setActivities(response.data.atividades)
+        }
+        loadSolicitations()
+      }, [])
+
+    const handleChangeSelect = event => {
+        setselectValues(oldValues => ({
+          ...oldValues,
+          [event.target.name]: event.target.value,
+        }));
+        setValues({ ...values, [event.target.name]: event.target.value });
+      };
+
+    const handleFile = event =>  {
+        setFile(event.target.files[0])
+    }
+
+    const handleDateChangeStart = date => {
+        if(!validateDate(date)){
+            setStatus({ show: true, message: 'Data Selecionada Inválida!' })
+            return
+        }
+        setSelectedDateStart(date);
+        setValues({ ...values, dateStart: new Date(date.getTime() - (date.getTimezoneOffset() * 60000 ))
+            .toISOString()
+            .split("T")[0] });
+    };
+
+    const handleDateChangeEnd = date => {
+        if(!validateDate(date)){
+            setStatus({ show: true, message: 'Data Selecionada Inválida!' })
+            return
+        }
+        setSelectedDateEnd(date);
+        setValues({ ...values, dateEnd: new Date(date.getTime() - (date.getTimezoneOffset() * 60000 ))
+            .toISOString()
+            .split("T")[0] });
     };
 
     const handleChange = () => event => {
         setValues({ ...values, [event.target.id]: event.target.value });
-        console.log(values.group)
     }
 
-    const handleChangeSelect = event => {
-        setValues(oldValues => ({
-          ...oldValues,
-          [event.target.id]: event.target.value,
-        }));
-      };
-
-    // function handleChangeSelect(event, value) {
-    //     //setRoomId(value.props.value)
-    //     //setRoomName(value.props.name)
-    // }
     function handleModal() {
         setOpenModal(true)
     }
+
     function handleCloseModal() {
         setOpenModal(false)
     }
-    function handleOpenSelectGroup() {
-        setOpenSelectGroup(true);
+
+    async function handleDelete() {
+            try {
+                const response = await axios.delete(`http://localhost:8081/solicitacao/${selectedRow[0]}`)
+                .then(resp => {
+                    console.log(response)
+                })
+                .catch(error => {
+                    console.error(error.response.data.message)
+                })
+                
+            } catch (error) {
+                
+            }
+        console.log(selectedRow[0])
     }
-    function handleOpenSelectActivitie() {
-        setOpenSelectActivitie(true);
+
+    const handleCloseMessageError = () => {
+        setStatus({ show: false })
     }
-    function handleCloseSelectGroup() {
-        setOpenSelectGroup(false);
-    }
-    function handleCloseSelectActivitie() {
-        setOpenSelectActivitie(false);
+
+    const handleOpen = () => {
+        setOpenDialog(true);
+    };
+    
+      const handleClose = () => {
+        setOpenDialog(false);
+        window.location.reload()
+    };
+
+    async function handleSubmit(event) {
+        //console.log(file)
+        if(!validateName(values.name)){
+            setStatus({ show: true, message: 'Nome Inválido!' })
+            return
+        }
+        if(!validateName(values.teacher)){
+            setStatus({ show: true, message: 'Nome do Professor Inválido!' })
+            return
+        }
+        if(!validateRegistration(values.registration)){
+            setStatus({ show: true, message: 'Número de Matrícula Inválido!' })
+            return
+        }
+        if(file === null){
+            setStatus({ show: true, message: 'Você precisa anexar pelo menos um arquivo!' })
+        }
+        var data = {
+            local: values.location,
+            aluno: values.name,
+            dataInicio: values.dateStart,
+            dataFim: values.dateEnd,
+            cargaHorariaSoli: values.requestedWorkload,
+            profRes: values.teacher,
+            descricao: values.description,
+            idAtividade: values.activitie.toString()
+        }
+        console.log(JSON.stringify(data), file)
+        const response = await sendForm(data, file)
+        
+        
+        //setSubmitMessage('Solicitação Realizada com Sucesso!')
+        //handleOpen()
+        
     }
 
     return (
@@ -261,7 +344,7 @@ const EnhancedTableToolbar = props => {
                 <div className={classes.actions}>
                     {numSelected > 0 ? (
                         <Tooltip title="Delete">
-                            <IconButton aria-label="delete">
+                            <IconButton aria-label="delete" onClick={handleDelete}>
                                 <DeleteIcon />
                             </IconButton>
                         </Tooltip>
@@ -277,6 +360,20 @@ const EnhancedTableToolbar = props => {
             <Modal aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description" open={openModal} onClose={handleCloseModal} >
                 <CardContent style={modalStyle} className={classes.paper}>
                     <div className={classes.modalRoot}>
+                    {status.show && (
+                        <Grid container direction="column" justify="center" alignItems="center" >
+                                <Chip avatar={
+                                    <Avatar>
+                                        <WarningIcon />
+                                    </Avatar>
+                                }
+                                label={status.message}
+                                onDelete={handleCloseMessageError}
+                                className={classes.chip}
+                                style={{ color: "#222222" }}
+                                />
+                            </Grid>
+                        )}
                         <form autoComplete="off">
                             <FormControl className={classes.formControl}>
                                 <Grid container direction="column" justify="space-evenly" alignItems="stretch" spacing={2}>
@@ -288,54 +385,57 @@ const EnhancedTableToolbar = props => {
                                     <Grid container direction="row" justify="space-around" alignItems="center">
                                         <Grid item xs={8}>
                                             <TextField id="name" required type="text" pattern="[A-Za-z]" label="Nome" style={{ width: '95%' }} className={classes.textField}
-                                            value={values.name} onChange={handleChange('name')} margin="normal" />
+                                            value={values.name} onChange={handleChange('name')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                         <Grid item xs={4}>
-                                            <TextField required id="registration" type="number" label="Matrícula" style={{ width: '100%' }} className={classes.textField}
-                                                value={values.registration} onChange={handleChange('registration')} margin="normal" />
+                                            <TextField id="registration" required type="number" label="Matrícula" style={{ width: '100%' }} className={classes.textField}
+                                                value={values.registration} onChange={handleChange('registration')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                     </Grid>
                                     <Grid container direction="row" justify="space-between" alignItems="center">
-                                        <div style={{ width: '35%' }}>
-                                            <InputLabel style={{ position: 'relative' }} htmlFor="group">Grupo da ACG</InputLabel>
-                                            <Select id="group" key={1} open={openSelectGroup} className={classes.textField} style={{ width: '100%' }}
-                                                value={values.group} onClose={handleCloseSelectGroup} onOpen={handleOpenSelectGroup} onChange={handleChange('group')} >
-                                                <MenuItem value="GRUPO I">GRUPO I</MenuItem>
-                                                <MenuItem value="GRUPO II">GRUPO II</MenuItem>
-                                                <MenuItem value="GRUPO III">GRUPO III</MenuItem>
-                                                <MenuItem value="GRUPO IV">GRUPO IV</MenuItem>
-                                            </Select>
-                                        </div>
-                                        <div style={{ width: '60%' }}>
-                                            <InputLabel style={{ position: 'relative' }} htmlFor="activitie">Atividade</InputLabel>
-                                            <Select id="activitie" name="activitie" key={2} open={openSelectActivitie} className={classes.textField} style={{ width: '100%' }}
-                                                value={values.activitie} onClose={handleCloseSelectActivitie} onOpen={handleOpenSelectActivitie} onChange={handleChangeSelect} >
-                                                <MenuItem value="ATIVIDADE I">ATIVIDADE I</MenuItem>
-                                                <MenuItem value="ATIVIDADE II">ATIVIDADE II</MenuItem>
-                                                <MenuItem value="ATIVIDADE III">ATIVIDADE III</MenuItem>
-                                                <MenuItem value="ATIVIDADE IV">ATIVIDADE IV</MenuItem>
-                                                <MenuItem value="ATIVIDADE V">ATIVIDADE V</MenuItem>
-                                                <MenuItem value="ATIVIDADE VI">ATIVIDADE VI</MenuItem>
-                                                <MenuItem value="ATIVIDADE VII">ATIVIDADE VII</MenuItem>
-                                            </Select>
-                                        </div>
+                                            <FormControl style={{ width: '35%' }}>
+                                                <InputLabel style={{ position: 'relative' }} htmlFor="groupSelect">Grupo da ACG</InputLabel>
+                                                <Select value={selectValues.group} className={classes.textField} style={{ width: '100%' }}
+                                                onChange={handleChangeSelect}
+                                                inputProps={{
+                                                    name: 'group',
+                                                    id: 'groupSelect',
+                                                }} >
+                                                    {groups.map((group, index) => (
+                                                        <MenuItem key={index} value={group.idGrupo} name={group.nome} >{group.nome}</MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                            <FormControl style={{ width: '60%' }}>
+                                                <InputLabel style={{ position: 'relative' }} htmlFor="activitieSelect">Atividade</InputLabel>
+                                                <Select value={selectValues.activitie} className={classes.textField} style={{ width: '100%' }}
+                                                onChange={handleChangeSelect}
+                                                inputProps={{
+                                                    name: 'activitie',
+                                                    id: 'activitieSelect',
+                                                }} >
+                                                    {activities.map((activitie, index) => (
+                                                        <MenuItem key={index} value={activitie.idAtividade} name={activitie.descricao} >{activitie.descricao}</MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
                                     </Grid>
                                     <Grid container direction="row" justify="space-around" alignItems="center">
                                         <Grid item xs={6}>
-                                            <TextField required label="Professor Responsável" style={{ width: '95%' }} className={classes.textField}
-                                                value={values.teacher} onChange={handleChange('teacher')} margin="normal" />
+                                            <TextField id="teacher" required label="Professor Responsável" style={{ width: '95%' }} className={classes.textField}
+                                                value={values.teacher} type="text" onChange={handleChange('teacher')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                         <Grid item xs={6}>
-                                            <TextField required label="Local da atividade" style={{ width: '100%' }} className={classes.textField}
-                                                value={values.location} onChange={handleChange('location')} margin="normal" />
+                                            <TextField id="location" required label="Local da atividade" style={{ width: '100%' }} className={classes.textField}
+                                                value={values.location} type="text" onChange={handleChange('location')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                     </Grid>
                                     <Grid container direction="row" justify="space-between" alignItems="center">
                                         <Grid item xs={5}>
                                             <div style={{ width: '100%' }}>
                                                 <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                                                    <KeyboardDatePicker disableToolbar variant="inline" format="dd/MM/yyyy" margin="normal" id="date-picker-inline"
-                                                        label="Período da Atividade" value={selectedDate} onChange={handleDateChange}
+                                                    <KeyboardDatePicker id="dateStart" disableToolbar variant="inline" format="dd/MM/yyyy" margin="normal" 
+                                                        label="Período da Atividade" value={selectedDateStart} onChange={handleDateChangeStart}
                                                         KeyboardButtonProps={{
                                                             'aria-label': 'change date',
                                                         }}
@@ -353,8 +453,8 @@ const EnhancedTableToolbar = props => {
                                         <Grid item xs={5}>
                                             <div style={{ width: '100%' }}>
                                                 <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                                                    <KeyboardDatePicker disableToolbar variant="inline" format="dd/MM/yyyy" margin="normal" id="date-picker-inline"
-                                                        label=" " value={selectedDate} onChange={handleDateChange}
+                                                    <KeyboardDatePicker id="dateEnd" disableToolbar variant="inline" format="dd/MM/yyyy" margin="normal"
+                                                        label=" " value={selectedDateEnd} onChange={handleDateChangeEnd}
                                                         KeyboardButtonProps={{
                                                             'aria-label': 'change date',
                                                         }}
@@ -365,25 +465,42 @@ const EnhancedTableToolbar = props => {
                                     </Grid>
                                     <Grid container direction="row" justify="space-around" alignItems="center">
                                         <Grid item xs={6}>
-                                            <TextField required type="number" label="Carga horária da Atividade (em horas)" style={{ width: '95%' }}
-                                                className={classes.textField} value={values.workload} onChange={handleChange('workload')} margin="normal" />
+                                            <TextField id="workload" required type="number" label="Carga horária da Atividade (em horas)" style={{ width: '95%' }}
+                                                className={classes.textField} value={values.workload} onChange={handleChange('workload')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                         <Grid item xs={6}>
-                                            <TextField required type="number" label="Carga horária Solicitada (em horas)" style={{ width: '95%' }}
-                                                className={classes.textField} value={values.requestedWorkload} onChange={handleChange('requestedWorkload')} margin="normal" />
+                                            <TextField id="requestedWorkload" required type="number" label="Carga horária Solicitada (em horas)" style={{ width: '95%' }}
+                                                className={classes.textField} value={values.requestedWorkload} onChange={handleChange('requestedWorkload')} margin="normal" autoComplete="off"/>
                                         </Grid>
                                     </Grid>
                                     <Grid container justify="space-between" alignItems="center">
-                                        <TextField required label="Descrição da Atividade" multiline rows="4" variant="filled" className={classes.textField}
-                                            style={{ width: '100%' }} className={classes.textField} value={values.description} onChange={handleChange('description')}
-                                            margin="normal" />
+                                        <TextField id="description" type="text" required label="Descrição da Atividade" multiline rows="4" variant="filled" className={classes.textField}
+                                            style={{ width: '100%' }} value={values.description} onChange={handleChange('description')} margin="normal" autoComplete="off"/>
                                     </Grid>
                                 </Grid>
                             </FormControl>
+                            <Grid container direction="row" justify="space-between" alignItems="center">
+                                <input required accept="image/*, .pdf, .docx" className={classes.input} onChange={handleFile} id="uploadFile" multiple type="file" />
+                                <label htmlFor="uploadFile">
+                                    <Button variant="outlined" component="span" className={classes.button}>
+                                        Comprovante
+                                    </Button>
+                                </label>
+                                <Button className={classes.button} onClick={handleSubmit} >
+                                    Enviar
+                                </Button>
+                            </Grid>
                         </form>
-                        <Button className={classes.button} >
-                            Enviar
-                        </Button>
+                        <Dialog open={openDialog} onClose={handleClose} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description" >
+                        <Grid container direction="column" justify="space-around" alignItems="center">
+                            <DialogTitle id="alert-dialog-title">{submitMessage}</DialogTitle>
+                            <DialogActions>
+                                <Button onClick={handleClose} color="primary" autoFocus>
+                                    OK!
+                                </Button>
+                            </DialogActions>
+                        </Grid>
+                        </Dialog>
                     </div>
                 </CardContent>
             </Modal>
@@ -393,6 +510,7 @@ const EnhancedTableToolbar = props => {
 
 EnhancedTableToolbar.propTypes = {
     numSelected: PropTypes.number.isRequired,
+    selectedRow: PropTypes
 };
 
 const useStyles = makeStyles(theme => ({
@@ -425,11 +543,11 @@ const useStyles = makeStyles(theme => ({
 
 export default function EnhancedTable() {
     const classes = useStyles();
-    const [order, setOrder] = React.useState('asc');
+    const [order, setOrder] = useState('asc');
     const [orderBy, setOrderBy] = React.useState();
     const [selected, setSelected] = React.useState([]);
-    const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const [rows, setRows] = useState([])
 
@@ -495,10 +613,10 @@ export default function EnhancedTable() {
             <Grid container direction="row" justify="center" alignItems="center">
                 {console.log(rows)}
                 <Paper className={classes.paper} style={{ marginBottom: '4%' }}>
-                    <EnhancedTableToolbar numSelected={selected.length} />
+                    <EnhancedTableToolbar numSelected={selected.length} selectedRow={selected} />
                     <div className={classes.tableWrapper}>
                         <Table className={classes.table} aria-labelledby="tableTitle" size={'medium'} >
-                            <EnhancedTableHead classes={classes} numSelected={selected.length} order={order} orderBy={orderBy}
+                            <EnhancedTableHead classes={classes} numSelected={selected.length} selectedRow={selected} order={order} orderBy={orderBy}
                                 onSelectAllClick={handleSelectAllClick} onRequestSort={handleRequestSort} rowCount={rows.length} />
                             <TableBody>
                                 {stableSort(rows, getSorting(order, orderBy))
@@ -508,7 +626,7 @@ export default function EnhancedTable() {
                                         const labelId = `enhanced-table-checkbox-${index}`;
 
                                         return (
-                                            <TableRow hover onClick={event => handleClick(event, row.aluno)} role="checkbox" aria-checked={isItemSelected}
+                                            <TableRow hover onClick={event => handleClick(event, row.idSolicitacao)} role="checkbox" aria-checked={isItemSelected}
                                                 tabIndex={-1} key={row.aluno} selected={isItemSelected} >
                                                 <TableCell padding="checkbox">
                                                     <Checkbox inputProps={{ 'aria-labelledby': labelId }} />

@@ -1,7 +1,11 @@
 package com.unipampa.sistemaacg.controllers;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -24,6 +28,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -91,11 +96,10 @@ public class SolicitacaoController {
     // public String postTeste(String nome) throws Exception {
     //     return nome;
     // }
-
+    @JsonIgnore 
     @PostMapping("/")
-    public ResponseEntity<Object> postSolicitacao(@RequestBody SolicitacaoPostDTO solicitacao) throws Exception {
-
-        Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
+    public ResponseEntity postSolicitacao(@ModelAttribute SolicitacaoPostDTO solicitacao,  MultipartFile file) throws Exception {
+      Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
 
         if(!atividade.isPresent()){
             return ResponseEntity.badRequest().body("A Atividade com o ID "+ solicitacao.getIdAtividade()+" não foi encontrada");
@@ -104,13 +108,18 @@ public class SolicitacaoController {
         Solicitacao newsolicitacao = new Solicitacao();
         newsolicitacao.setAtividade(atividade.get());
 
-        newsolicitacao.setNomeAnexo(this.postAnexo(solicitacao.getAnexo(), solicitacao.getAluno()));
+       // java.io.File file = solicitacao.getAnexo().getFile();
+        //FileInputStream input = new FileInputStream(file);
+        //MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain","Spring Framework".getBytes());
+
+        //newsolicitacao.setNomeAnexo(this.postAnexo(file, solicitacao.getAluno()));
+        newsolicitacao.setNomeAnexo(storageService.store(file, solicitacao.getAluno()));
 
         //newsolicitacao.setNomeAnexo(this.postTeste("teste"));
 
-         if (!newsolicitacao.verificaTamanho(solicitacao.getAnexo().getSize())) {
-		 	return ResponseEntity.badRequest().body("O arquivo com "+ solicitacao.getAnexo().getSize()+"mb excede o tamanho permitido! Por favor selecione um arquivo com no máximo 20mb");
-         }
+//         if (!newsolicitacao.verificaTamanho(solicitacao.getAnexo().getSize())) {
+//		 	return ResponseEntity.badRequest().body("O arquivo com "+ solicitacao.getAnexo().getSize()+"mb excede o tamanho permitido! Por favor selecione um arquivo com no máximo 20mb");
+//         }
 
         newsolicitacao.setAluno(solicitacao.getAluno());
         newsolicitacao.setCargaHorariaSoli(solicitacao.getCargaHorariaSoli());
@@ -119,11 +128,11 @@ public class SolicitacaoController {
         newsolicitacao.setProfRes(solicitacao.getProfRes());
 
         Date dataAtual = new Date();
-        // SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-        // Date dataTeste = formato.parse(solicitacao.getDataInicio());
+        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+        Date dataTeste = formato.parse(solicitacao.getDataInicio());
 		newsolicitacao.setDataAtual(dataAtual);
-        newsolicitacao.setDataInicio(solicitacao.getDataInicio());
-		newsolicitacao.setDataFim(solicitacao.getDataFim());
+                newsolicitacao.setDataInicio(dataTeste);
+		newsolicitacao.setDataFim(dataTeste);//tem q aarrumae
 
 		newsolicitacao.setStatus(Status.PENDENTE.toString());
 

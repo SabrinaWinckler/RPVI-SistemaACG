@@ -21,3 +21,5 @@
 /Dev/frontend/npm-debug.log*
 /Dev/frontend/yarn-debug.log*
 /Dev/frontend/yarn-error.log*
+
+*.pdf

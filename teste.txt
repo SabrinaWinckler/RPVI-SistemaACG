@@ -1,0 +1,1 @@
+Ele reseta a pasta de arquivos enviados a cada execução.

@@ -1,11 +1,7 @@
 package com.unipampa.sistemaacg.controllers;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -21,12 +17,11 @@ import com.unipampa.sistemaacg.repository.SolicitacaoRepository;
 import com.unipampa.sistemaacg.storageanexo.StorageService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,11 +33,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * SolicitacaoController
  */
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("solicitacao") // localhost:8080/solicitacao
 public class SolicitacaoController {
@@ -62,7 +57,6 @@ public class SolicitacaoController {
     public SolicitacaoController(StorageService storageService) {
         this.storageService = storageService;
     }
-
     @GetMapping(value = "") // Lista de solicitações no formato JSON - localhost:8080/solicitacao/
     public @ResponseBody ResponseEntity<Iterable<Solicitacao>> getSolitacoes() {
         Iterable<Solicitacao> retornableSolicitacoes = solicitacaoRepository.findAll();
@@ -99,7 +93,7 @@ public class SolicitacaoController {
     // }
 
     @PostMapping("/")
-    public ResponseEntity postSolicitacao(@RequestBody SolicitacaoPostDTO solicitacao) throws Exception {
+    public ResponseEntity<Object> postSolicitacao(@RequestBody SolicitacaoPostDTO solicitacao) throws Exception {
 
         Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
 

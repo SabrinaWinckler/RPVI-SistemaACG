@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -59,7 +60,6 @@ public class SolicitacaoController {
     public SolicitacaoController(StorageService storageService) {
         this.storageService = storageService;
     }
-
     @GetMapping(value = "") // Lista de solicitações no formato JSON - localhost:8080/solicitacao/
     public @ResponseBody ResponseEntity<Iterable<Solicitacao>> getSolitacoes() {
         Iterable<Solicitacao> retornableSolicitacoes = solicitacaoRepository.findAll();
@@ -105,10 +105,10 @@ public class SolicitacaoController {
 
     @JsonIgnore
     @PostMapping("/")
-    public ResponseEntity postSolicitacao(@ModelAttribute SolicitacaoPostDTO solicitacao,  MultipartFile files[]) throws Exception {
 
-        String caminhoNome;
-        Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
+    public ResponseEntity postSolicitacao(@ModelAttribute SolicitacaoPostDTO solicitacao,  MultipartFile file) throws Exception {
+      Optional<Atividade> atividade = atividadeRepository.findById(solicitacao.getIdAtividade());
+
 
         if(!atividade.isPresent()){
             return ResponseEntity.badRequest().body("A Atividade com o ID "+ solicitacao.getIdAtividade()+" não foi encontrada");
